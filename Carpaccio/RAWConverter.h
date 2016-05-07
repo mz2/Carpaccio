@@ -8,25 +8,27 @@
 
 #import <Foundation/Foundation.h>
 
-extern NSString *const RAWConverterErrorDomain;
+extern NSString *_Nonnull const RAWConverterErrorDomain;
 
 typedef NS_ENUM(NSUInteger, RAWConversionError) {
     RAWConversionErrorOpenFailed = 1,
     RAWConversionErrorUnpackImageFailed = 2,
     RAWConversionErrorUnpackThumbnailFailed = 3,
-    RAWConversionErrorPostprocessingFailed = 4
+    RAWConversionErrorPostprocessingFailed = 4,
+    RAWConversionErrorInMemoryThumbnailCreationFailed = 5,
+    RAWConversionErrorInMemoryImageCreationFailed = 6
 };
 
 @interface RAWConverter : NSObject
 
-typedef void (^RAWConverterImageHandler)(NSImage *image);
-typedef void (^RAWConverterErrorHandler)(NSError *error);
+typedef void (^RAWConverterImageHandler)(NSImage *_Nonnull image);
+typedef void (^RAWConverterErrorHandler)(NSError *_Nonnull error);
 
-- (instancetype)init;
+- (nonnull instancetype)init;
 
-- (void)decodeContentsOfURL:(NSURL *)URL
-           thumbnailHandler:(RAWConverterImageHandler)thumbnailHandler
-               imageHandler:(RAWConverterImageHandler)imageHandler
-               errorHandler:(RAWConverterErrorHandler)errorHandler;
+- (void)decodeContentsOfURL:(nonnull NSURL *)URL
+           thumbnailHandler:(nonnull RAWConverterImageHandler)thumbnailHandler
+               imageHandler:(nonnull RAWConverterImageHandler)imageHandler
+               errorHandler:(nonnull RAWConverterErrorHandler)errorHandler;
 
 @end

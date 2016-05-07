@@ -10,9 +10,12 @@
 		5F1E22811CDEA9D90083FD6F /* Carpaccio.h in Headers */ = {isa = PBXBuildFile; fileRef = 5F1E22801CDEA9D90083FD6F /* Carpaccio.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		5F1E22881CDEA9D90083FD6F /* Carpaccio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5F1E227D1CDEA9D90083FD6F /* Carpaccio.framework */; };
 		5F1E228D1CDEA9D90083FD6F /* CarpaccioTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F1E228C1CDEA9D90083FD6F /* CarpaccioTests.swift */; };
-		5F1E22991CDEAA030083FD6F /* RAWConverter.h in Headers */ = {isa = PBXBuildFile; fileRef = 5F1E22971CDEAA030083FD6F /* RAWConverter.h */; };
+		5F1E22991CDEAA030083FD6F /* RAWConverter.h in Headers */ = {isa = PBXBuildFile; fileRef = 5F1E22971CDEAA030083FD6F /* RAWConverter.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		5F1E229A1CDEAA030083FD6F /* RAWConverter.mm in Sources */ = {isa = PBXBuildFile; fileRef = 5F1E22981CDEAA030083FD6F /* RAWConverter.mm */; };
 		5F1E229C1CDEAABF0083FD6F /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5F1E229B1CDEAABF0083FD6F /* Cocoa.framework */; };
+		5F1E22A01CDEAC330083FD6F /* DSC00583.ARW in Resources */ = {isa = PBXBuildFile; fileRef = 5F1E229D1CDEAC330083FD6F /* DSC00583.ARW */; };
+		5F1E22A11CDEAC330083FD6F /* DSC00588.ARW in Resources */ = {isa = PBXBuildFile; fileRef = 5F1E229E1CDEAC330083FD6F /* DSC00588.ARW */; };
+		5F1E22A21CDEAC330083FD6F /* DSC00593.ARW in Resources */ = {isa = PBXBuildFile; fileRef = 5F1E229F1CDEAC330083FD6F /* DSC00593.ARW */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -35,6 +38,9 @@
 		5F1E22971CDEAA030083FD6F /* RAWConverter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RAWConverter.h; sourceTree = "<group>"; };
 		5F1E22981CDEAA030083FD6F /* RAWConverter.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = RAWConverter.mm; sourceTree = "<group>"; };
 		5F1E229B1CDEAABF0083FD6F /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
+		5F1E229D1CDEAC330083FD6F /* DSC00583.ARW */ = {isa = PBXFileReference; lastKnownFileType = file; path = DSC00583.ARW; sourceTree = "<group>"; };
+		5F1E229E1CDEAC330083FD6F /* DSC00588.ARW */ = {isa = PBXFileReference; lastKnownFileType = file; path = DSC00588.ARW; sourceTree = "<group>"; };
+		5F1E229F1CDEAC330083FD6F /* DSC00593.ARW */ = {isa = PBXFileReference; lastKnownFileType = file; path = DSC00593.ARW; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -90,6 +96,9 @@
 		5F1E228B1CDEA9D90083FD6F /* CarpaccioTests */ = {
 			isa = PBXGroup;
 			children = (
+				5F1E229D1CDEAC330083FD6F /* DSC00583.ARW */,
+				5F1E229E1CDEAC330083FD6F /* DSC00588.ARW */,
+				5F1E229F1CDEAC330083FD6F /* DSC00593.ARW */,
 				5F1E228C1CDEA9D90083FD6F /* CarpaccioTests.swift */,
 				5F1E228E1CDEA9D90083FD6F /* Info.plist */,
 			);
@@ -195,6 +204,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5F1E22A21CDEAC330083FD6F /* DSC00593.ARW in Resources */,
+				5F1E22A01CDEAC330083FD6F /* DSC00583.ARW in Resources */,
+				5F1E22A11CDEAC330083FD6F /* DSC00588.ARW in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -399,6 +411,7 @@
 				5F1E22931CDEA9D90083FD6F /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		5F1E22941CDEA9D90083FD6F /* Build configuration list for PBXNativeTarget "CarpaccioTests" */ = {
 			isa = XCConfigurationList;
@@ -407,6 +420,7 @@
 				5F1E22961CDEA9D90083FD6F /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

@@ -21,16 +21,19 @@ class CarpaccioTests: XCTestCase {
         super.tearDown()
     }
     
-    func testExample() {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
-    }
-    
-    func testPerformanceExample() {
-        // This is an example of a performance test case.
-        self.measureBlock {
-            // Put the code you want to measure the time of here.
-        }
+    func testSonyRAWConversion() {
+        let img1URL = NSBundle(forClass: self.dynamicType).URLForResource("DSC00583", withExtension: "ARW")!
+
+        RAWConverter().decodeContentsOfURL(img1URL,
+                                           thumbnailHandler:
+            { thumb in
+                XCTAssert(thumb.size.width > 387 && thumb.size.width < 388, "Unexpected thumbnail width: \(thumb.size.width)")
+                XCTAssert(thumb.size.width > 259 && thumb.size.height < 260, "Unexpected thumbnail height: \(thumb.size.height)")
+            }, imageHandler: { img in
+                XCTAssert(true, "")
+            }) { err in
+                //XCTFail("Error: \(err)")
+            }
     }
     
 }
