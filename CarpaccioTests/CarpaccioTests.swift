@@ -28,10 +28,10 @@ class CarpaccioTests: XCTestCase {
         
         try! NSFileManager.defaultManager().createDirectoryAtURL(tempDir, withIntermediateDirectories: true, attributes: [:])
         
-        let converter = RAWConverter(URL: img1URL, convertedImagesRootURL:tempDir)
+        let converter = try! RAWConverter(URL: img1URL)
         
-        converter.decodeContentsOfURL(img1URL,
-                                      thumbnailHandler:
+        converter.decodeToDirectoryAtURL(tempDir,
+                                         thumbnailHandler:
             { thumb in
                 XCTAssert(thumb.size.width > 387 && thumb.size.width < 388, "Unexpected thumbnail width: \(thumb.size.width)")
                 XCTAssert(thumb.size.width > 259 && thumb.size.height < 260, "Unexpected thumbnail height: \(thumb.size.height)")
