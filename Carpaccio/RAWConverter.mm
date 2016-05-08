@@ -22,10 +22,12 @@ NSString *const RAWConverterErrorDomain = @"RAWConversionErrorDomain";
 
 @implementation RAWConverter
 
-- (instancetype)init {
+- (instancetype)initWithURL:(NSURL *)URL convertedImagesRootURL:(NSURL *)directoryURL {
     self = [super init];
     
     if (self) {
+        _URL = URL.copy;
+        _convertedImagesRootURL = directoryURL;
         
         // The date in TIFF is written in the local format; let us specify the timezone for compatibility with dcraw
         putenv ((char*)"TZ=UTC");
@@ -52,11 +54,18 @@ NSString *const RAWConverterErrorDomain = @"RAWConversionErrorDomain";
 }
 
 - (void)decodeContentsOfURL:(NSURL *)URL
-           thumbnailHandler:(RAWConverterImageHandler)thumbnailHandler
+           thumbnailHandler:(RAWConverterThumbnailHandler)thumbnailHandler
                imageHandler:(RAWConverterImageHandler)imageHandler
                errorHandler:(RAWConverterErrorHandler)errorHandler {
     LibRaw RawProcessor;
     RawProcessor.imgdata.params.output_tiff = 1; // Let us output TIFF
+    //RawProcessor.imgdata.params.filtering_mode = LIBRAW_FILTERING_AUTOMATIC;
+    RawProcessor.imgdata.params.output_bps = 16; // Write 16 bits per color value
+    RawProcessor.imgdata.params.gamm[0] = RawProcessor.imgdata.params.gamm[1] = 1.0; // linear gamma curve
+    RawProcessor.imgdata.params.no_auto_bright = 1; // Don't use automatic increase of brightness by histogram.
+    //RawProcessor.imgdata.params.document_mode = 0; // standard processing (with white balance)
+    RawProcessor.imgdata.params.use_camera_wb = 1; // If possible, use the white balance from the camera.
+    RawProcessor.imgdata.params.half_size = 1;
     
     NSString *path = URL.path;
     
@@ -75,18 +84,31 @@ NSString *const RAWConverterErrorDomain = @"RAWConversionErrorDomain";
         return;
     }
     
-    if ((ret = RawProcessor.unpack()) != LIBRAW_SUCCESS) {
-        errorHandler([self.class RAWConversionErrorWithCode:RAWConversionErrorUnpackImageFailed
-                                                description:[NSString stringWithFormat:@"Unpacking image from file \%@ failed.", URL.path]
-                                         recoverySuggestion:@"Check that the file is a valid RAW file supported by libraw."
-                                            LibRawErrorCode:ret]);
-        return;
-    }
-    
     if ((ret = RawProcessor.unpack_thumb()) != LIBRAW_SUCCESS) {
         errorHandler([self.class RAWConversionErrorWithCode:RAWConversionErrorUnpackThumbnailFailed
                                                 description:[NSString stringWithFormat:@"Unpacking thumbnail from file \%@ failed.", URL.path]
                                          recoverySuggestion:@"Check that the file has a thumbnail."
+                                            LibRawErrorCode:ret]);
+        return;
+    }
+    
+    libraw_processed_image_t *processedThumb = RawProcessor.dcraw_make_mem_thumb();
+    NSImage *thumb = [[NSImage alloc] initWithData:[NSData dataWithBytes:processedThumb->data length:processedThumb->data_size]];
+    if (!thumb) {
+        errorHandler([self.class RAWConversionErrorWithCode:RAWConversionErrorInMemoryThumbnailCreationFailed
+                                                description:@"Failed to load thumbnail in memory from postprocessed RAW data."
+                                         recoverySuggestion:@"Check that the file is a valid RAW file supported by libraw."
+                                            LibRawErrorCode:-1]);
+        delete processedThumb;
+        return;
+    }
+    delete processedThumb;
+    thumbnailHandler(thumb);
+    
+    if ((ret = RawProcessor.unpack()) != LIBRAW_SUCCESS) {
+        errorHandler([self.class RAWConversionErrorWithCode:RAWConversionErrorUnpackImageFailed
+                                                description:[NSString stringWithFormat:@"Unpacking image from file \%@ failed.", URL.path]
+                                         recoverySuggestion:@"Check that the file is a valid RAW file supported by libraw."
                                             LibRawErrorCode:ret]);
         return;
     }
@@ -98,40 +120,18 @@ NSString *const RAWConverterErrorDomain = @"RAWConversionErrorDomain";
                                             LibRawErrorCode:ret]);
     }
     
-    //int width, height, colors, bps;
-    //RawProcessor.get_mem_image_format(&width, &height, &colors, &bps);
+    NSURL *imgURL = [self.convertedImagesRootURL URLByAppendingPathComponent:[URL.lastPathComponent.stringByDeletingPathExtension stringByAppendingString:@".tiff"]];
     
-    //unsigned char *buffer = new unsigned char[height * width * 3];
-    //RawProcessor.copy_mem_image(buffer, width * 3, 0);
-    
-    libraw_processed_image_t *processedThumb = RawProcessor.dcraw_make_mem_thumb();
-    NSImage *thumb = [[NSImage alloc] initWithData:[NSData dataWithBytes:processedThumb->data length:processedThumb->data_size]];
-    if (!thumb) {
-        errorHandler([self.class RAWConversionErrorWithCode:RAWConversionErrorInMemoryThumbnailCreationFailed
-                                                description:@"Failed to load thumbnail in memory from postprocessed RAW data."
-                                         recoverySuggestion:@"Check that the file is a valid RAW file supported by libraw."
-                                            LibRawErrorCode:-1]);
+    if ((ret = RawProcessor.dcraw_ppm_tiff_writer(imgURL.path.UTF8String)) != LIBRAW_SUCCESS) {
+        errorHandler([self.class RAWConversionErrorWithCode:RAWConversionErrorInMemoryConvertedImageWritingFailed
+                                                description:@"Failed to write converted image to a location on disk."
+                                         recoverySuggestion:[NSString stringWithFormat:@"Check that you have the permission to write to %@.",
+                                                             self.convertedImagesRootURL.path]
+                                            LibRawErrorCode:ret]);
         return;
     }
     
-    delete processedThumb;
-    thumbnailHandler(thumb);
-    
-    libraw_processed_image_t *processedImg = RawProcessor.dcraw_make_mem_image();
-    NSImage *img = [[NSImage alloc] initWithData:[NSData dataWithBytes:processedImg->data length:processedImg->data_size]];
-    //delete processedImg;
-    
-    if (!img) {
-        errorHandler([self.class RAWConversionErrorWithCode:RAWConversionErrorInMemoryImageCreationFailed
-                                                description:@"Failed to load an image in memory from postprocessed RAW data."
-                                         recoverySuggestion:@"Check that the file is a valid RAW file supported by libraw."
-                                            LibRawErrorCode:-1]);
-        return;
-    }
-    
-    imageHandler(img);
-    
-    //delete []buffer;
+    imageHandler(imgURL);
 }
 
 @end

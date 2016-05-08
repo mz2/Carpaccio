@@ -16,18 +16,24 @@ typedef NS_ENUM(NSUInteger, RAWConversionError) {
     RAWConversionErrorUnpackThumbnailFailed = 3,
     RAWConversionErrorPostprocessingFailed = 4,
     RAWConversionErrorInMemoryThumbnailCreationFailed = 5,
-    RAWConversionErrorInMemoryImageCreationFailed = 6
+    RAWConversionErrorInMemoryConvertedImageWritingFailed = 6
 };
 
 @interface RAWConverter : NSObject
 
-typedef void (^RAWConverterImageHandler)(NSImage *_Nonnull image);
+@property (readonly, copy, nonnull) NSURL *URL;
+@property (readonly, copy, nonnull) NSURL *convertedImagesRootURL;
+
+typedef void (^RAWConverterThumbnailHandler)(NSImage *_Nonnull image);
+typedef void (^RAWConverterImageHandler)(NSURL *_Nonnull convertedURL);
+
 typedef void (^RAWConverterErrorHandler)(NSError *_Nonnull error);
 
-- (nonnull instancetype)init;
+- (nonnull instancetype)initWithURL:(nonnull NSURL *)URL
+             convertedImagesRootURL:(nonnull NSURL *)directoryURL;
 
 - (void)decodeContentsOfURL:(nonnull NSURL *)URL
-           thumbnailHandler:(nonnull RAWConverterImageHandler)thumbnailHandler
+           thumbnailHandler:(nonnull RAWConverterThumbnailHandler)thumbnailHandler
                imageHandler:(nonnull RAWConverterImageHandler)imageHandler
                errorHandler:(nonnull RAWConverterErrorHandler)errorHandler;
 
