@@ -5,6 +5,10 @@ Carpaccio is a Cocoa wrapper to the [LibRaw](http://www.libraw.org/docs/API-CXX-
 
 #### INSTALLATION
 
+**NOTE:** As a prerequisite to building & installing the framework any route you choose, it is assumed that [LibRaw](http://www.libraw.org/docs/API-CXX-eng.html) is available under `/usr/local/lib` and its headers under `/usr/local/include`. 
+
+The easiest way to make that happen is with `brew install libraw`. Note that Carpaccio uses LibRaw built as a static library as part of its build and therefore your end users will not need to have LibRaw installed under /usr/local/lib.
+
 ##### Carthage
 
 [Carthage](https://github.com/Carthage/Carthage) is a decentralized dependency manager that builds your dependencies and provides you with binary frameworks.
@@ -80,9 +84,10 @@ Adapting from a test included in the test suite for the framework, here's how yo
 
 #### TODO
 
-Carpaccio is still a very fresh and raw (har har) library and there are many tasks to make this .
+Carpaccio is still a very fresh and raw (har har) library and there are many tasks to make this a more generally useful library.
 
 - [ ] As part of the build process, help with building your own copy of [LibRaw](http://www.libraw.org/docs/API-CXX-eng.html) library instead of assuming one sits under `/usr/local/lib`. 
 - [ ] Switch the `RAWConverter` implementation to using the libraw C API instead of the C++ API to allow for a pure Swift implementation.
 - [ ] Add tests for RAWs from a number of different camera vendors.
+- [ ] Travis CI support.
 - [ ] iOS support.
