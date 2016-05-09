@@ -17,6 +17,8 @@
 		5F1E22A11CDEAC330083FD6F /* DSC00588.ARW in Resources */ = {isa = PBXBuildFile; fileRef = 5F1E229E1CDEAC330083FD6F /* DSC00588.ARW */; };
 		5F1E22A21CDEAC330083FD6F /* DSC00593.ARW in Resources */ = {isa = PBXBuildFile; fileRef = 5F1E229F1CDEAC330083FD6F /* DSC00593.ARW */; };
 		5FF2F7A21CE1542D00C15E3A /* libraw.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5FF2F7A11CE1542D00C15E3A /* libraw.a */; };
+		5FF2F7A91CE1563400C15E3A /* Image.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FF2F7A71CE1563400C15E3A /* Image.swift */; };
+		5FF2F7AA1CE1563400C15E3A /* ImageCollection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FF2F7A81CE1563400C15E3A /* ImageCollection.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -43,6 +45,8 @@
 		5F1E229E1CDEAC330083FD6F /* DSC00588.ARW */ = {isa = PBXFileReference; lastKnownFileType = file; path = DSC00588.ARW; sourceTree = "<group>"; };
 		5F1E229F1CDEAC330083FD6F /* DSC00593.ARW */ = {isa = PBXFileReference; lastKnownFileType = file; path = DSC00593.ARW; sourceTree = "<group>"; };
 		5FF2F7A11CE1542D00C15E3A /* libraw.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libraw.a; path = Libraries/libraw.a; sourceTree = "<group>"; };
+		5FF2F7A71CE1563400C15E3A /* Image.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Image.swift; sourceTree = "<group>"; };
+		5FF2F7A81CE1563400C15E3A /* ImageCollection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageCollection.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -69,8 +73,7 @@
 		5F1E22731CDEA9D90083FD6F = {
 			isa = PBXGroup;
 			children = (
-				5FF2F7A11CE1542D00C15E3A /* libraw.a */,
-				5F1E229B1CDEAABF0083FD6F /* Cocoa.framework */,
+				5FF2F7AD1CE1568E00C15E3A /* Frameworks */,
 				5F1E227F1CDEA9D90083FD6F /* Carpaccio */,
 				5F1E228B1CDEA9D90083FD6F /* CarpaccioTests */,
 				5F1E227E1CDEA9D90083FD6F /* Products */,
@@ -89,10 +92,10 @@
 		5F1E227F1CDEA9D90083FD6F /* Carpaccio */ = {
 			isa = PBXGroup;
 			children = (
+				5FF2F7AC1CE1564100C15E3A /* Image */,
+				5FF2F7AB1CE1563C00C15E3A /* RAW Converter */,
 				5F1E22801CDEA9D90083FD6F /* Carpaccio.h */,
 				5F1E22821CDEA9D90083FD6F /* Info.plist */,
-				5F1E22971CDEAA030083FD6F /* RAWConverter.h */,
-				5F1E22981CDEAA030083FD6F /* RAWConverter.mm */,
 			);
 			path = Carpaccio;
 			sourceTree = "<group>";
@@ -107,6 +110,33 @@
 				5F1E228E1CDEA9D90083FD6F /* Info.plist */,
 			);
 			path = CarpaccioTests;
+			sourceTree = "<group>";
+		};
+		5FF2F7AB1CE1563C00C15E3A /* RAW Converter */ = {
+			isa = PBXGroup;
+			children = (
+				5F1E22971CDEAA030083FD6F /* RAWConverter.h */,
+				5F1E22981CDEAA030083FD6F /* RAWConverter.mm */,
+			);
+			name = "RAW Converter";
+			sourceTree = "<group>";
+		};
+		5FF2F7AC1CE1564100C15E3A /* Image */ = {
+			isa = PBXGroup;
+			children = (
+				5FF2F7A71CE1563400C15E3A /* Image.swift */,
+				5FF2F7A81CE1563400C15E3A /* ImageCollection.swift */,
+			);
+			name = Image;
+			sourceTree = "<group>";
+		};
+		5FF2F7AD1CE1568E00C15E3A /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				5FF2F7A11CE1542D00C15E3A /* libraw.a */,
+				5F1E229B1CDEAABF0083FD6F /* Cocoa.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -222,6 +252,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				5F1E229A1CDEAA030083FD6F /* RAWConverter.mm in Sources */,
+				5FF2F7AA1CE1563400C15E3A /* ImageCollection.swift in Sources */,
+				5FF2F7A91CE1563400C15E3A /* Image.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -337,6 +369,7 @@
 		5F1E22921CDEA9D90083FD6F /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEFINES_MODULE = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
@@ -353,12 +386,14 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.piipari.Carpaccio;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
 			name = Debug;
 		};
 		5F1E22931CDEA9D90083FD6F /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEFINES_MODULE = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
