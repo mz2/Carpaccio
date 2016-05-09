@@ -16,7 +16,7 @@
 		5F1E22A01CDEAC330083FD6F /* DSC00583.ARW in Resources */ = {isa = PBXBuildFile; fileRef = 5F1E229D1CDEAC330083FD6F /* DSC00583.ARW */; };
 		5F1E22A11CDEAC330083FD6F /* DSC00588.ARW in Resources */ = {isa = PBXBuildFile; fileRef = 5F1E229E1CDEAC330083FD6F /* DSC00588.ARW */; };
 		5F1E22A21CDEAC330083FD6F /* DSC00593.ARW in Resources */ = {isa = PBXBuildFile; fileRef = 5F1E229F1CDEAC330083FD6F /* DSC00593.ARW */; };
-		5F1E22A81CDEC35C0083FD6F /* libraw.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5F1E22A71CDEC35C0083FD6F /* libraw.a */; };
+		5FF2F7A21CE1542D00C15E3A /* libraw.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5FF2F7A11CE1542D00C15E3A /* libraw.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -42,7 +42,7 @@
 		5F1E229D1CDEAC330083FD6F /* DSC00583.ARW */ = {isa = PBXFileReference; lastKnownFileType = file; path = DSC00583.ARW; sourceTree = "<group>"; };
 		5F1E229E1CDEAC330083FD6F /* DSC00588.ARW */ = {isa = PBXFileReference; lastKnownFileType = file; path = DSC00588.ARW; sourceTree = "<group>"; };
 		5F1E229F1CDEAC330083FD6F /* DSC00593.ARW */ = {isa = PBXFileReference; lastKnownFileType = file; path = DSC00593.ARW; sourceTree = "<group>"; };
-		5F1E22A71CDEC35C0083FD6F /* libraw.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libraw.a; path = ../../../../usr/local/Cellar/libraw/0.17.1/lib/libraw.a; sourceTree = "<group>"; };
+		5FF2F7A11CE1542D00C15E3A /* libraw.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libraw.a; path = Libraries/libraw.a; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -50,7 +50,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				5F1E22A81CDEC35C0083FD6F /* libraw.a in Frameworks */,
+				5FF2F7A21CE1542D00C15E3A /* libraw.a in Frameworks */,
 				5F1E229C1CDEAABF0083FD6F /* Cocoa.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -69,7 +69,7 @@
 		5F1E22731CDEA9D90083FD6F = {
 			isa = PBXGroup;
 			children = (
-				5F1E22A71CDEC35C0083FD6F /* libraw.a */,
+				5FF2F7A11CE1542D00C15E3A /* libraw.a */,
 				5F1E229B1CDEAABF0083FD6F /* Cocoa.framework */,
 				5F1E227F1CDEA9D90083FD6F /* Carpaccio */,
 				5F1E228B1CDEA9D90083FD6F /* CarpaccioTests */,
@@ -282,6 +282,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = $SRCROOT/Include;
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -324,6 +325,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = $SRCROOT/Include;
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = macosx;
@@ -341,11 +343,13 @@
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				FRAMEWORK_VERSION = A;
-				HEADER_SEARCH_PATHS = /usr/local/include/libraw;
 				INFOPLIST_FILE = Carpaccio/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
-				LIBRARY_SEARCH_PATHS = "/usr/local/Cellar/libraw/**";
+				LIBRARY_SEARCH_PATHS = (
+					"/usr/local/Cellar/libraw/**",
+					"$(PROJECT_DIR)/Libraries",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.piipari.Carpaccio;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -361,11 +365,13 @@
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				FRAMEWORK_VERSION = A;
-				HEADER_SEARCH_PATHS = /usr/local/include/libraw;
 				INFOPLIST_FILE = Carpaccio/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
-				LIBRARY_SEARCH_PATHS = "/usr/local/Cellar/libraw/**";
+				LIBRARY_SEARCH_PATHS = (
+					"/usr/local/Cellar/libraw/**",
+					"$(PROJECT_DIR)/Libraries",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.piipari.Carpaccio;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;

@@ -9,7 +9,7 @@
 #import "RAWConverter.h"
 
 #import <Cocoa/Cocoa.h>
-#import <libraw.h>
+#import <libraw/libraw.h>
 
 NSString *const RAWConverterErrorDomain = @"RAWConversionErrorDomain";
 
