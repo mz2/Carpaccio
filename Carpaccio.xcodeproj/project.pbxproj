@@ -16,6 +16,9 @@
 		5F1E22A01CDEAC330083FD6F /* DSC00583.ARW in Resources */ = {isa = PBXBuildFile; fileRef = 5F1E229D1CDEAC330083FD6F /* DSC00583.ARW */; };
 		5F1E22A11CDEAC330083FD6F /* DSC00588.ARW in Resources */ = {isa = PBXBuildFile; fileRef = 5F1E229E1CDEAC330083FD6F /* DSC00588.ARW */; };
 		5F1E22A21CDEAC330083FD6F /* DSC00593.ARW in Resources */ = {isa = PBXBuildFile; fileRef = 5F1E229F1CDEAC330083FD6F /* DSC00593.ARW */; };
+		5F7016211CE3291300173EB6 /* libjasper.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5F7016201CE3291300173EB6 /* libjasper.a */; };
+		5F7016231CE3295900173EB6 /* libjpeg.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5F7016221CE3295900173EB6 /* libjpeg.a */; };
+		5F7016271CE329D400173EB6 /* liblcms2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5F7016261CE329D400173EB6 /* liblcms2.a */; };
 		5FF2F7A21CE1542D00C15E3A /* libraw.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5FF2F7A11CE1542D00C15E3A /* libraw.a */; };
 		5FF2F7A91CE1563400C15E3A /* Image.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FF2F7A71CE1563400C15E3A /* Image.swift */; };
 		5FF2F7AA1CE1563400C15E3A /* ImageCollection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FF2F7A81CE1563400C15E3A /* ImageCollection.swift */; };
@@ -44,6 +47,9 @@
 		5F1E229D1CDEAC330083FD6F /* DSC00583.ARW */ = {isa = PBXFileReference; lastKnownFileType = file; path = DSC00583.ARW; sourceTree = "<group>"; };
 		5F1E229E1CDEAC330083FD6F /* DSC00588.ARW */ = {isa = PBXFileReference; lastKnownFileType = file; path = DSC00588.ARW; sourceTree = "<group>"; };
 		5F1E229F1CDEAC330083FD6F /* DSC00593.ARW */ = {isa = PBXFileReference; lastKnownFileType = file; path = DSC00593.ARW; sourceTree = "<group>"; };
+		5F7016201CE3291300173EB6 /* libjasper.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libjasper.a; path = Libraries/libjasper.a; sourceTree = "<group>"; };
+		5F7016221CE3295900173EB6 /* libjpeg.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libjpeg.a; path = Libraries/libjpeg.a; sourceTree = "<group>"; };
+		5F7016261CE329D400173EB6 /* liblcms2.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = liblcms2.a; path = Libraries/liblcms2.a; sourceTree = "<group>"; };
 		5FF2F7A11CE1542D00C15E3A /* libraw.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libraw.a; path = Libraries/libraw.a; sourceTree = "<group>"; };
 		5FF2F7A71CE1563400C15E3A /* Image.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Image.swift; sourceTree = "<group>"; };
 		5FF2F7A81CE1563400C15E3A /* ImageCollection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageCollection.swift; sourceTree = "<group>"; };
@@ -55,7 +61,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				5FF2F7A21CE1542D00C15E3A /* libraw.a in Frameworks */,
+				5F7016271CE329D400173EB6 /* liblcms2.a in Frameworks */,
+				5F7016231CE3295900173EB6 /* libjpeg.a in Frameworks */,
 				5F1E229C1CDEAABF0083FD6F /* Cocoa.framework in Frameworks */,
+				5F7016211CE3291300173EB6 /* libjasper.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -133,6 +142,9 @@
 		5FF2F7AD1CE1568E00C15E3A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				5F7016261CE329D400173EB6 /* liblcms2.a */,
+				5F7016221CE3295900173EB6 /* libjpeg.a */,
+				5F7016201CE3291300173EB6 /* libjasper.a */,
 				5FF2F7A11CE1542D00C15E3A /* libraw.a */,
 				5F1E229B1CDEAABF0083FD6F /* Cocoa.framework */,
 			);
@@ -382,6 +394,7 @@
 				LIBRARY_SEARCH_PATHS = (
 					"/usr/local/Cellar/libraw/**",
 					"$(PROJECT_DIR)/Libraries",
+					"/usr/local/Cellar/little-cms2/2.7/lib",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.piipari.Carpaccio;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -406,6 +419,7 @@
 				LIBRARY_SEARCH_PATHS = (
 					"/usr/local/Cellar/libraw/**",
 					"$(PROJECT_DIR)/Libraries",
+					"/usr/local/Cellar/little-cms2/2.7/lib",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.piipari.Carpaccio;
 				PRODUCT_NAME = "$(TARGET_NAME)";
