@@ -391,11 +391,7 @@
 				INFOPLIST_FILE = Carpaccio/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
-				LIBRARY_SEARCH_PATHS = (
-					"/usr/local/Cellar/libraw/**",
-					"$(PROJECT_DIR)/Libraries",
-					"/usr/local/Cellar/little-cms2/2.7/lib",
-				);
+				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/Libraries";
 				PRODUCT_BUNDLE_IDENTIFIER = com.piipari.Carpaccio;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -416,11 +412,7 @@
 				INFOPLIST_FILE = Carpaccio/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
-				LIBRARY_SEARCH_PATHS = (
-					"/usr/local/Cellar/libraw/**",
-					"$(PROJECT_DIR)/Libraries",
-					"/usr/local/Cellar/little-cms2/2.7/lib",
-				);
+				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/Libraries";
 				PRODUCT_BUNDLE_IDENTIFIER = com.piipari.Carpaccio;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
