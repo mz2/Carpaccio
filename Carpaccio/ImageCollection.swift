@@ -13,6 +13,12 @@ public struct ImageCollection {
     public let images:[Image]
     public let URL:NSURL
     
+    public init(name:String, images:[Image], URL:NSURL) throws {
+        self.URL = URL
+        self.name = URL.lastPathComponent ?? "Untitled"
+        self.images = images
+    }
+    
     public init(contentsOfURL URL:NSURL) throws {
         self.URL = URL
         self.name = URL.lastPathComponent ?? "Untitled"
