@@ -63,7 +63,7 @@ public class Image {
     }
     
     public class var imageFileExtensions:Set<String> {
-        return Set(["arw"])
+        return Set(["arw", "jpg", "jpeg", "png", "tif", "tiff", "nef", "cr2"])
     }
     
     public class func images(contentsOfURL URL:NSURL) throws -> [Image] {
