@@ -24,4 +24,47 @@ public struct ImageCollection {
         self.name = URL.lastPathComponent ?? "Untitled"
         self.images = try Image.images(contentsOfURL: URL)
     }
+    
+    // TODO: Create a specific type for a sparse distance matrix.
+    public func distanceMatrix(distance:Image.DistanceFunction) -> [[Double]] {
+        return (images.startIndex ..< self.images.endIndex).lazy.map { i in
+            var row = [Double]()
+            for e in images.startIndex ..< i { row[e] = Double.NaN }
+            row[i] = 0
+            
+            for j in (i.successor() ..< self.images.endIndex) {
+                row[j] = distance(a: images[i], b: images[j])
+            }
+
+            return row
+        }
+    }
+    
+    // TODO: Use a Swot data frame as return type instead?
+    public func distanceTable(distance:Image.DistanceFunction) -> [[Double]] {
+        let distMatrix = self.distanceMatrix(distance)
+        var distTable = [[Double]]()
+        
+        if (distMatrix.count == 0) { return [[Double]]() }
+        
+        let rowCount = distMatrix.count
+        let colCount = distMatrix[0].count
+        precondition(rowCount == self.images.count)
+        precondition(rowCount == colCount)
+        
+        for i in images.startIndex ..< images.endIndex {
+            var row = [Double]()
+            for j in images.startIndex ..< images.endIndex {
+                if j < i {
+                    row.append(distMatrix[j][i])
+                }
+                else {
+                    row.append(distMatrix[i][j])
+                }
+            }
+            distTable.append(row)
+        }
+        
+        return distTable
+    }
 }

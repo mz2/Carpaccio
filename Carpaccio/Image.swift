@@ -18,6 +18,8 @@ public class Image {
     public let backingImage:NSImage?
     public let URL:NSURL?
     
+    public typealias DistanceFunction = (a:Image, b:Image)-> Double
+    
     public required init(image:NSImage) {
         self.backingImage = image
         self.name = image.name() ?? "Untitled"
