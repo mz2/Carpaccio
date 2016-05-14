@@ -27,12 +27,19 @@ public struct ImageCollection {
     
     // TODO: Create a specific type for a sparse distance matrix.
     public func distanceMatrix(distance:Image.DistanceFunction) -> [[Double]] {
-        return (images.startIndex ..< self.images.endIndex).lazy.map { i in
+        return (images.startIndex ..< self.images.endIndex).lazy.flatMap { i in
             var row = [Double]()
-            for e in images.startIndex ..< i { row[e] = Double.NaN }
-            row[i] = 0
+            for e in images.startIndex ..< images.endIndex {
+                if e == i {
+                    row.append(0)
+                }
+                else {
+                    row.append(Double.NaN)
+                }
+            }
             
-            for j in (i.successor() ..< self.images.endIndex) {
+            let iSuccessor = i.successor()
+            for j in (iSuccessor ..< self.images.endIndex) {
                 row[j] = distance(a: images[i], b: images[j])
             }
 

@@ -46,4 +46,48 @@ class CarpaccioTests: XCTestCase {
         try! NSFileManager.defaultManager().removeItemAtURL(tempDir)
     }
     
+    func testDistanceMatrixComputation() {
+        let resourcesDir = NSBundle(forClass: self.dynamicType).resourceURL!
+        let imgColl = try! ImageCollection(contentsOfURL: resourcesDir)
+        
+        // just checking that the matrix computation succeeds.
+        let distances = imgColl.distanceMatrix { a, b in
+            return Double.infinity
+        }
+        
+        for (r, row) in distances.enumerate() {
+            for (c, dist) in row.enumerate() {
+                if c > r {
+                    XCTAssert(dist.isInfinite)
+                }
+                else if c == r {
+                    XCTAssert(dist == 0)
+                }
+                else if c < r {
+                    XCTAssert(dist.isNaN) // the lower part under diagonal is filled with NaN (for now anyway, until we create a sparse matrix for the purpose)
+                }
+            }
+        }
+    }
+    
+    func testDistanceTableComputation() {
+        let resourcesDir = NSBundle(forClass: self.dynamicType).resourceURL!
+        let imgColl = try! ImageCollection(contentsOfURL: resourcesDir)
+        
+        let distances = imgColl.distanceTable { a, b in
+            return Double.infinity
+        }
+        
+        for (r, row) in distances.enumerate() {
+            for (c, dist) in row.enumerate() {
+                if c == r {
+                    XCTAssert(dist == 0)
+                }
+                else {
+                    XCTAssert(dist.isInfinite)
+                }
+            }
+        }
+    }
+    
 }
