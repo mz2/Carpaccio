@@ -8,7 +8,7 @@
 
 import Foundation
 
-public struct ImageCollection {
+public class ImageCollection {
     public let name:String
     public var images:[Image]
     public let URL:NSURL

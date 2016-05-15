@@ -15,7 +15,7 @@ public enum ImageError:ErrorType {
     case LoadingFailed(underlyingError:ErrorType)
 }
 
-public class Image {
+public class Image: Equatable {
     public let name:String
     public var thumbnailImage:NSImage? = nil
     public let backingImage:NSImage?
@@ -106,24 +106,26 @@ public class Image {
         
         var images = [Image]()
         
-        var i = 0
+        let allPaths = (enumerator.allObjects as! [String]).filter {
+            let pathExtension = ($0 as NSString).pathExtension.lowercaseString
+            return Image.imageFileExtensions.contains(pathExtension)
+        }
         
-        let allPaths = enumerator.allObjects
-        for elementStr in allPaths as! [NSString] {
-            let pathExtension = elementStr.pathExtension.lowercaseString
-            if !Image.imageFileExtensions.contains(pathExtension) {
-                continue
-            }
-            
-            let absoluteURL = URL.URLByAppendingPathComponent(elementStr as String)
+        for (i, elementStr) in allPaths.enumerate() {
+            let absoluteURL = URL.URLByAppendingPathComponent(elementStr)
             let image = Image(URL: absoluteURL)
             
             loadHandler?(index: i, total:allPaths.count, image: image)
-            i += 1
-            
             images.append(image)
         }
         
         return images
     }
+}
+
+public func == (lhs:Image, rhs:Image) -> Bool {
+    return lhs.name == rhs.name
+            && lhs.thumbnailImage === rhs.thumbnailImage
+            && lhs.backingImage === rhs.backingImage
+            && lhs.URL == rhs.URL
 }
