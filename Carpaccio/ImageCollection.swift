@@ -10,7 +10,7 @@ import Foundation
 
 public struct ImageCollection {
     public let name:String
-    public let images:[Image]
+    public var images:[Image]
     public let URL:NSURL
     
     public init(name:String, images:[Image], URL:NSURL) throws {
@@ -22,7 +22,7 @@ public struct ImageCollection {
     public init(contentsOfURL URL:NSURL) throws {
         self.URL = URL
         self.name = URL.lastPathComponent ?? "Untitled"
-        self.images = try Image.images(contentsOfURL: URL)
+        self.images = try Image.loadImages(contentsOfURL: URL)
     }
     
     // TODO: Create a specific type for a sparse distance matrix.

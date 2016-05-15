@@ -12,6 +12,7 @@ public enum ImageError:ErrorType {
     case URLMissing
     case URLHasNoPath(NSURL)
     case LocationNotEnumerable(NSURL)
+    case LoadingFailed(underlyingError:ErrorType)
 }
 
 public class Image {
@@ -78,27 +79,48 @@ public class Image {
         return Set(["arw", "nef", "cr2"])
     }
     
-    public class func images(contentsOfURL URL:NSURL) throws -> [Image] {
+    public typealias LoadHandler = (index:Int, total:Int, image:Image) -> Void
+    public typealias LoadErrorHandler = (ImageError) -> Void
+    
+    public class func loadImagesAsynchronously(contentsOfURL URL:NSURL, loadHandler:LoadHandler? = nil, errorHandler:LoadErrorHandler) {
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)) { 
+            do {
+                try loadImages(contentsOfURL: URL, loadHandler: loadHandler)
+            }
+            catch {
+                errorHandler(.LoadingFailed(underlyingError: error))
+            }
+        }
+    }
+    
+    public class func loadImages(contentsOfURL URL:NSURL, loadHandler:LoadHandler? = nil) throws -> [Image] {
         let fileManager = NSFileManager.defaultManager()
         
         guard let path = URL.path else {
             throw ImageError.URLHasNoPath(URL)
         }
         
-        guard let enumerator:NSDirectoryEnumerator = fileManager.enumeratorAtPath(path) else {
+        guard let enumerator = fileManager.enumeratorAtPath(path) else {
             throw ImageError.LocationNotEnumerable(URL)
         }
         
         var images = [Image]()
-        while let element = enumerator.nextObject() as? String {
-            let elementStr = element as NSString
+        
+        var i = 0
+        
+        let allPaths = enumerator.allObjects
+        for elementStr in allPaths as! [NSString] {
             let pathExtension = elementStr.pathExtension.lowercaseString
             if !Image.imageFileExtensions.contains(pathExtension) {
                 continue
             }
             
-            let absoluteURL = URL.URLByAppendingPathComponent(element)
+            let absoluteURL = URL.URLByAppendingPathComponent(elementStr as String)
             let image = Image(URL: absoluteURL)
+            
+            loadHandler?(index: i, total:allPaths.count, image: image)
+            i += 1
+            
             images.append(image)
         }
         
