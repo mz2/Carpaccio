@@ -189,10 +189,29 @@ NSString *const RAWConverterErrorDomain = @"RAWConversionErrorDomain";
     return ret;
 }
 
-- (void)decodeToDirectoryAtURL:(nonnull NSURL *)convertedImagesRootURL
-              thumbnailHandler:(nullable RAWConverterThumbnailHandler)thumbnailHandler
-                  imageHandler:(nullable RAWConverterImageHandler)imageHandler
-                  errorHandler:(nonnull RAWConverterErrorHandler)errorHandler {
+- (void)decodeWithThumbnailHandler:(RAWConverterThumbnailHandler)thumbnailHandler
+                      errorHandler:(RAWConverterErrorHandler)errorHandler {
+    [self _decodeToDirectoryAtURL:nil
+                 thumbnailHandler:thumbnailHandler
+                     imageHandler:nil
+                     errorHandler:errorHandler];
+}
+
+- (void)decodeToDirectoryAtURL:(NSURL *)convertedImagesRootURL
+             thumbnailHandler:(RAWConverterThumbnailHandler)thumbnailHandler
+                 imageHandler:(RAWConverterImageHandler)imageHandler
+                 errorHandler:(RAWConverterErrorHandler)errorHandler {
+    [self _decodeToDirectoryAtURL:convertedImagesRootURL
+                 thumbnailHandler:thumbnailHandler
+                     imageHandler:imageHandler
+                     errorHandler:errorHandler];
+}
+
+// this _ prefixed method is used so that convertedImagesRootURL can be made publicly nonnull but still used by the simpler -decodeWithThumbnailHandler:errorHandler: method above.
+- (void)_decodeToDirectoryAtURL:(NSURL *)convertedImagesRootURL
+               thumbnailHandler:(RAWConverterThumbnailHandler)thumbnailHandler
+                   imageHandler:(RAWConverterImageHandler)imageHandler
+                   errorHandler:(RAWConverterErrorHandler)errorHandler {
     NSParameterAssert(!self.error);
     NSParameterAssert(!(self.state & RAWConverterStateImageDecoded));
     self.state = self.state | RAWConverterStateImageDecoded;

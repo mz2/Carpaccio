@@ -9,12 +9,14 @@
 import Cocoa
 
 public enum ImageError:ErrorType {
+    case URLMissing
     case URLHasNoPath(NSURL)
     case LocationNotEnumerable(NSURL)
 }
 
 public class Image {
     public let name:String
+    public var thumbnailImage:NSImage? = nil
     public let backingImage:NSImage?
     public let URL:NSURL?
     
@@ -37,35 +39,43 @@ public class Image {
     }
     
     public var presentedImage:NSImage {
-        return backingImage ?? self.placeholderImage
+        return backingImage ?? self.thumbnailImage ?? self.placeholderImage
     }
     
-    public func fetchThumbnail(completionHandler:(image:NSImage)->Void) {
+    public func fetchThumbnail(store:Bool = true, completionHandler:(image:NSImage)->Void, errorHandler:(ErrorType)->Void) {
+        if let thumb = self.thumbnailImage {
+            completionHandler(image: thumb)
+            return
+        }
+        
         if let url = self.URL {
             let converter:RAWConverter
             do {
                 converter = try RAWConverter(URL: url)
             }
             catch {
-                completionHandler(image: self.placeholderImage)
+                errorHandler(error)
                 return
             }
-            converter.decodeToDirectoryAtURL(NSURL(fileURLWithPath:NSTemporaryDirectory()),
-                                             thumbnailHandler:
-                { thumb in
-                    completionHandler(image:thumb)
-                }, imageHandler: nil) { err in
-                    completionHandler(image: self.placeholderImage)
+            
+            converter.decodeWithThumbnailHandler({ thumb in
+                if store {
+                    self.thumbnailImage = thumb
+                }
+                completionHandler(image:thumb)
+                }) { err in
+                    errorHandler(err)
+                    return
                 }
         }
         else {
-            completionHandler(image: self.placeholderImage)
+            errorHandler(ImageError.URLMissing)
             return
         }
     }
     
     public class var imageFileExtensions:Set<String> {
-        return Set(["arw", "jpg", "jpeg", "png", "tif", "tiff", "nef", "cr2"])
+        return Set(["arw", "nef", "cr2"])
     }
     
     public class func images(contentsOfURL URL:NSURL) throws -> [Image] {

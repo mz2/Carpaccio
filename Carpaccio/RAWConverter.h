@@ -43,6 +43,9 @@ typedef void (^RAWConverterErrorHandler)(NSError *_Nonnull error);
 
 - (nullable instancetype)initWithURL:(nonnull NSURL *)URL error:(NSError *_Nullable *_Nullable)error;
 
+- (void)decodeWithThumbnailHandler:(nonnull RAWConverterThumbnailHandler)thumbnailHandler
+                      errorHandler:(nonnull RAWConverterErrorHandler)errorHandler;
+
 - (void)decodeToDirectoryAtURL:(nonnull NSURL *)convertedImagesRootURL
               thumbnailHandler:(nullable RAWConverterThumbnailHandler)thumbnailHandler
                   imageHandler:(nullable RAWConverterImageHandler)imageHandler
