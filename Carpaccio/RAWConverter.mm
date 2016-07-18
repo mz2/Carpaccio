@@ -80,11 +80,12 @@ NSString *const RAWConverterErrorDomain = @"RAWConversionErrorDomain";
     LibRaw *processor = new LibRaw();
     processor->imgdata.params.output_tiff = 1; // Let us output TIFF
     //RawProcessor.imgdata.params.filtering_mode = LIBRAW_FILTERING_AUTOMATIC;
-    processor->imgdata.params.output_bps = 16; // Write 16 bits per color value
+    processor->imgdata.params.output_bps = 8; //16; // Write 16 bits per color value
     processor->imgdata.params.gamm[0] = processor->imgdata.params.gamm[1] = 1.0; // linear gamma curve
-    processor->imgdata.params.no_auto_bright = 1; // Don't use automatic increase of brightness by histogram.
-    //RawProcessor.imgdata.params.document_mode = 0; // standard processing (with white balance)
+    processor->imgdata.params.no_auto_bright = 0; //1; // Don't use automatic increase of brightness by histogram.
+    //processor->imgdata.params.document_mode = 0; // standard processing (with white balance)
     processor->imgdata.params.use_camera_wb = 1; // If possible, use the white balance from the camera.
+    processor->imgdata.params.use_rawspeed = 1;
     processor->imgdata.params.half_size = 1;
     processor->verbose = true;
     processor->imgdata.params.output_tiff = 1;
@@ -130,7 +131,32 @@ NSString *const RAWConverterErrorDomain = @"RAWConversionErrorDomain";
     self.state = self.state | RAWConverterStateThumbnailDecodedToMemory;
     
     libraw_processed_image_t *processedThumb = self.RAWProcessor->dcraw_make_mem_thumb();
-    NSImage *thumb = [[NSImage alloc] initWithData:[NSData dataWithBytes:processedThumb->data length:processedThumb->data_size]];
+    //int errorCode = 0;
+    //libraw_processed_image_t *processedThumb = self.RAWProcessor->dcraw_make_mem_image(&errorCode);
+    
+    NSImage *thumb = nil;
+    NSData *data = [NSData dataWithBytes:processedThumb->data length:processedThumb->data_size];
+    //NSImage *thumb = [[NSImage alloc] initWithData:data];
+    NSBitmapImageRep *rep = [[NSBitmapImageRep alloc] initWithData:data];
+    
+    if (rep)
+    {
+        NSImage *img = [[NSImage alloc] init];
+        img.cacheMode = NSImageCacheNever;
+        [img addRepresentation:rep];
+
+        CGFloat h = 1000.0;
+        CGFloat w = (img.size.width / img.size.height) * h;
+        
+        thumb = [[NSImage alloc] initWithSize:NSMakeSize(w, h)];
+        [thumb lockFocus];
+        [NSGraphicsContext currentContext].imageInterpolation = NSImageInterpolationHigh;
+        [img drawInRect:NSMakeRect(0.0, 0.0, w, h) fromRect:NSMakeRect(0.0, 0.0, img.size.width, img.size.height)operation:NSCompositeCopy fraction:1.0];
+        [thumb unlockFocus];
+    }
+    
+    //libraw_dcraw_clear_mem(processedThumb);
+    
     int ret = LIBRAW_SUCCESS;
     if (!thumb) {
         self.error = [self.class RAWConversionErrorWithCode:RAWConversionErrorInMemoryThumbnailCreationFailed
