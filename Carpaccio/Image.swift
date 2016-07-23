@@ -43,13 +43,19 @@ public class Image: Equatable {
         return backingImage ?? self.thumbnailImage ?? self.placeholderImage
     }
     
-    public func fetchThumbnail(store:Bool = true, completionHandler:(image:NSImage)->Void, errorHandler:(ErrorType)->Void) {
-        if let thumb = self.thumbnailImage {
-            completionHandler(image: thumb)
-            return
+    public func fetchThumbnail(presentedHeight presentedHeight: CGFloat? = nil, force: Bool = false, store: Bool = true, completionHandler:(image:NSImage)->Void, errorHandler:(ErrorType)->Void)
+    {
+        if !force
+        {
+            if let thumb = self.thumbnailImage
+            {
+                completionHandler(image: thumb)
+                return
+            }
         }
         
-        if let url = self.URL {
+        if let url = self.URL
+        {
             let converter:RAWConverter
             do {
                 converter = try RAWConverter(URL: url)
@@ -59,11 +65,17 @@ public class Image: Equatable {
                 return
             }
             
-            converter.decodeWithThumbnailHandler({ thumb in
+            converter.decodeWithThumbnailHandler({ fetchedThumbnail in
+                
+                let t = presentedHeight != nil ?
+                    Image.scale(thumbnailImage: fetchedThumbnail, height: presentedHeight!, screenScaleFactor: 2.0) : fetchedThumbnail
+                
                 if store {
-                    self.thumbnailImage = thumb
+                    self.thumbnailImage = t
                 }
-                completionHandler(image:thumb)
+                
+                completionHandler(image:t)
+                
                 }) { err in
                     errorHandler(err)
                     return
@@ -73,6 +85,22 @@ public class Image: Equatable {
             errorHandler(ImageError.URLMissing)
             return
         }
+    }
+    
+    internal class func scale(thumbnailImage t: NSImage, height: CGFloat, screenScaleFactor: CGFloat) -> NSImage
+    {
+        let widthToHeightRatio = t.size.width / t.size.height
+        let width = round(widthToHeightRatio * height)
+        
+        let thumb = NSImage(size: NSSize(width: width, height: height))
+        thumb.cacheMode = .Never
+        
+        thumb.lockFocus()
+        NSGraphicsContext.currentContext()?.imageInterpolation = .Default
+        t.drawInRect(NSRect(x: 0.0, y: 0.0, width: width, height: height), fromRect: NSRect(x: 0.0, y: 0.0, width: t.size.width, height: t.size.height), operation: .CompositeCopy, fraction: 1.0)
+        thumb.unlockFocus()
+
+        return thumb
     }
     
     public class var imageFileExtensions:Set<String> {
