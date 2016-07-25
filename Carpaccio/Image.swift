@@ -87,17 +87,64 @@ public class Image: Equatable {
         }
     }
     
+    public func fetchFullSizeImage(presentedHeight presentedHeight: CGFloat? = nil, completionHandler: (image: NSImage) -> Void, errorHandler: (ErrorType) -> Void)
+    {
+        if let url = self.URL
+        {
+            let converter: RAWConverter
+            do
+            {
+                converter = try RAWConverter(URL: url)
+                
+                try converter.decodeToDirectoryAtURL(NSFileManager.defaultManager().URLForDirectory(.CachesDirectory, inDomain: .UserDomainMask, appropriateForURL: nil, create: true), thumbnailHandler: nil, imageHandler: { (image: NSImage) in
+                    
+                    do
+                    {
+                        /*if let rep = try NSBitmapImageRep(data: NSData(contentsOfURL: imageURL, options: [.MappedRead, .UncachedRead]))
+                        {
+                            let fullImage = NSImage()
+                            fullImage.cacheMode = .Never
+                            fullImage.addRepresentation(rep)*/
+                            
+                            let i = presentedHeight != nil ?
+                                Image.scale(thumbnailImage: image, height: presentedHeight!, screenScaleFactor: 2.0) : image
+                            
+                            completionHandler(image: i)
+                        //}
+                    }
+                    catch
+                    {
+                        errorHandler(error)
+                        return
+                    }
+                    
+                    }, imageURLHandler: nil, errorHandler: { error in errorHandler(error) }
+                )
+            }
+            catch
+            {
+                errorHandler(error)
+                return
+            }
+        }
+        else {
+            errorHandler(ImageError.URLMissing)
+            return
+        }
+    }
+
     internal class func scale(thumbnailImage t: NSImage, height: CGFloat, screenScaleFactor: CGFloat) -> NSImage
     {
         let widthToHeightRatio = t.size.width / t.size.height
-        let width = round(widthToHeightRatio * height)
+        let pixelHeight = height * screenScaleFactor
+        let pixelWidth = round(widthToHeightRatio * pixelHeight)
         
-        let thumb = NSImage(size: NSSize(width: width, height: height))
+        let thumb = NSImage(size: NSSize(width: pixelWidth, height: pixelHeight))
         thumb.cacheMode = .Never
         
         thumb.lockFocus()
         NSGraphicsContext.currentContext()?.imageInterpolation = .Default
-        t.drawInRect(NSRect(x: 0.0, y: 0.0, width: width, height: height), fromRect: NSRect(x: 0.0, y: 0.0, width: t.size.width, height: t.size.height), operation: .CompositeCopy, fraction: 1.0)
+        t.drawInRect(NSRect(x: 0.0, y: 0.0, width: pixelWidth, height: pixelHeight), fromRect: NSRect(x: 0.0, y: 0.0, width: t.size.width, height: t.size.height), operation: .CompositeCopy, fraction: 1.0)
         thumb.unlockFocus()
 
         return thumb

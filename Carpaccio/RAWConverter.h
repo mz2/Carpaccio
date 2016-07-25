@@ -16,8 +16,9 @@ typedef NS_ENUM(NSUInteger, RAWConversionError) {
     RAWConversionErrorUnpackThumbnailFailed = 3,
     RAWConversionErrorPostprocessingFailed = 4,
     RAWConversionErrorInMemoryThumbnailCreationFailed = 5,
-    RAWConversionErrorInMemoryConvertedImageWritingFailed = 6,
-    RAWConversionErrorDataAtContentsOfURLIsNotAnImage = 7
+    RAWConversionErrorInMemoryFullSizeImageCreationFailed = 6,
+    RAWConversionErrorInMemoryConvertedImageWritingFailed = 7,
+    RAWConversionErrorDataAtContentsOfURLIsNotAnImage = 8
 };
 
 typedef NS_OPTIONS(NSInteger, RAWConverterState) {
@@ -36,19 +37,24 @@ typedef NS_OPTIONS(NSInteger, RAWConverterState) {
 @property (readonly, nullable) NSError *error;
 @property (readonly) RAWConverterState state;
 
-typedef void (^RAWConverterThumbnailHandler)(NSImage *_Nonnull image);
-typedef void (^RAWConverterImageHandler)(NSURL *_Nonnull convertedURL);
+typedef void (^RAWConverterImageHandler)(NSImage *_Nonnull image);
+typedef void (^RAWConverterImageURLHandler)(NSURL *_Nonnull convertedURL);
 
 typedef void (^RAWConverterErrorHandler)(NSError *_Nonnull error);
 
 - (nullable instancetype)initWithURL:(nonnull NSURL *)URL error:(NSError *_Nullable *_Nullable)error;
 
-- (void)decodeWithThumbnailHandler:(nonnull RAWConverterThumbnailHandler)thumbnailHandler
+- (void)decodeWithThumbnailHandler:(nonnull RAWConverterImageHandler)thumbnailHandler
                       errorHandler:(nonnull RAWConverterErrorHandler)errorHandler;
 
+/** Decode and process full-size image in memory, without writing to temporary directory on disk. */
+- (void)decodeWithImageHandler:(nonnull RAWConverterImageHandler)imageHandler
+                  errorHandler:(nonnull RAWConverterErrorHandler)errorHandler;
+
 - (void)decodeToDirectoryAtURL:(nonnull NSURL *)convertedImagesRootURL
-              thumbnailHandler:(nullable RAWConverterThumbnailHandler)thumbnailHandler
+              thumbnailHandler:(nullable RAWConverterImageHandler)thumbnailHandler
                   imageHandler:(nullable RAWConverterImageHandler)imageHandler
+               imageURLHandler:(nullable RAWConverterImageURLHandler)imageURLHandler
                   errorHandler:(nonnull RAWConverterErrorHandler)errorHandler;
 
 @end

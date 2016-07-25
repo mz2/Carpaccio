@@ -204,31 +204,49 @@ NSString *const RAWConverterErrorDomain = @"RAWConversionErrorDomain";
     return ret;
 }
 
-- (void)decodeWithThumbnailHandler:(RAWConverterThumbnailHandler)thumbnailHandler
+- (void)decodeWithThumbnailHandler:(RAWConverterImageHandler)thumbnailHandler
                       errorHandler:(RAWConverterErrorHandler)errorHandler {
     [self _decodeToDirectoryAtURL:nil
                  thumbnailHandler:thumbnailHandler
                      imageHandler:nil
+                  imageURLHandler:nil
+                     errorHandler:errorHandler];
+}
+
+- (void)decodeWithImageHandler:(RAWConverterImageHandler)imageHandler
+                  errorHandler:(RAWConverterErrorHandler)errorHandler
+{
+    [self _decodeToDirectoryAtURL:nil
+                 thumbnailHandler:nil
+                     imageHandler:imageHandler
+                  imageURLHandler:nil
                      errorHandler:errorHandler];
 }
 
 - (void)decodeToDirectoryAtURL:(NSURL *)convertedImagesRootURL
-             thumbnailHandler:(RAWConverterThumbnailHandler)thumbnailHandler
-                 imageHandler:(RAWConverterImageHandler)imageHandler
-                 errorHandler:(RAWConverterErrorHandler)errorHandler {
+              thumbnailHandler:(RAWConverterImageHandler)thumbnailHandler
+                  imageHandler:(RAWConverterImageHandler)imageHandler
+               imageURLHandler:(nullable RAWConverterImageURLHandler)imageURLHandler
+                  errorHandler:(RAWConverterErrorHandler)errorHandler
+{
     [self _decodeToDirectoryAtURL:convertedImagesRootURL
                  thumbnailHandler:thumbnailHandler
                      imageHandler:imageHandler
+                  imageURLHandler:imageURLHandler
                      errorHandler:errorHandler];
 }
 
 // this _ prefixed method is used so that convertedImagesRootURL can be made publicly nonnull but still used by the simpler -decodeWithThumbnailHandler:errorHandler: method above.
 - (void)_decodeToDirectoryAtURL:(NSURL *)convertedImagesRootURL
-               thumbnailHandler:(RAWConverterThumbnailHandler)thumbnailHandler
+               thumbnailHandler:(RAWConverterImageHandler)thumbnailHandler
                    imageHandler:(RAWConverterImageHandler)imageHandler
-                   errorHandler:(RAWConverterErrorHandler)errorHandler {
+                imageURLHandler:(RAWConverterImageURLHandler)imageURLHandler
+                   errorHandler:(RAWConverterErrorHandler)errorHandler
+{
     NSParameterAssert(!self.error);
     NSParameterAssert(!(self.state & RAWConverterStateImageDecoded));
+    NSAssert(!(imageURLHandler && imageURLHandler), @"Must provide either in-memory image handler, or on-disk image URL handler — not both");
+    
     self.state = self.state | RAWConverterStateImageDecoded;
     
     int ret = [self openURL];
@@ -257,7 +275,7 @@ NSString *const RAWConverterErrorDomain = @"RAWConversionErrorDomain";
         }
     }
     
-    if (imageHandler) {
+    if (imageHandler || imageURLHandler) {
         if ((ret = [self unpackImage]) != LIBRAW_SUCCESS) {
             NSParameterAssert(self.error);
             errorHandler(self.error);
@@ -270,15 +288,44 @@ NSString *const RAWConverterErrorDomain = @"RAWConversionErrorDomain";
             return;
         }
         
-        NSURL *imgURL = [convertedImagesRootURL URLByAppendingPathComponent:[self.URL.lastPathComponent.stringByDeletingPathExtension stringByAppendingString:@".tiff"]];
-
-        if ((ret = [self writeToURL:imgURL]) != LIBRAW_SUCCESS) {
-            NSParameterAssert(self.error);
-            errorHandler(self.error);
-            return;
+        if (imageHandler)
+        {
+            libraw_processed_image_t *processedImage = self.RAWProcessor->dcraw_make_mem_image();
+            
+            //NSData *data = [NSData dataWithBytes:processedImage->data length:processedImage->data_size];
+            NSBitmapImageRep *rep = [[NSBitmapImageRep alloc] initWithBitmapDataPlanes:(unsigned char **)&processedImage->data pixelsWide:processedImage->width pixelsHigh:processedImage->height bitsPerSample:processedImage->bits samplesPerPixel:3 hasAlpha:NO isPlanar:NO colorSpaceName:NSDeviceRGBColorSpace bytesPerRow:0 bitsPerPixel:24];
+            NSImage *image = nil;
+            
+            if (rep)
+            {
+                image = [[NSImage alloc] init];
+                image.cacheMode = NSImageCacheNever;
+                [image addRepresentation:rep];
+            }
+            
+            if (image) {
+                imageHandler(image);
+            }
+            else {
+                self.error = [self.class RAWConversionErrorWithCode:RAWConversionErrorInMemoryThumbnailCreationFailed
+                                                        description:@"Failed to load full-size image into memory from postprocessed RAW data."
+                                                 recoverySuggestion:@"Check that the file is a valid RAW file supported by libraw."
+                                                    LibRawErrorCode:-1];
+            }
+            //delete processedImage;
         }
-        
-        imageHandler(imgURL);
+        else
+        {
+            NSURL *imgURL = [convertedImagesRootURL URLByAppendingPathComponent:[self.URL.lastPathComponent.stringByDeletingPathExtension stringByAppendingString:@".tiff"]];
+            
+            if ((ret = [self writeToURL:imgURL]) != LIBRAW_SUCCESS) {
+                NSParameterAssert(self.error);
+                errorHandler(self.error);
+                return;
+            }
+            
+            imageURLHandler(imgURL);
+        }
     }
 }
 
