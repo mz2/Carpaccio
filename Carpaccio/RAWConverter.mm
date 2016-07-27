@@ -13,6 +13,14 @@
 
 NSString *const RAWConverterErrorDomain = @"RAWConversionErrorDomain";
 
+NSString *const RAWConverterMetadataKeyAperture = @"aperture";
+NSString *const RAWConverterMetadataKeyFocalLength = @"focalLength";
+NSString *const RAWConverterMetadataKeyImageWidth = @"imageWidth";
+NSString *const RAWConverterMetadataKeyImageHeight = @"imageHeight";
+NSString *const RAWConverterMetadataKeyISO = @"ISO";
+NSString *const RAWConverterMetadataKeyShutterSpeed = @"shutterSpeed";
+
+
 @interface RAWConverter ()
 @property (readwrite) LibRaw *RAWProcessor;
 @property (readwrite) NSError *error;
@@ -63,7 +71,7 @@ NSString *const RAWConverterErrorDomain = @"RAWConversionErrorDomain";
                             description:(NSString *)description
                      recoverySuggestion:(NSString *)recoverySuggestion
                         LibRawErrorCode:(int)errorCode {
-    NSString *libRawErrorString = errorCode != -1
+    NSString *libRawErrorString = (errorCode != -1)
                                     ? [NSString stringWithUTF8String:libraw_strerror(errorCode)]
                                     : @"Unknown reason.";
     
@@ -78,19 +86,57 @@ NSString *const RAWConverterErrorDomain = @"RAWConversionErrorDomain";
 
 + (LibRaw *)RAWProcessor {
     LibRaw *processor = new LibRaw();
-    processor->imgdata.params.output_tiff = 1; // Let us output TIFF
-    //RawProcessor.imgdata.params.filtering_mode = LIBRAW_FILTERING_AUTOMATIC;
-    processor->imgdata.params.output_bps = 8; //16; // Write 16 bits per color value
-    processor->imgdata.params.gamm[0] = processor->imgdata.params.gamm[1] = 1.0; // linear gamma curve
-    processor->imgdata.params.no_auto_bright = 0; //1; // Don't use automatic increase of brightness by histogram.
-    //processor->imgdata.params.document_mode = 0; // standard processing (with white balance)
+    processor->verbose = true;
+    
+    //processor->imgdata.params.output_tiff = 1; // Let us output TIFF
+    //processor->imgdata.params.filtering_mode = LIBRAW_FILTERING_AUTOMATIC;
+    //processor->imgdata.params.document_mode = 1; // standard processing (with white balance)
+    
+    // See libraw_types.h and https://www.cybercom.net/~dcoffin/dcraw/dcraw.1.html for some of the values
+    //processor->imgdata.params.camera_profile = "embed";
+    processor->imgdata.params.half_size = 1;
+    //processor->imgdata.params.highlight = 5;
+    //processor->imgdata.params.gamm[0] = processor->imgdata.params.gamm[1] = processor->imgdata.params.gamm[2] = processor->imgdata.params.gamm[3] = processor->imgdata.params.gamm[4] = processor->imgdata.params.gamm[5] = processor->imgdata.params.gamm[6] = 1.0; // linear gamma curve
+    processor->imgdata.params.no_auto_bright = 0; // Don't use automatic increase of brightness by histogram.
+    processor->imgdata.params.output_bps = 8;
+    processor->imgdata.params.output_color = 2; // 1 = sRGB d65 (apparently the default), 2 = Adobe RGB
     processor->imgdata.params.use_camera_wb = 1; // If possible, use the white balance from the camera.
     processor->imgdata.params.use_rawspeed = 1;
-    processor->imgdata.params.half_size = 1;
-    processor->verbose = true;
-    processor->imgdata.params.output_tiff = 1;
+    processor->imgdata.params.user_qual = 3; // 0: High-speed, low-quality bilinear interpolation. 1: Variable Number of Gradients (VNG) interpolation. 2: Patterned Pixel Grouping (PPG) interpolation. 3: Adaptive Homogeneity-Directed (AHD) interpolation. At quick test, doesn't seem to affect decoding speed at all?!
     
     return processor;
+}
+
+- (BOOL)isStateFlagSet:(RAWConverterState)flag
+{
+    if (flag == 0)
+        return YES;
+    return ((self.state & flag) == flag);
+
+}
+
+- (BOOL)isOpened {
+    return [self isStateFlagSet:RAWConverterStateOpened];
+}
+
+- (BOOL)isThumbnailUnpacked {
+    return [self isStateFlagSet:RAWConverterStateThumbnailUnpacked];
+}
+
+- (BOOL)isThumbnailDecoded {
+    return [self isStateFlagSet:RAWConverterStateThumbnailDecodedToMemory];
+}
+
+- (BOOL)isImageUnpacked {
+    return [self isStateFlagSet:RAWConverterStateImageUnpacked];
+}
+
+- (BOOL)isImageProcessed {
+    return [self isStateFlagSet:RAWConverterStateImageProcessed];
+}
+
+- (BOOL)isImageDecoded {
+    return [self isStateFlagSet:RAWConverterStateImageDecoded];
 }
 
 - (int)openURL {
@@ -129,6 +175,7 @@ NSString *const RAWConverterErrorDomain = @"RAWConversionErrorDomain";
 {
     NSParameterAssert(!self.error);
     NSParameterAssert(!(self.state & RAWConverterStateThumbnailDecodedToMemory));
+    
     self.state = self.state | RAWConverterStateThumbnailDecodedToMemory;
     
     libraw_processed_image_t *processedThumb = self.RAWProcessor->dcraw_make_mem_thumb();
@@ -161,7 +208,12 @@ NSString *const RAWConverterErrorDomain = @"RAWConversionErrorDomain";
 
 - (int)unpackImage {
     NSParameterAssert(!self.error);
-    NSParameterAssert(!(self.state & RAWConverterStateImageUnpacked));
+    //NSParameterAssert(!(self.state & RAWConverterStateImageUnpacked));
+    
+    if (self.isImageUnpacked) {
+        return LIBRAW_SUCCESS;
+    }
+    
     self.state = self.state | RAWConverterStateImageUnpacked;
     
     int ret = 0;
@@ -177,7 +229,12 @@ NSString *const RAWConverterErrorDomain = @"RAWConversionErrorDomain";
 
 - (int)processImage {
     NSParameterAssert(!self.error);
-    NSParameterAssert(!(self.state & RAWConverterStateImageProcessed));
+    //NSParameterAssert(!(self.state & RAWConverterStateImageProcessed));
+    
+    if (self.isImageProcessed) {
+        return LIBRAW_SUCCESS;
+    }
+    
     self.state = self.state | RAWConverterStateImageProcessed;
     
     int ret = LIBRAW_SUCCESS;
@@ -202,6 +259,57 @@ NSString *const RAWConverterErrorDomain = @"RAWConversionErrorDomain";
     }
     
     return ret;
+}
+
+- (NSDictionary *)metadata
+{
+    NSParameterAssert(self.RAWProcessor);
+    
+    if (!(self.state & RAWConverterStateOpened)) {
+        return nil;
+    }
+    
+    CGFloat width = (CGFloat)self.RAWProcessor->imgdata.sizes.width;
+    CGFloat height = (CGFloat)self.RAWProcessor->imgdata.sizes.height;
+    
+    if (self.RAWProcessor->imgdata.sizes.flip)
+    {
+        CGFloat h = width;
+        width = height;
+        height = h;
+    }
+    
+    CGFloat aperture = (CGFloat)self.RAWProcessor->imgdata.other.aperture;
+    CGFloat focalLength = (CGFloat)self.RAWProcessor->imgdata.other.focal_len;
+    CGFloat ISO = (CGFloat)self.RAWProcessor->imgdata.other.iso_speed;
+    CGFloat shutterSpeed = (CGFloat)self.RAWProcessor->imgdata.other.shutter;
+    
+    NSDictionary *metadata = @{
+                               RAWConverterMetadataKeyAperture: @(aperture),
+                               RAWConverterMetadataKeyFocalLength: @(focalLength),
+                               RAWConverterMetadataKeyImageWidth: @(width),
+                               RAWConverterMetadataKeyImageHeight: @(height),
+                               RAWConverterMetadataKeyISO: @(ISO),
+                               RAWConverterMetadataKeyShutterSpeed: @(shutterSpeed)
+                               };
+    return metadata;
+}
+
+- (void)decodeMetadata:(RAWConverterMetadataHandler)metadataHandler errorHandler:(RAWConverterErrorHandler)errorHandler
+{
+    int ret = LIBRAW_SUCCESS;
+    
+    if (!(self.state & RAWConverterStateOpened))
+    {
+        ret = [self openURL];
+        if (ret != LIBRAW_SUCCESS) {
+            NSParameterAssert(self.error);
+            errorHandler(self.error);
+            return;
+        }
+    }
+    
+    metadataHandler(self.metadata);
 }
 
 - (void)decodeWithThumbnailHandler:(RAWConverterImageHandler)thumbnailHandler
@@ -244,27 +352,40 @@ NSString *const RAWConverterErrorDomain = @"RAWConversionErrorDomain";
                    errorHandler:(RAWConverterErrorHandler)errorHandler
 {
     NSParameterAssert(!self.error);
-    NSParameterAssert(!(self.state & RAWConverterStateImageDecoded));
+    //NSParameterAssert(!(self.state & RAWConverterStateImageDecoded));
     NSAssert(!(imageURLHandler && imageURLHandler), @"Must provide either in-memory image handler, or on-disk image URL handler — not both");
     
-    self.state = self.state | RAWConverterStateImageDecoded;
-    
-    int ret = [self openURL];
-    if (ret != LIBRAW_SUCCESS) {
-        NSParameterAssert(self.error);
-        errorHandler(self.error);
-        return;
+    if (self.isImageDecoded) {
+        NSLog(@"Hmm, why you decodin' %@ again?", self.URL);
     }
     
-    if (thumbnailHandler) {
-        ret = [self unpackThumbnail];
+    self.state = self.state | RAWConverterStateImageDecoded;
+    int ret = LIBRAW_SUCCESS;
+    
+    if (!self.isOpened)
+    {
+        ret = [self openURL];
         if (ret != LIBRAW_SUCCESS) {
             NSParameterAssert(self.error);
             errorHandler(self.error);
             return;
         }
+    }
+    
+    if (thumbnailHandler)
+    {
+        if (!self.isThumbnailUnpacked)
+        {
+            ret = [self unpackThumbnail];
+            if (ret != LIBRAW_SUCCESS) {
+                NSParameterAssert(self.error);
+                errorHandler(self.error);
+                return;
+            }
+        }
         
         NSImage *img = [self thumbnailImage];
+        
         if (!img) {
             NSParameterAssert(self.error);
             errorHandler(self.error);
@@ -275,25 +396,58 @@ NSString *const RAWConverterErrorDomain = @"RAWConversionErrorDomain";
         }
     }
     
-    if (imageHandler || imageURLHandler) {
-        if ((ret = [self unpackImage]) != LIBRAW_SUCCESS) {
-            NSParameterAssert(self.error);
-            errorHandler(self.error);
-            return;
+    if (imageHandler || imageURLHandler)
+    {
+        if (!self.isImageUnpacked)
+        {
+            if ((ret = [self unpackImage]) != LIBRAW_SUCCESS) {
+                NSParameterAssert(self.error);
+                errorHandler(self.error);
+                return;
+            }
         }
         
-        if ((ret = [self processImage]) != LIBRAW_SUCCESS) {
-            NSParameterAssert(self.error);
-            errorHandler(self.error);
-            return;
+        if (!self.isImageProcessed)
+        {
+            if ((ret = [self processImage]) != LIBRAW_SUCCESS) {
+                NSParameterAssert(self.error);
+                errorHandler(self.error);
+                return;
+            }
         }
         
         if (imageHandler)
         {
-            libraw_processed_image_t *processedImage = self.RAWProcessor->dcraw_make_mem_image();
+            int errorCode = 0;
+            libraw_processed_image_t *processedImage = self.RAWProcessor->dcraw_make_mem_image(&errorCode);
             
-            //NSData *data = [NSData dataWithBytes:processedImage->data length:processedImage->data_size];
-            NSBitmapImageRep *rep = [[NSBitmapImageRep alloc] initWithBitmapDataPlanes:(unsigned char **)&processedImage->data pixelsWide:processedImage->width pixelsHigh:processedImage->height bitsPerSample:processedImage->bits samplesPerPixel:3 hasAlpha:NO isPlanar:NO colorSpaceName:NSDeviceRGBColorSpace bytesPerRow:0 bitsPerPixel:24];
+            if (errorCode != 0)
+            {
+                self.error = [self.class RAWConversionErrorWithCode:RAWConversionErrorInMemoryFullSizeImageCreationFailed
+                                                        description:@"Failed to load full-size image into memory from postprocessed RAW data."
+                                                 recoverySuggestion:@"Check that the file is a valid RAW file supported by libraw."
+                                                    LibRawErrorCode:-1];
+                errorHandler(self.error);
+                return;
+            }
+            
+            int width, height, bps, colors;
+            self.RAWProcessor->get_mem_image_format(&width, &height, &colors, &bps);
+            
+            unsigned int n = processedImage->data_size;
+            unsigned char *data = (unsigned char *)malloc(n);
+            memcpy(data, processedImage->data, n);
+            
+            NSBitmapImageRep *rep = [[NSBitmapImageRep alloc] initWithBitmapDataPlanes:&data
+                                                                            pixelsWide:width
+                                                                            pixelsHigh:height
+                                                                         bitsPerSample:bps
+                                                                       samplesPerPixel:colors
+                                                                              hasAlpha:NO
+                                                                              isPlanar:NO
+                                                                        colorSpaceName:NSCalibratedRGBColorSpace
+                                                                           bytesPerRow:(width * colors)
+                                                                          bitsPerPixel:24];
             NSImage *image = nil;
             
             if (rep)
@@ -307,12 +461,14 @@ NSString *const RAWConverterErrorDomain = @"RAWConversionErrorDomain";
                 imageHandler(image);
             }
             else {
-                self.error = [self.class RAWConversionErrorWithCode:RAWConversionErrorInMemoryThumbnailCreationFailed
+                self.error = [self.class RAWConversionErrorWithCode:RAWConversionErrorInMemoryFullSizeImageCreationFailed
                                                         description:@"Failed to load full-size image into memory from postprocessed RAW data."
                                                  recoverySuggestion:@"Check that the file is a valid RAW file supported by libraw."
                                                     LibRawErrorCode:-1];
+                errorHandler(self.error);
             }
-            //delete processedImage;
+            
+            delete processedImage;
         }
         else
         {

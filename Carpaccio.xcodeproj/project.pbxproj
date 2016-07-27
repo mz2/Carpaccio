@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		289813321D48E59D00B1BA5D /* BakedImageLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 289813311D48E59D00B1BA5D /* BakedImageLoader.swift */; };
+		289813341D494B1300B1BA5D /* ImageLoaderProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 289813331D494B1300B1BA5D /* ImageLoaderProtocol.swift */; };
+		289813361D494BF700B1BA5D /* LibRAWImageLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 289813351D494BF700B1BA5D /* LibRAWImageLoader.swift */; };
+		28B9AA081D462AFD00C4B03E /* ImageMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28B9AA071D462AFD00C4B03E /* ImageMetadata.swift */; };
 		5F1E22811CDEA9D90083FD6F /* Carpaccio.h in Headers */ = {isa = PBXBuildFile; fileRef = 5F1E22801CDEA9D90083FD6F /* Carpaccio.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		5F1E22881CDEA9D90083FD6F /* Carpaccio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5F1E227D1CDEA9D90083FD6F /* Carpaccio.framework */; };
 		5F1E228D1CDEA9D90083FD6F /* CarpaccioTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F1E228C1CDEA9D90083FD6F /* CarpaccioTests.swift */; };
@@ -35,6 +39,10 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		289813311D48E59D00B1BA5D /* BakedImageLoader.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BakedImageLoader.swift; sourceTree = "<group>"; };
+		289813331D494B1300B1BA5D /* ImageLoaderProtocol.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageLoaderProtocol.swift; sourceTree = "<group>"; };
+		289813351D494BF700B1BA5D /* LibRAWImageLoader.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LibRAWImageLoader.swift; sourceTree = "<group>"; };
+		28B9AA071D462AFD00C4B03E /* ImageMetadata.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageMetadata.swift; sourceTree = "<group>"; };
 		5F1E227D1CDEA9D90083FD6F /* Carpaccio.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Carpaccio.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		5F1E22801CDEA9D90083FD6F /* Carpaccio.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Carpaccio.h; sourceTree = "<group>"; };
 		5F1E22821CDEA9D90083FD6F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -79,6 +87,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		289813301D48E55300B1BA5D /* Developed Images */ = {
+			isa = PBXGroup;
+			children = (
+				289813311D48E59D00B1BA5D /* BakedImageLoader.swift */,
+			);
+			name = "Developed Images";
+			sourceTree = "<group>";
+		};
 		5F1E22731CDEA9D90083FD6F = {
 			isa = PBXGroup;
 			children = (
@@ -101,7 +117,10 @@
 		5F1E227F1CDEA9D90083FD6F /* Carpaccio */ = {
 			isa = PBXGroup;
 			children = (
+				289813331D494B1300B1BA5D /* ImageLoaderProtocol.swift */,
+				28B9AA071D462AFD00C4B03E /* ImageMetadata.swift */,
 				5FF2F7AC1CE1564100C15E3A /* Image */,
+				289813301D48E55300B1BA5D /* Developed Images */,
 				5FF2F7AB1CE1563C00C15E3A /* RAW Converter */,
 				5F1E22801CDEA9D90083FD6F /* Carpaccio.h */,
 				5F1E22821CDEA9D90083FD6F /* Info.plist */,
@@ -124,6 +143,7 @@
 		5FF2F7AB1CE1563C00C15E3A /* RAW Converter */ = {
 			isa = PBXGroup;
 			children = (
+				289813351D494BF700B1BA5D /* LibRAWImageLoader.swift */,
 				5F1E22971CDEAA030083FD6F /* RAWConverter.h */,
 				5F1E22981CDEAA030083FD6F /* RAWConverter.mm */,
 			);
@@ -263,9 +283,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				289813361D494BF700B1BA5D /* LibRAWImageLoader.swift in Sources */,
+				289813341D494B1300B1BA5D /* ImageLoaderProtocol.swift in Sources */,
 				5F1E229A1CDEAA030083FD6F /* RAWConverter.mm in Sources */,
 				5FF2F7AA1CE1563400C15E3A /* ImageCollection.swift in Sources */,
+				28B9AA081D462AFD00C4B03E /* ImageMetadata.swift in Sources */,
 				5FF2F7A91CE1563400C15E3A /* Image.swift in Sources */,
+				289813321D48E59D00B1BA5D /* BakedImageLoader.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

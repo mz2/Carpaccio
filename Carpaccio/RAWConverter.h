@@ -10,6 +10,14 @@
 
 extern NSString *_Nonnull const RAWConverterErrorDomain;
 
+extern NSString *_Nonnull const RAWConverterMetadataKeyAperture;
+extern NSString *_Nonnull const RAWConverterMetadataKeyFocalLength;
+extern NSString *_Nonnull const RAWConverterMetadataKeyImageWidth;
+extern NSString *_Nonnull const RAWConverterMetadataKeyImageHeight;
+extern NSString *_Nonnull const RAWConverterMetadataKeyISO;
+extern NSString *_Nonnull const RAWConverterMetadataKeyShutterSpeed;
+
+
 typedef NS_ENUM(NSUInteger, RAWConversionError) {
     RAWConversionErrorOpenFailed = 1,
     RAWConversionErrorUnpackImageFailed = 2,
@@ -31,18 +39,32 @@ typedef NS_OPTIONS(NSInteger, RAWConverterState) {
     RAWConverterStateImageDecoded = 64
 };
 
+
 @interface RAWConverter : NSObject
 
 @property (readonly, copy, nonnull) NSURL *URL;
 @property (readonly, nullable) NSError *error;
+@property (readonly, nullable) NSDictionary *metadata;
 @property (readonly) RAWConverterState state;
 
+/** Donvenience properties derived off of `state` */
+@property (readonly) BOOL isOpened;
+@property (readonly) BOOL isThumbnailUnpacked;
+@property (readonly) BOOL isThumbnailDecoded;
+@property (readonly) BOOL isImageUnpacked;
+@property (readonly) BOOL isImageProcessed;
+@property (readonly) BOOL isImageDecoded;
+
+typedef void (^RAWConverterMetadataHandler)(NSDictionary *_Nonnull metadata);
 typedef void (^RAWConverterImageHandler)(NSImage *_Nonnull image);
 typedef void (^RAWConverterImageURLHandler)(NSURL *_Nonnull convertedURL);
 
 typedef void (^RAWConverterErrorHandler)(NSError *_Nonnull error);
 
 - (nullable instancetype)initWithURL:(nonnull NSURL *)URL error:(NSError *_Nullable *_Nullable)error;
+
+- (void)decodeMetadata:(nonnull RAWConverterMetadataHandler)metadataHandler
+          errorHandler:(nonnull RAWConverterErrorHandler)errorHandler;
 
 - (void)decodeWithThumbnailHandler:(nonnull RAWConverterImageHandler)thumbnailHandler
                       errorHandler:(nonnull RAWConverterErrorHandler)errorHandler;
