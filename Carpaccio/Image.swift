@@ -40,11 +40,15 @@ public class Image: Equatable {
         self.name = URL.lastPathComponent ?? "Untitled"
         self.backingImage = nil
         
-        if let pathExtension = URL.pathExtension
+        if let pathExtension = URL.pathExtension?.lowercaseString
         {
-            if Image.RAWImageFileExtensions.contains(pathExtension.lowercaseString)
+            if Image.RAWImageFileExtensions.contains(pathExtension)
             {
                 self.imageLoader = LibRAWImageLoader(imageURL: URL)
+            }
+            else if Image.bakedImageFileExtensions.contains(pathExtension)
+            {
+                self.imageLoader = BakedImageLoader(imageURL: URL)
             }
         }
     }
@@ -207,25 +211,14 @@ public class Image: Equatable {
             return Image.imageFileExtensions.contains(pathExtension)
         }
         
-        let cookedExtensions = self.bakedImageFileExtensions
-        
         for (i, elementStr) in allPaths.enumerate() {
             let absoluteURL = URL.URLByAppendingPathComponent(elementStr)
             
             if let pathExtension = absoluteURL.pathExtension
             {
-                if cookedExtensions.contains(pathExtension)
-                {
-                    if let img = imageSourceWithURL(absoluteURL) {
-                        let md = extractImageMetadata(imageSource: img)
-                    }
-                }
-                else
-                {
-                    let image = Image(URL: absoluteURL)
-                    loadHandler?(index: i, total:allPaths.count, image: image)
-                    images.append(image)
-                }
+                let image = Image(URL: absoluteURL)
+                loadHandler?(index: i, total:allPaths.count, image: image)
+                images.append(image)
             }
         }
         
