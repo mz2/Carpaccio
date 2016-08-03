@@ -19,13 +19,14 @@ public typealias ImageLoadingErrorHandler = (error: ErrorType) -> Void
 protocol ImageLoaderProtocol
 {
     var imageURL: NSURL { get }
+    var imageMetadata: ImageMetadata? { get }
     
     /** Retrieve metadata about this loader's image, to be called before loading actual image data. */
-    func extractImageMetadata(handler: ImageMetadataHandler, errorHandler: ImageLoadingErrorHandler)
+    func loadImageMetadata(handler: ImageMetadataHandler, errorHandler: ImageLoadingErrorHandler)
     
     /** Load thumbnail image. */
-    func loadThumbnailImage(handler: PresentableImageHandler, errorHandler: ImageLoadingErrorHandler)
+    func loadThumbnailImage(maximumPixelDimensions maxPixelSize: NSSize?, handler: PresentableImageHandler, errorHandler: ImageLoadingErrorHandler)
     
     /** Load full-size image. */
-    func loadFullSizeImage(handler: PresentableImageHandler, errorHandler: ImageLoadingErrorHandler)
+    func loadFullSizeImage(maximumPixelDimensions maxPixelSize: NSSize?, handler: PresentableImageHandler, errorHandler: ImageLoadingErrorHandler)
 }

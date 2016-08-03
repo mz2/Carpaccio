@@ -40,7 +40,7 @@ typedef NS_OPTIONS(NSInteger, RAWConverterState) {
 };
 
 
-@interface RAWConverter : NSObject
+@interface LibRAWConverter : NSObject
 
 @property (readonly, copy, nonnull) NSURL *URL;
 @property (readonly, nullable) NSError *error;

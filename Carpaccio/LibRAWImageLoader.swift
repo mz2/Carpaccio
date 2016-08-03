@@ -18,9 +18,9 @@ public class LibRAWImageLoader: ImageLoaderProtocol
         self.imageURL = imageURL
     }
     
-    private var _converter: RAWConverter?
+    private var _converter: LibRAWConverter?
     
-    private func converter() throws -> RAWConverter
+    private func converter() throws -> LibRAWConverter
     {
         if let converter = self._converter
         {
@@ -29,14 +29,14 @@ public class LibRAWImageLoader: ImageLoaderProtocol
             }
         }
         
-        try self._converter = RAWConverter(URL: self.imageURL)
+        try self._converter = LibRAWConverter(URL: self.imageURL)
         
         return self._converter!
     }
     
     public func extractImageMetadata(handler: ImageMetadataHandler, errorHandler: ImageLoadingErrorHandler)
     {
-        let converter: RAWConverter
+        let converter: LibRAWConverter
         do {
             converter = try self.converter()
         }
@@ -48,15 +48,15 @@ public class LibRAWImageLoader: ImageLoaderProtocol
         
         converter.decodeMetadata({ metadataDictionary in
             
-            let metadata = ImageMetadata(RAWConverterMetadata: metadataDictionary)
+            let metadata = ImageMetadata(LibRAWConverterMetadata: metadataDictionary)
             handler(metadata: metadata)
             
         }, errorHandler: { error in errorHandler(error: error) })
     }
     
-    public func loadThumbnailImage(handler: PresentableImageHandler, errorHandler: ImageLoadingErrorHandler)
+    public func loadThumbnailImage(maximumPixelDimensions maxPixelSize: NSSize?, handler: PresentableImageHandler, errorHandler: ImageLoadingErrorHandler)
     {
-        let converter: RAWConverter
+        let converter: LibRAWConverter
         do {
             converter = try self.converter()
         }
@@ -68,15 +68,15 @@ public class LibRAWImageLoader: ImageLoaderProtocol
         
         converter.decodeWithThumbnailHandler({ fetchedThumbnail in
             
-            let metadata = ImageMetadata(RAWConverterMetadata: converter.metadata!)
+            let metadata = ImageMetadata(LibRAWConverterMetadata: converter.metadata!)
             handler(image: fetchedThumbnail, metadata: metadata)
             
         }) { error in errorHandler(error: error) }
     }
     
-    public func loadFullSizeImage(handler: PresentableImageHandler, errorHandler: ImageLoadingErrorHandler)
+    public func loadFullSizeImage(maximumPixelDimensions maxPixelSize: NSSize?, handler: PresentableImageHandler, errorHandler: ImageLoadingErrorHandler)
     {
-        let converter: RAWConverter
+        let converter: LibRAWConverter
         let URL: NSURL
         
         do
@@ -92,7 +92,7 @@ public class LibRAWImageLoader: ImageLoaderProtocol
         
         converter.decodeToDirectoryAtURL(URL, thumbnailHandler: nil, imageHandler: { (image: NSImage) in
 
-            let metadata = ImageMetadata(RAWConverterMetadata: converter.metadata!)
+            let metadata = ImageMetadata(LibRAWConverterMetadata: converter.metadata!)
             handler(image: image, metadata: metadata)
             
             self._converter = nil // Can't reuse LibRAW converter after unpacking & processing have been done

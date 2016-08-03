@@ -6,7 +6,7 @@
 //  Copyright © 2016 Matias Piipari & Co. All rights reserved.
 //
 
-#import "RAWConverter.h"
+#import "LibRAWConverter.h"
 
 #import <Cocoa/Cocoa.h>
 #import <libraw/libraw.h>
@@ -21,7 +21,7 @@ NSString *const RAWConverterMetadataKeyISO = @"ISO";
 NSString *const RAWConverterMetadataKeyShutterSpeed = @"shutterSpeed";
 
 
-@interface RAWConverter ()
+@interface LibRAWConverter ()
 @property (readwrite) LibRaw *RAWProcessor;
 @property (readwrite) NSError *error;
 @property (readwrite) RAWConverterState state;
@@ -30,10 +30,10 @@ NSString *const RAWConverterMetadataKeyShutterSpeed = @"shutterSpeed";
 
 // Collected from http://www.libraw.org/docs/Samples-LibRaw-eng.html
 
-@implementation RAWConverter
+@implementation LibRAWConverter
 
 + (void)initialize {
-    if (self == [RAWConverter class]) {
+    if (self == [LibRAWConverter class]) {
         // The date in TIFF is written in the local format; let us specify the timezone for compatibility with dcraw
         putenv ((char*)"TZ=UTC");
     }

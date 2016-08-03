@@ -8,14 +8,21 @@
 
 import Foundation
 
-public class ImageCollection {
+
+public typealias ImageCollectionHandler = (collection: ImageCollection) -> Void
+public typealias ImageCollectionErrorHandler = (error: ErrorType) -> Void
+
+
+public class ImageCollection
+{
     public let name:String
     public var images:[Image]
     public let URL:NSURL
     
-    public init(name:String, images:[Image], URL:NSURL) throws {
+    public init(name: String, images: [Image], URL: NSURL) throws
+    {
         self.URL = URL
-        self.name = URL.lastPathComponent ?? "Untitled"
+        self.name = name
         self.images = images
     }
     
@@ -23,6 +30,33 @@ public class ImageCollection {
         self.URL = URL
         self.name = URL.lastPathComponent ?? "Untitled"
         self.images = try Image.loadImages(contentsOfURL: URL)
+    }
+    
+    /** Asynchronously initialise an image collection rooted at given URL, with all images found in the subtree prepared up to essential metadata having been loaded. */
+    public class func prepareImageCollection(atURL collectionURL: NSURL, completionHandler: ImageCollectionHandler, errorHandler: ImageCollectionErrorHandler)
+    {
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0))
+        {
+            do
+            {
+                let imageURLs = try Image.imageURLs(atCollectionURL: collectionURL)
+                var images = [Image]()
+                
+                for URL in imageURLs
+                {
+                    let image = Image(URL: URL)
+                    images.append(image)
+                    _ = image.metadata
+                }
+                
+                let collection = try ImageCollection(name: collectionURL.lastPathComponent ?? "Untitled", images: images, URL: collectionURL)
+                completionHandler(collection: collection)
+                
+            }
+            catch {
+                errorHandler(error: ImageError.LoadingFailed(underlyingError: error))
+            }
+        }
     }
     
     // TODO: Create a specific type for a sparse distance matrix.

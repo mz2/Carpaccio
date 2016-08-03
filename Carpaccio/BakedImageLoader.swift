@@ -24,29 +24,45 @@ public class BakedImageLoader: ImageLoaderProtocol
 {
     public let imageURL: NSURL
     
-    private let alwaysCreateThumbnailFromFullImage = false
-    private var imageSource: CGImageSource?
+    private let alwaysCreateThumbnailFromFullImage = true
+    //private var imageSource: CGImageSource?
     //private var image: CGImage?
     private var imageMetadata: ImageMetadata?
     
     init(imageURL: NSURL)
     {
         self.imageURL = imageURL
-        
-        let options: CFDictionary = [String(kCGImageSourceShouldCache): false, String(kCGImageSourceShouldAllowFloat): true]
-        self.imageSource = CGImageSourceCreateWithURL(imageURL, options)
+    }
+    
+    private var imageSource: CGImageSource? {
+        get
+        {
+            // We intentionally don't store the image source, to not gob up resources, but rather open it anew each time
+            let options: CFDictionary = [String(kCGImageSourceShouldCache): false, String(kCGImageSourceShouldAllowFloat): true]
+            let imageSource = CGImageSourceCreateWithURL(imageURL, options)
+            return imageSource
+        }
     }
     
     public func extractImageMetadata(handler: ImageMetadataHandler, errorHandler: ImageLoadingErrorHandler)
     {
-        if let imageSource = self.imageSource,
-            let properties = CGImageSourceCopyPropertiesAtIndex(imageSource, 0, nil),
-            let EXIFDictionary = NSDictionary(dictionary: properties)[kCGImagePropertyExifDictionary as! NSString]
+        guard let imageSource = self.imageSource else {
+            precondition(false)
+            return
+        }
+        
+        let properties = NSDictionary(dictionary: CGImageSourceCopyPropertiesAtIndex(imageSource, 0, nil)!)
+        
+        if let EXIF = properties[kCGImagePropertyExifDictionary as! NSString] as? NSDictionary,
+           let TIFF = properties[kCGImagePropertyTIFFDictionary as! NSString] as? NSDictionary
         {
-            let EXIF = NSDictionary(dictionary: EXIFDictionary as! CFDictionary)
+            //let EXIF = NSDictionary(dictionary: EXIFDictionary as! CFDictionary)
+            let cameraMaker = TIFF[kCGImagePropertyTIFFMake as! NSString] as? String
+            let cameraModel = TIFF[kCGImagePropertyTIFFModel as! NSString] as? String
             
             let aperture = EXIF[kCGImagePropertyExifApertureValue as! NSString]?.doubleValue ?? 0.0
             let focalLength = EXIF[kCGImagePropertyExifFocalLength as! NSString]?.doubleValue ?? 0.0
+            let focalLength35mm = EXIF[kCGImagePropertyExifFocalLenIn35mmFilm as! NSString]?.doubleValue ?? 0.0
             let height = CGFloat(EXIF[kCGImagePropertyExifPixelYDimension as! NSString]?.doubleValue ?? 0.0)
             
             var ISO = 0.0
@@ -61,7 +77,7 @@ public class BakedImageLoader: ImageLoaderProtocol
             let shutterSpeed = EXIF[kCGImagePropertyExifExposureTime as! NSString]?.doubleValue ?? 0.0
             let width = CGFloat(EXIF[kCGImagePropertyExifPixelXDimension as! NSString]?.doubleValue ?? 0.0)
             
-            let metadata = ImageMetadata(size: NSSize(width: width, height: height), aperture: aperture, focalLength: focalLength, ISO: ISO, shutterSpeed: shutterSpeed)
+            let metadata = ImageMetadata(nativeSize: NSSize(width: width, height: height), aperture: aperture, focalLength: focalLength, ISO: ISO, focalLength35mmEquivalent: focalLength35mm, shutterSpeed: shutterSpeed, cameraMaker: cameraMaker, cameraModel: cameraModel)
             
             self.imageMetadata = metadata
             
@@ -72,18 +88,35 @@ public class BakedImageLoader: ImageLoaderProtocol
         }
     }
     
-    public func loadThumbnailImage(handler: PresentableImageHandler, errorHandler: ImageLoadingErrorHandler)
+    private func _loadThumbnailImage(maximumPixelDimensions maxPixelSize: NSSize?, alwaysUseFullImage: Bool? = nil) -> CGImage?
     {
         guard let source = self.imageSource else {
-            precondition(false, "Ooops")
-            return
+            precondition(false)
+            return nil
         }
         
         let image = CGImageSourceCreateImageAtIndex(source, 0, nil)
+        let createFromFullImage = alwaysUseFullImage ?? self.alwaysCreateThumbnailFromFullImage
         
-        let options = [String(kCGImageSourceCreateThumbnailWithTransform): true, String(self.alwaysCreateThumbnailFromFullImage ? kCGImageSourceCreateThumbnailFromImageAlways : kCGImageSourceCreateThumbnailFromImageIfAbsent): true]//, String(kCGImageSourceThumbnailMaxPixelSize): 500]
+        var options: [String: AnyObject] = [String(kCGImageSourceCreateThumbnailWithTransform): true,
+                                            String(createFromFullImage ? kCGImageSourceCreateThumbnailFromImageAlways : kCGImageSourceCreateThumbnailFromImageIfAbsent): true]
         
-        if let thumbnailImage = CGImageSourceCreateThumbnailAtIndex(source, 0, options)
+        if let sz = maxPixelSize {
+            options[String(kCGImageSourceThumbnailMaxPixelSize)] = maxPixelSize?.maximumPixelSize(forImageSize: self.imageMetadata!.size)
+        }
+        
+        let thumbnailImage = CGImageSourceCreateThumbnailAtIndex(source, 0, options)
+        return thumbnailImage
+    }
+    
+    public func loadThumbnailImage(maximumPixelDimensions maxPixelSize: NSSize?, handler: PresentableImageHandler, errorHandler: ImageLoadingErrorHandler)
+    {
+        guard let source = self.imageSource else {
+            precondition(false)
+            return
+        }
+        
+        if let thumbnailImage = _loadThumbnailImage(maximumPixelDimensions: maxPixelSize)
         {
             handler(image: NSImage(CGImage: thumbnailImage, size: NSZeroSize), metadata: self.imageMetadata!)
         }
@@ -92,16 +125,23 @@ public class BakedImageLoader: ImageLoaderProtocol
         }
     }
     
-    public func loadFullSizeImage(handler: PresentableImageHandler, errorHandler: ImageLoadingErrorHandler)
+    public func loadFullSizeImage(maximumPixelDimensions maxPixelSize: NSSize?, handler: PresentableImageHandler, errorHandler: ImageLoadingErrorHandler)
     {
         guard let source = self.imageSource else {
-            precondition(false, "Öööps")
+            precondition(false)
             return
         }
         
-        let image = CGImageSourceCreateImageAtIndex(source, 0, nil)
+        let image: CGImage?
         
-        if let image = CGImageSourceCreateImageAtIndex(source, 0, nil)
+        if let sz = maxPixelSize {
+            image = _loadThumbnailImage(maximumPixelDimensions: maxPixelSize)
+        }
+        else {
+            image = CGImageSourceCreateImageAtIndex(source, 0, nil)
+        }
+        
+        if let image = image
         {
             handler(image: NSImage(CGImage: image, size: NSZeroSize), metadata: self.imageMetadata!)
         }
@@ -109,4 +149,37 @@ public class BakedImageLoader: ImageLoaderProtocol
             errorHandler(error: BakedImageLoaderError.FailedToLoadThumbnailImage(message: "Failed to load full-size image from \(self.imageURL.path!)"))
         }
     }
+}
+
+extension NSSize
+{
+    init(constrainWidth w: CGFloat)
+    {
+        self.width = w
+        self.height = CGFloat.max
+    }
+    
+    init(constrainHeight h: CGFloat)
+    {
+        self.width = CGFloat.max
+        self.height = h
+    }
+    
+    /** Assuming this NSSize value describes desired maximum width and/or height of a scaled output image, return appropriate value for the `kCGImageSourceThumbnailMaxPixelSize` option. */
+    func maximumPixelSize(forImageSize imageSize: NSSize) -> CGFloat
+    {
+        let imageWidthToHeightRatio = abs(imageSize.width / imageSize.height)
+        
+        if imageWidthToHeightRatio > 1.0 {
+            return min(imageSize.width, self.width)
+        }
+        
+        return min(imageSize.height, self.height)
+    }
+    
+    func scaledHeight(forImageSize imageSize: NSSize) -> CGFloat
+    {
+        return min(imageSize.height, self.height)
+    }
+
 }
