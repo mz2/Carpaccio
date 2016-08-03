@@ -19,15 +19,23 @@ public enum RAWImageLoaderError: ErrorType
 }
 
 
+public enum ImageLoadingThumbnailScheme: Int
+{
+    case AlwaysDecodeFullImage
+    case DecodeFullImageIfThumbnailTooSmall
+    case DecodeFullImageIfThumbnailMissing
+}
+
+
 public class RAWImageLoader: ImageLoaderProtocol
 {
     public let imageURL: NSURL
+    public let thumbnailScheme: ImageLoadingThumbnailScheme
     
-    private let alwaysCreateThumbnailFromFullImage = true
-    
-    init(imageURL: NSURL)
+    init(imageURL: NSURL, thumbnailScheme: ImageLoadingThumbnailScheme)
     {
         self.imageURL = imageURL
+        self.thumbnailScheme = thumbnailScheme
     }
     
     private var imageSource: CGImageSource? {
@@ -45,6 +53,8 @@ public class RAWImageLoader: ImageLoaderProtocol
         guard let imageSource = self.imageSource else {
             return nil
         }
+        
+        //self.dumpAllImageMetadata(imageSource)
         
         let properties = NSDictionary(dictionary: CGImageSourceCopyPropertiesAtIndex(imageSource, 0, nil)!)
         
@@ -97,6 +107,33 @@ public class RAWImageLoader: ImageLoaderProtocol
         return nil
     }()
     
+    private func dumpAllImageMetadata(imageSource: CGImageSource)
+    {
+        let metadata = CGImageSourceCopyMetadataAtIndex(imageSource, 0, nil)
+        let options: [String: AnyObject] = [String(kCGImageMetadataEnumerateRecursively): true as CFNumber]
+        var results = [String: AnyObject]()
+
+        CGImageMetadataEnumerateTagsUsingBlock(metadata!, nil, options) { (path: CFString, tag: CGImageMetadataTag) -> Bool in
+            
+            if let value = CGImageMetadataTagCopyValue(tag) {
+                results[path as String] = value
+            }
+            else {
+                results[path as String] = "??"
+            }
+            return true
+        }
+        
+        print("---- All metadata for \(self.imageURL.path!): ----")
+        
+        for key in results.keys.sort()
+        {
+            print("    \(key) = \(results[key]!)")
+        }
+        
+        print("----")
+    }
+    
     public func loadImageMetadata(handler: ImageMetadataHandler, errorHandler: ImageLoadingErrorHandler)
     {
         guard let imageSource = self.imageSource else {
@@ -112,21 +149,44 @@ public class RAWImageLoader: ImageLoaderProtocol
         }
     }
     
-    private func _loadThumbnailImage(maximumPixelDimensions maxPixelSize: NSSize?, alwaysUseFullImage: Bool? = nil) -> CGImage?
+    private func _loadThumbnailImage(maximumPixelDimensions maximumSize: NSSize?) -> CGImage?
     {
         guard let source = self.imageSource else {
             precondition(false)
             return nil
         }
         
-        let image = CGImageSourceCreateImageAtIndex(source, 0, nil)
-        let createFromFullImage = alwaysUseFullImage ?? self.alwaysCreateThumbnailFromFullImage
+        let maxPixelSize: CGFloat? = maximumSize?.maximumPixelSize(forImageSize: self.imageMetadata!.size)
+        var createFromFullImage: Bool = false
         
-        var options: [String: AnyObject] = [String(kCGImageSourceCreateThumbnailWithTransform): true,
-                                            String(createFromFullImage ? kCGImageSourceCreateThumbnailFromImageAlways : kCGImageSourceCreateThumbnailFromImageIfAbsent): true]
+        if self.thumbnailScheme == .AlwaysDecodeFullImage {
+            createFromFullImage = true
+        }
+        
+        // If thumbnail dimensions are too small for current configuration, create from full image
+        /*if self.thumbnailScheme == .DecodeFullImageIfThumbnailTooSmall && maximumSize != nil
+        {
+            let options: [String: AnyObject] = [String(kCGImageSourceCreateThumbnailFromImageIfAbsent): false]
+            let t = CGImageSourceCreateThumbnailAtIndex(source, 0, options)
+            
+            let w = CGImageGetWidth(t)
+            let h = CGImageGetHeight(t)
+            let m = Int(round(maxPixelSize!))
+            
+            createFromFullImage = w < m && h < m
+                
+            if createFromFullImage {
+                print("Will decode thumbnail from full image for \(self.imageURL.lastPathComponent!), would be too small at \(NSSize(width: w, height: h)) for requested pixel dimensions \(maximumSize!) yeilding max pixel size \(Int(round(maxPixelSize!)))")
+            }
+            else {
+                print("Will use pre-rendered thumbail for \(self.imageURL.lastPathComponent!), is big enough at \(NSSize(width: w, height: h)) for requested pixel dimensions \(maximumSize!) yeilding max pixel size \(Int(round(maxPixelSize!)))")
+            }
+        }*/
+        
+        var options: [String: AnyObject] = [String(kCGImageSourceCreateThumbnailWithTransform): true, String(createFromFullImage ? kCGImageSourceCreateThumbnailFromImageAlways : kCGImageSourceCreateThumbnailFromImageIfAbsent): true]
         
         if let sz = maxPixelSize {
-            options[String(kCGImageSourceThumbnailMaxPixelSize)] = maxPixelSize?.maximumPixelSize(forImageSize: self.imageMetadata!.size)
+            options[String(kCGImageSourceThumbnailMaxPixelSize)] = Int(round(sz))
         }
         
         let thumbnailImage = CGImageSourceCreateThumbnailAtIndex(source, 0, options)
@@ -188,7 +248,6 @@ public class RAWImageLoader: ImageLoaderProtocol
     }
 }
 
-
 extension NSSize
 {
     init(constrainWidth w: CGFloat)
@@ -206,18 +265,35 @@ extension NSSize
     /** Assuming this NSSize value describes desired maximum width and/or height of a scaled output image, return appropriate value for the `kCGImageSourceThumbnailMaxPixelSize` option. */
     func maximumPixelSize(forImageSize imageSize: NSSize) -> CGFloat
     {
-        let imageWidthToHeightRatio = abs(imageSize.width / imageSize.height)
+        let widthIsUnconstrained = self.width > imageSize.width
+        let heightIsUnconstrained = self.height > imageSize.height
+        let ratio = imageSize.widthToHeightRatio
         
-        if imageWidthToHeightRatio > 1.0 {
-            return min(imageSize.width, self.width)
+        if widthIsUnconstrained && heightIsUnconstrained
+        {
+            if ratio > 1.0 {
+                return imageSize.width
+            }
+            return imageSize.height
+        }
+        else if widthIsUnconstrained {
+            if ratio > 1.0 {
+                return imageSize.width(forHeight: self.height)
+            }
+            return self.height
+        }
+        else if heightIsUnconstrained {
+            if ratio > 1.0 {
+                return self.width
+            }
+            return imageSize.height(forWidth: self.width)
         }
         
-        return min(imageSize.height, self.height)
+        return min(self.width, self.height)
     }
     
     func scaledHeight(forImageSize imageSize: NSSize) -> CGFloat
     {
         return min(imageSize.height, self.height)
     }
-    
 }

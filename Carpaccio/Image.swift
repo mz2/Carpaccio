@@ -45,13 +45,12 @@ public class Image: Equatable
         {
             if Image.RAWImageFileExtensions.contains(pathExtension)
             {
-                //self.imageLoader = LibRAWImageLoader(imageURL: URL)
-                self.imageLoader = RAWImageLoader(imageURL: URL)
+                self.imageLoader = RAWImageLoader(imageURL: URL, thumbnailScheme: .DecodeFullImageIfThumbnailTooSmall)
+                //self.imageLoader = RAWImageLoader(imageURL: URL, thumbnailScheme: .AlwaysDecodeFullImage)
             }
             else if Image.bakedImageFileExtensions.contains(pathExtension)
             {
-                //self.imageLoader = BakedImageLoader(imageURL: URL)
-                self.imageLoader = RAWImageLoader(imageURL: URL)
+                self.imageLoader = RAWImageLoader(imageURL: URL, thumbnailScheme: .DecodeFullImageIfThumbnailTooSmall)
             }
         }
     }
@@ -104,7 +103,7 @@ public class Image: Equatable
         
         if let URL = self.URL
         {
-            self.imageLoader?.loadThumbnailImage(maximumPixelDimensions: presentedHeight != nil ? NSSize(constrainHeight: presentedHeight!) : nil, handler: { (thumbnailImage: NSImage, metadata: ImageMetadata) in
+            self.imageLoader?.loadThumbnailImage(maximumPixelDimensions: presentedHeight != nil ? NSSize(constrainHeight: presentedHeight! * 2.0) : nil, handler: { (thumbnailImage: NSImage, metadata: ImageMetadata) in
                 
                 if self.metadata == nil {
                     self.metadata = metadata
@@ -129,7 +128,7 @@ public class Image: Equatable
     {
         if let url = self.URL
         {
-            // TODO: Query actual screen scale factor instead of card-coded 2.0
+            // TODO: Query actual screen scale factor instead of hard-coded 2.0
             self.imageLoader?.loadFullSizeImage(maximumPixelDimensions: presentedHeight != nil ? NSSize(constrainHeight: presentedHeight! * 2.0) : nil, handler: { (image: NSImage, metadata: ImageMetadata) in
                 
                 if self.metadata == nil {

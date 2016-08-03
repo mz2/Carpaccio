@@ -10,6 +10,62 @@
 import Cocoa
 
 
+public extension NSImage
+{
+    public var bounds: NSRect
+        {
+        get {
+            return NSRect(x: 0.0, y: 0.0, width: self.size.width, height: self.size.height)
+        }
+    }
+    
+    public var widthToHeightRatio: CGFloat
+        {
+        get {
+            return self.size.widthToHeightRatio
+        }
+    }
+    
+    public func width(forHeight height: CGFloat) -> CGFloat
+    {
+        return self.size.width(forHeight: height)
+    }
+    
+    public func height(forWidth width: CGFloat) -> CGFloat
+    {
+        return self.size.height(forWidth: width)
+    }
+}
+
+extension NSSize
+{
+    public var widthToHeightRatio: CGFloat
+        {
+        get
+        {
+            if self.width == 0.0 {
+                return 0.0
+            }
+            
+            if self.height == 0.0 {
+                return CGFloat.infinity
+            }
+            
+            return self.width / self.height
+        }
+    }
+    
+    public func width(forHeight height: CGFloat) -> CGFloat
+    {
+        return height * self.widthToHeightRatio
+    }
+    
+    public func height(forWidth width: CGFloat) -> CGFloat
+    {
+        return width / self.widthToHeightRatio
+    }
+}
+
 public func scale(presentableImage inputImage: NSImage, height: CGFloat, screenScaleFactor: CGFloat) -> NSImage
 {
     let widthToHeightRatio = inputImage.size.width / inputImage.size.height
