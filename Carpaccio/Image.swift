@@ -158,11 +158,11 @@ public class Image: Equatable
     }
     
     public class var RAWImageFileExtensions:Set<String> {
-        return Set(["arw", "nef", "cr2"])
+        return Set(["arw", "nef", "cr2", "crw"])
     }
 
     public class var bakedImageFileExtensions:Set<String> {
-        return Set(["jpg", "jpeg"]) //, "png", "tiff"])
+        return Set(["jpg", "jpeg", "png", "tiff", "tif", "gif"])
     }
 
     public typealias LoadHandler = (index:Int, total:Int, image:Image) -> Void

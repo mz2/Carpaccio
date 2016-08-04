@@ -58,20 +58,16 @@ public class RAWImageLoader: ImageLoaderProtocol
         
         let properties = NSDictionary(dictionary: CGImageSourceCopyPropertiesAtIndex(imageSource, 0, nil)!)
         
-        if let EXIF = properties[kCGImagePropertyExifDictionary as! NSString] as? NSDictionary,
-            let TIFF = properties[kCGImagePropertyTIFFDictionary as! NSString] as? NSDictionary
+        var aperture: Double? = nil, focalLength: Double? = nil, focalLength35mm: Double? = nil, ISO: Double? = nil, shutterSpeed: Double? = nil
+        var width: CGFloat? = nil, height: CGFloat? = nil
+        
+        // Examine EXIF metadata
+        if let EXIF = properties[kCGImagePropertyExifDictionary as! NSString] as? NSDictionary
         {
-            //let EXIF = NSDictionary(dictionary: EXIFDictionary as! CFDictionary)
-            let cameraMaker = TIFF[kCGImagePropertyTIFFMake as! NSString] as? String
-            let cameraModel = TIFF[kCGImagePropertyTIFFModel as! NSString] as? String
-            let orientation = CGImagePropertyOrientation(rawValue: TIFF[kCGImagePropertyTIFFOrientation as! NSString]?.unsignedIntValue ?? 1) ?? .Up
+            aperture = EXIF[kCGImagePropertyExifFNumber as! NSString]?.doubleValue
+            focalLength = EXIF[kCGImagePropertyExifFocalLength as! NSString]?.doubleValue
+            focalLength35mm = EXIF[kCGImagePropertyExifFocalLenIn35mmFilm as! NSString]?.doubleValue
             
-            let aperture = EXIF[kCGImagePropertyExifFNumber as! NSString]?.doubleValue
-            let focalLength = EXIF[kCGImagePropertyExifFocalLength as! NSString]?.doubleValue
-            let focalLength35mm = EXIF[kCGImagePropertyExifFocalLenIn35mmFilm as! NSString]?.doubleValue
-            var heightInMetadata: Double? = EXIF[kCGImagePropertyExifPixelYDimension as! NSString]?.doubleValue
-            
-            var ISO = 0.0
             if let ISOs = EXIF[kCGImagePropertyExifISOSpeedRatings as! NSString]
             {
                 let ISOArray = NSArray(array: ISOs as! CFArray)
@@ -80,31 +76,40 @@ public class RAWImageLoader: ImageLoaderProtocol
                 }
             }
             
-            let shutterSpeed = EXIF[kCGImagePropertyExifExposureTime as! NSString]?.doubleValue
-            var widthInMetadata: Double? = EXIF[kCGImagePropertyExifPixelXDimension as! NSString]?.doubleValue
-
-            /*
-             Annoyingly, image dimensions don't appear to be available for some RAW files (like Nikon NEFs) in any of the property dictionaries.
-             Hence, must take one more step: open the actual image (which thankfully doesn't appear to immediately load image data, either.)
-             */
-            let width: CGFloat, height: CGFloat
-
-            if widthInMetadata == nil || heightInMetadata == nil
-            {
-                let options: CFDictionary = [String(kCGImageSourceShouldCache): false]
-                let image = CGImageSourceCreateImageAtIndex(imageSource, 0, options)
-                width = CGFloat(CGImageGetWidth(image))
-                height = CGFloat(CGImageGetHeight(image))
-            }
-            else {
-                width = CGFloat(widthInMetadata!)
-                height = CGFloat(heightInMetadata!)
-            }
+            shutterSpeed = EXIF[kCGImagePropertyExifExposureTime as! NSString]?.doubleValue
             
-            let metadata = ImageMetadata(nativeSize: NSSize(width: width, height: height), nativeOrientation: orientation, aperture: aperture, focalLength: focalLength, ISO: ISO, focalLength35mmEquivalent: focalLength35mm, shutterSpeed: shutterSpeed, cameraMaker: cameraMaker, cameraModel: cameraModel)
-            return metadata
+            if let w = EXIF[kCGImagePropertyExifPixelXDimension as! NSString]?.doubleValue {
+                width = CGFloat(w)
+            }
+            if let h = EXIF[kCGImagePropertyExifPixelYDimension as! NSString]?.doubleValue {
+                height = CGFloat(h)
+            }
         }
-        return nil
+        
+        // Examine TIFF metadata
+        var cameraMaker: String? = nil, cameraModel: String? = nil, orientation: CGImagePropertyOrientation? = nil
+        
+        if let TIFF = properties[kCGImagePropertyTIFFDictionary as! NSString] as? NSDictionary
+        {
+            cameraMaker = TIFF[kCGImagePropertyTIFFMake as! NSString] as? String
+            cameraModel = TIFF[kCGImagePropertyTIFFModel as! NSString] as? String
+            orientation = CGImagePropertyOrientation(rawValue: TIFF[kCGImagePropertyTIFFOrientation as! NSString]?.unsignedIntValue ?? 1)
+        }
+        
+        /*
+         If image dimension didn't appear in metadata (can happen with some RAW files like Nikon NEFs), take one more step:
+         open the actual image. This thankfully doesn't appear to immediately load image data.
+         */
+        if width == nil || height == nil
+        {
+            let options: CFDictionary = [String(kCGImageSourceShouldCache): false]
+            let image = CGImageSourceCreateImageAtIndex(imageSource, 0, options)
+            width = CGFloat(CGImageGetWidth(image))
+            height = CGFloat(CGImageGetHeight(image))
+        }
+        
+        let metadata = ImageMetadata(nativeSize: NSSize(width: width!, height: height!), nativeOrientation: orientation ?? .Up, aperture: aperture, focalLength: focalLength, ISO: ISO, focalLength35mmEquivalent: focalLength35mm, shutterSpeed: shutterSpeed, cameraMaker: cameraMaker, cameraModel: cameraModel)
+        return metadata
     }()
     
     private func dumpAllImageMetadata(imageSource: CGImageSource)
