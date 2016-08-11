@@ -59,6 +59,23 @@ public class ImageCollection
         }
     }
     
+    /** Return any image found in this collection whose URL is included in given input array or URLs. */
+    public func images(forURLs URLs: [NSURL]) -> [Image]
+    {
+        var images = [Image]()
+        
+        for URL in URLs
+        {
+            if let i = self.images.indexOf( { (image: Image) -> Bool in
+                return image.URL == URL
+            }) {
+                images.append(self.images[i])
+            }
+        }
+        
+        return images
+    }
+    
     // TODO: Create a specific type for a sparse distance matrix.
     public func distanceMatrix(distance:Image.DistanceFunction) -> [[Double]] {
         return (images.startIndex ..< self.images.endIndex).lazy.flatMap { i in
