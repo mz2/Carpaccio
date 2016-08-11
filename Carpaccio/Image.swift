@@ -224,9 +224,16 @@ public class Image: Equatable
     }
 }
 
+/*
 public func == (lhs:Image, rhs:Image) -> Bool {
     return lhs.name == rhs.name
             && lhs.thumbnailImage === rhs.thumbnailImage
             && lhs.fullImage === rhs.fullImage
             && lhs.URL == rhs.URL
+}
+ */
+
+public func == (lhs:Image, rhs:Image) -> Bool
+{
+    return lhs.URL == rhs.URL
 }
