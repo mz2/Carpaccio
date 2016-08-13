@@ -232,24 +232,43 @@ public class RAWImageLoader: ImageLoaderProtocol
             scaleFactor = 1.0
         }
         
-        // NOTE: Having the draft mode option set to `true` appears to be crucial to performance, with a difference of 0.3s vs. 2.5s per image on this iMac 5K, for instance.
+        // NOTE: Having draft mode on appears to be crucial to performance, with a difference of 0.3s vs. 2.5s per image on this iMac 5K, for instance.
         // The quality is still quite excellent for displaying scaled-down presentations in a collection view, subjectively better than what you get from LibRAW with the half-size option.
-        let options: [NSObject: AnyObject] = [kCIInputScaleFactorKey: scaleFactor, kCIInputAllowDraftModeKey: true, kCIInputBoostShadowAmountKey: NSNumber(float: 1.0)]
-        let RAWFilter = CIFilter(imageURL: self.imageURL, options: options)
+        let RAWFilter = CIFilter(imageURL: self.imageURL, options: nil)
+        RAWFilter.setValue(true, forKey: kCIInputAllowDraftModeKey)
+        RAWFilter.setValue(scaleFactor, forKey: kCIInputScaleFactorKey)
         
-        if let bakedImage = RAWFilter.outputImage
+        RAWFilter.setValue(0.5, forKey: kCIInputNoiseReductionAmountKey)
+        RAWFilter.setValue(1.0, forKey: kCIInputColorNoiseReductionAmountKey)
+        RAWFilter.setValue(0.5, forKey: kCIInputNoiseReductionSharpnessAmountKey)
+        RAWFilter.setValue(0.5, forKey: kCIInputNoiseReductionContrastAmountKey)
+        RAWFilter.setValue(1.0, forKey: kCIInputBoostShadowAmountKey)
+        RAWFilter.setValue(true, forKey: kCIInputEnableVendorLensCorrectionKey)
+        
+        var image = RAWFilter.outputImage
+        
+        if let filters = image?.autoAdjustmentFiltersWithOptions([kCIImageAutoAdjustEnhance: true, kCIImageAutoAdjustFeatures: [CIFaceFeature()]])
         {
-            var image = NSImage(size: bakedImage.extent.size)
-            image.cacheMode = .Never
-            image.lockFocus()
-            NSGraphicsContext.currentContext()?.CIContext?.drawImage(bakedImage, inRect: bakedImage.extent, fromRect: bakedImage.extent)
-            image.unlockFocus()
+            for f in filters
+            {
+                f.setValue(image, forKey: kCIInputImageKey)
+                image = f.outputImage
+            }
             
-            handler(image: image, metadata: ImageMetadata(nativeSize: image.size))
+            if let image = image
+            {
+                var bakedImage = NSImage(size: image.extent.size)
+                bakedImage.cacheMode = .Never
+                bakedImage.lockFocus()
+                NSGraphicsContext.currentContext()?.CIContext?.drawImage(image, inRect: image.extent, fromRect: image.extent)
+                bakedImage.unlockFocus()
+                
+                handler(image: bakedImage, metadata: ImageMetadata(nativeSize: bakedImage.size))
+                return
+            }
         }
-        else {
-            errorHandler(error: RAWImageLoaderError.FailedToLoadFullSizeImage(message: "Failed to load full-size RAW image \(self.imageURL.path!)"))
-        }
+        
+        errorHandler(error: RAWImageLoaderError.FailedToLoadFullSizeImage(message: "Failed to load full-size RAW image \(self.imageURL.path!)"))
     }
 }
 
