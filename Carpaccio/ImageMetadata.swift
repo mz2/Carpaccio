@@ -120,7 +120,7 @@ public struct ImageMetadata
             }
             
             let mm = Int(round(f))
-            return "\(mm)mm"
+            return "(\(mm)mm)"
         }
     }
 
@@ -159,24 +159,32 @@ public struct ImageMetadata
     
     public var humanReadableMetadataSummary: String {
         get {
-            return "\(padTail(ofString:self.cleanedUpCameraModel))\(padTail(ofString: self.humanReadableFocalLength))\(padTail(ofString: conditional(string:"(\(self.humanReadableFocalLength35mmEquivalent))", condition: (self.focalLength35mmEquivalent != nil && self.focalLength35mmEquivalent != self.focalLength))))\(padTail(ofString: self.humanReadableAperture))\(padTail(ofString: self.humanReadableShutterSpeed))\(padTail(ofString: self.humanReadableISO))"
+            return "\(padTail(ofString:self.cleanedUpCameraModel))\(padTail(ofString: self.humanReadableFocalLength))\(padTail(ofString: conditional(string: self.humanReadableFocalLength35mmEquivalent, condition: (self.focalLength35mmEquivalent != self.focalLength))))\(padTail(ofString: self.humanReadableAperture))\(padTail(ofString: self.humanReadableShutterSpeed))\(padTail(ofString: self.humanReadableISO))"
         }
+    }
+    
+    public var humanReadableNativeSize: String {
+        return "\(Int(self.nativeSize.width))x\(Int(self.nativeSize.height))"
     }
 }
 
-func conditional(string s: String?, condition: Bool) -> String?
+func conditional(string s: String?, condition: Bool) -> String
 {
-    if condition {
-        return s
+    if let t = s
+    {
+        if condition {
+            return t
+        }
     }
-    return nil
+    return ""
 }
 
 func padTail(ofString s: String?, with: String = " ") -> String
 {
-    if let s = s {
-        if !s.isEmpty {
-            return "\(s)\(with)"
+    if let t = s
+    {
+        if !t.isEmpty {
+            return "\(t)\(with)"
         }
     }
     return ""
