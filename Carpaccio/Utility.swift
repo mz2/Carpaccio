@@ -51,7 +51,7 @@ extension NSSize
                 return CGFloat.infinity
             }
             
-            return self.width / self.height
+            return round(self.width) / round(self.height)
         }
     }
     
