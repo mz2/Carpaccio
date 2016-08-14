@@ -22,11 +22,11 @@ class CarpaccioTests: XCTestCase {
     }
     
     func testSonyRAWConversion() {
-        let img1URL = NSBundle(forClass: self.dynamicType).URLForResource("DSC00583", withExtension: "ARW")!
+        let img1URL = Bundle(for: self.dynamicType).urlForResource("DSC00583", withExtension: "ARW")!
 
-        let tempDir = NSURL(fileURLWithPath:NSTemporaryDirectory().stringByAppendingString("/\(NSUUID().UUIDString)"))
+        let tempDir = URL(fileURLWithPath:NSTemporaryDirectory() + "/\(UUID().uuidString)")
         
-        try! NSFileManager.defaultManager().createDirectoryAtURL(tempDir, withIntermediateDirectories: true, attributes: [:])
+        try! FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true, attributes: [:])
         
         let converter = try! RAWConverter(URL: img1URL)
         
@@ -43,11 +43,11 @@ class CarpaccioTests: XCTestCase {
             XCTFail("Error: \(err)")
         }
         
-        try! NSFileManager.defaultManager().removeItemAtURL(tempDir)
+        try! FileManager.default.removeItem(at: tempDir)
     }
     
     func testDistanceMatrixComputation() {
-        let resourcesDir = NSBundle(forClass: self.dynamicType).resourceURL!
+        let resourcesDir = Bundle(for: self.dynamicType).resourceURL!
         let imgColl = try! ImageCollection(contentsOfURL: resourcesDir)
         
         // just checking that the matrix computation succeeds.
@@ -55,8 +55,8 @@ class CarpaccioTests: XCTestCase {
             return Double.infinity
         }
         
-        for (r, row) in distances.enumerate() {
-            for (c, dist) in row.enumerate() {
+        for (r, row) in distances.enumerated() {
+            for (c, dist) in row.enumerated() {
                 if c > r {
                     XCTAssert(dist.isInfinite)
                 }
@@ -71,15 +71,15 @@ class CarpaccioTests: XCTestCase {
     }
     
     func testDistanceTableComputation() {
-        let resourcesDir = NSBundle(forClass: self.dynamicType).resourceURL!
+        let resourcesDir = Bundle(for: self.dynamicType).resourceURL!
         let imgColl = try! ImageCollection(contentsOfURL: resourcesDir)
         
         let distances = imgColl.distanceTable { a, b in
             return Double.infinity
         }
         
-        for (r, row) in distances.enumerate() {
-            for (c, dist) in row.enumerate() {
+        for (r, row) in distances.enumerated() {
+            for (c, dist) in row.enumerated() {
                 if c == r {
                     XCTAssert(dist == 0)
                 }

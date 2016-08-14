@@ -73,11 +73,11 @@ public func scale(presentableImage inputImage: NSImage, height: CGFloat, screenS
     let pixelWidth = round(widthToHeightRatio * pixelHeight)
     
     let scaledImage = NSImage(size: NSSize(width: pixelWidth, height: pixelHeight))
-    scaledImage.cacheMode = .Never
+    scaledImage.cacheMode = .never
     
     scaledImage.lockFocus()
-    NSGraphicsContext.currentContext()?.imageInterpolation = .Default
-    inputImage.drawInRect(NSRect(x: 0.0, y: 0.0, width: pixelWidth, height: pixelHeight), fromRect: NSRect(x: 0.0, y: 0.0, width: inputImage.size.width, height: inputImage.size.height), operation: .CompositeCopy, fraction: 1.0)
+    NSGraphicsContext.current()?.imageInterpolation = .default
+    inputImage.draw(in: NSRect(x: 0.0, y: 0.0, width: pixelWidth, height: pixelHeight), from: NSRect(x: 0.0, y: 0.0, width: inputImage.size.width, height: inputImage.size.height), operation: .copy, fraction: 1.0)
     scaledImage.unlockFocus()
     
     return scaledImage
