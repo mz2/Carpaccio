@@ -8,25 +8,24 @@
 
 import Cocoa
 
-public enum ImageError:ErrorType
-{
-    case URLMissing
-    case URLHasNoPath(NSURL)
-    case LocationNotEnumerable(NSURL)
-    case LoadingFailed(underlyingError:ErrorType)
-}
 
-public class Image: Equatable
-{
+public class Image: Equatable {
+    
+    public enum Error: Swift.Error {
+        case urlMissing
+        case locationNotEnumerable(URL)
+        case loadingFailed(underlyingError: Swift.Error)
+    }
+    
     public let name: String
     public var thumbnailImage: NSImage? = nil
     public var fullImage: NSImage?
-    public let URL: NSURL?
+    public let URL: Foundation.URL?
     
-    public typealias MetadataHandler = (metadata: ImageMetadata) -> Void
-    public typealias ErrorHandler = (error: ErrorType) -> Void
+    public typealias MetadataHandler = (_ metadata: ImageMetadata) -> Void
+    public typealias ErrorHandler = (_ error: Image.Error) -> Void
     
-    public typealias DistanceFunction = (a:Image, b:Image)-> Double
+    public typealias DistanceFunction = (_ a:Image, _ b:Image)-> Double
     
     public required init(image: NSImage)
     {
@@ -35,23 +34,21 @@ public class Image: Equatable
         self.URL = nil
     }
     
-    public init(URL: NSURL)
+    public init(URL: Foundation.URL)
     {
         self.URL = URL
-        self.name = URL.lastPathComponent ?? "Untitled"
+        self.name = URL.lastPathComponent 
         self.fullImage = nil
         
-        if let pathExtension = URL.pathExtension?.lowercaseString
+        let pathExtension = URL.pathExtension.lowercased()
+        
+        if Image.RAWImageFileExtensions.contains(pathExtension) {
+            self.imageLoader = RAWImageLoader(imageURL: URL, thumbnailScheme: .decodeFullImageIfThumbnailTooSmall)
+            //self.imageLoader = RAWImageLoader(imageURL: URL, thumbnailScheme: .AlwaysDecodeFullImage)
+        }
+        else if Image.bakedImageFileExtensions.contains(pathExtension)
         {
-            if Image.RAWImageFileExtensions.contains(pathExtension)
-            {
-                self.imageLoader = RAWImageLoader(imageURL: URL, thumbnailScheme: .DecodeFullImageIfThumbnailTooSmall)
-                //self.imageLoader = RAWImageLoader(imageURL: URL, thumbnailScheme: .AlwaysDecodeFullImage)
-            }
-            else if Image.bakedImageFileExtensions.contains(pathExtension)
-            {
-                self.imageLoader = RAWImageLoader(imageURL: URL, thumbnailScheme: .DecodeFullImageIfThumbnailTooSmall)
-            }
+            self.imageLoader = RAWImageLoader(imageURL: URL, thumbnailScheme: .decodeFullImageIfThumbnailTooSmall)
         }
     }
     
@@ -67,10 +64,7 @@ public class Image: Equatable
     
     public var isMetadataAvailable: Bool {
         get {
-            if let metadata = self.metadata {
-                return true
-            }
-            return false
+            return self.metadata != nil
         }
     }
     
@@ -78,82 +72,75 @@ public class Image: Equatable
         return self.fullImage ?? self.thumbnailImage ?? self.placeholderImage
     }
     
-    public func fetchMetadata(store: Bool = true, handler: MetadataHandler, errorHandler: ErrorHandler)
+    public func fetchMetadata(_ store: Bool = true, handler: MetadataHandler, errorHandler: ErrorHandler)
     {
         self.imageLoader?.loadImageMetadata({ (metadata: ImageMetadata) in
             
             if store {
                 self.metadata = metadata
             }
-            handler(metadata: metadata)
+            handler(metadata)
 
-        }, errorHandler: { error in errorHandler(error: error) })
+            }, errorHandler: { error in errorHandler(Error.loadingFailed(underlyingError:error)) })
     }
     
-    public func fetchThumbnail(presentedHeight presentedHeight: CGFloat? = nil, force: Bool = false, store: Bool = true, completionHandler:(image:NSImage)->Void, errorHandler:(ErrorType)->Void)
+    public func fetchThumbnail(presentedHeight: CGFloat? = nil, force: Bool = false, store: Bool = true, scaleFactor:CGFloat = 2.0, completionHandler:@escaping (_ image:NSImage)->Void, errorHandler:@escaping (Error)->Void)
     {
         if !force
         {
             if let thumb = self.thumbnailImage
             {
-                completionHandler(image: thumb)
+                completionHandler(thumb)
                 return
             }
         }
         
-        if let URL = self.URL
-        {
-            self.imageLoader?.loadThumbnailImage(maximumPixelDimensions: presentedHeight != nil ? NSSize(constrainHeight: presentedHeight! * 2.0) : nil, handler: { (thumbnailImage: NSImage, metadata: ImageMetadata) in
-                
-                if self.metadata == nil {
-                    self.metadata = metadata
-                }
-                
-                if store {
-                    self.thumbnailImage = thumbnailImage
-                }
-                
-                completionHandler(image: thumbnailImage)
-
-            }, errorHandler: { (error) in errorHandler(error) })
-        }
-        else
-        {
-            errorHandler(ImageError.URLMissing)
+        guard self.URL != nil else {
+            errorHandler(Error.urlMissing)
             return
         }
+
+        self.imageLoader?.loadThumbnailImage(maximumPixelDimensions: presentedHeight != nil ? NSSize(constrainHeight: presentedHeight! * scaleFactor) : nil, handler: { (thumbnailImage: NSImage, metadata: ImageMetadata) in
+            if self.metadata == nil {
+                self.metadata = metadata
+            }
+            
+            if store {
+                self.thumbnailImage = thumbnailImage
+            }
+            
+            completionHandler(thumbnailImage)
+
+            }, errorHandler: { (error) in errorHandler(.loadingFailed(underlyingError:error)) })
+        
     }
     
-    public func fetchFullSizeImage(presentedHeight presentedHeight: CGFloat? = nil, store: Bool = false, completionHandler: (image: NSImage) -> Void, errorHandler: (ErrorType) -> Void)
+    public func fetchFullSizeImage(presentedHeight: CGFloat? = nil, store: Bool = false, scaleFactor:CGFloat = 2.0, completionHandler: @escaping (_ image: NSImage) -> Void, errorHandler: @escaping (Error) -> Void)
     {
-        if let url = self.URL
-        {
-            // TODO: Query actual screen scale factor instead of hard-coded 2.0
-            self.imageLoader?.loadFullSizeImage(maximumPixelDimensions: presentedHeight != nil ? NSSize(constrainHeight: presentedHeight! * 2.0) : nil, handler: { (image: NSImage, metadata: ImageMetadata) in
-                
-                if self.metadata == nil {
-                    self.metadata = metadata
-                }
-                
-                if store {
-                    self.fullImage = image
-                }
-                
-                completionHandler(image: image)
-                
-                }, errorHandler: { error in errorHandler(error) }
-            )
-        }
-        else
-        {
-            errorHandler(ImageError.URLMissing)
+        guard self.URL != nil else {
+            errorHandler(.urlMissing)
             return
         }
+
+        self.imageLoader?.loadFullSizeImage(maximumPixelDimensions: presentedHeight != nil ? NSSize(constrainHeight: presentedHeight! * scaleFactor) : nil, handler: { (image: NSImage, metadata: ImageMetadata) in
+            
+            if self.metadata == nil {
+                self.metadata = metadata
+            }
+            
+            if store {
+                self.fullImage = image
+            }
+            
+            completionHandler(image)
+            
+            }, errorHandler: { error in errorHandler(.loadingFailed(underlyingError:error)) }
+        )
     }
     
     public class var imageFileExtensions:Set<String> {
         var extensions = self.RAWImageFileExtensions
-        extensions.unionInPlace(self.bakedImageFileExtensions)
+        extensions.formUnion(self.bakedImageFileExtensions)
         return extensions
     }
     
@@ -165,60 +152,58 @@ public class Image: Equatable
         return Set(["jpg", "jpeg", "png", "tiff", "tif", "gif"])
     }
 
-    public typealias LoadHandler = (index:Int, total:Int, image:Image) -> Void
-    public typealias LoadErrorHandler = (ImageError) -> Void
+    public typealias LoadHandler = (_ index:Int, _ total:Int, _ image:Image) -> Void
+    public typealias LoadErrorHandler = (Error) -> Void
     
-    internal class func imageURLs(atCollectionURL URL: NSURL) throws -> [NSURL]
+    internal class func imageURLs(atCollectionURL URL: Foundation.URL) throws -> [Foundation.URL]
     {
-        let fileManager = NSFileManager.defaultManager()
+        let fileManager = FileManager.default
         
-        guard let path = URL.path else {
-            throw ImageError.URLHasNoPath(URL)
-        }
+        let path = URL.path
         
-        guard let enumerator = fileManager.enumeratorAtPath(path) else {
-            throw ImageError.LocationNotEnumerable(URL)
+        guard let enumerator = fileManager.enumerator(atPath: path) else {
+            throw Error.locationNotEnumerable(URL)
         }
         
         let imagePaths = (enumerator.allObjects as! [String]).filter
         {
             // TODO: should filter out directories etc. here, just in case — or use the enumeration method with options for that
-            let pathExtension = ($0 as NSString).pathExtension.lowercaseString
+            let pathExtension = ($0 as NSString).pathExtension.lowercased()
             return Image.imageFileExtensions.contains(pathExtension)
         }
         
-        let imageURLs = imagePaths.flatMap { (path: String) -> NSURL? in
-            return URL.URLByAppendingPathComponent(path, isDirectory: false).absoluteURL
+        let imageURLs = imagePaths.flatMap { (path: String) -> Foundation.URL? in
+            return URL.appendingPathComponent(path, isDirectory: false).absoluteURL
         }
         
         return imageURLs
     }
     
-    public class func loadImages(contentsOfURL URL:NSURL, loadHandler: LoadHandler? = nil) throws -> [Image]
+    public class func load(contentsOfURL URL:Foundation.URL, loadHandler: LoadHandler? = nil) throws -> [Image]
     {
         let imageURLs = try self.imageURLs(atCollectionURL: URL)
-        var images = [Image]()
         
-        for (i, imageURL) in imageURLs.enumerate()
-        {
-            if let pathExtension = imageURL.pathExtension
-            {
-                let image = Image(URL: imageURL)
-                loadHandler?(index: i, total: imageURLs.count, image: image)
-                images.append(image)
-            }
+        let images = imageURLs.enumerated().flatMap { (i, imageURL) -> Image? in
+            let pathExtension = imageURL.pathExtension
+            
+            guard pathExtension.utf8.count > 0 else { return nil }
+            
+            let image = Image(URL: imageURL)
+            loadHandler?(i, imageURLs.count, image)
+            
+            return image
         }
         
         return images
     }
     
-    public class func loadImagesAsynchronously(contentsOfURL URL:NSURL, loadHandler:LoadHandler? = nil, errorHandler:LoadErrorHandler) {
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)) {
+    public class func loadAsynchronously(contentsOfURL URL:Foundation.URL, queue:DispatchQueue = DispatchQueue.global(), loadHandler:LoadHandler? = nil, errorHandler:LoadErrorHandler) {
+        queue.async {
             do {
-                try loadImages(contentsOfURL: URL, loadHandler: loadHandler)
+                _ = try load(contentsOfURL: URL, loadHandler: loadHandler)
             }
             catch {
-                errorHandler(.LoadingFailed(underlyingError: error))
+                errorHandler(.loadingFailed(underlyingError: error))
             }
         }
     }

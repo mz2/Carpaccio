@@ -20,9 +20,9 @@ public struct ImageMetadata
     public let ISO: Double?
     public let nativeOrientation: CGImagePropertyOrientation
     public let nativeSize: NSSize
-    public let shutterSpeed: NSTimeInterval?
+    public let shutterSpeed: TimeInterval?
     
-    init(nativeSize: NSSize, nativeOrientation: CGImagePropertyOrientation = .Up, aperture: Double? = nil, focalLength: Double? = nil, focalLength35mmEquivalent: Double? = nil, ISO: Double? = nil, shutterSpeed: NSTimeInterval? = nil, cameraMaker: String? = nil, cameraModel: String? = nil)
+    init(nativeSize: NSSize, nativeOrientation: CGImagePropertyOrientation = .up, aperture: Double? = nil, focalLength: Double? = nil, focalLength35mmEquivalent: Double? = nil, ISO: Double? = nil, shutterSpeed: TimeInterval? = nil, cameraMaker: String? = nil, cameraModel: String? = nil)
     {
         self.aperture = aperture
         self.cameraMaker = cameraMaker
@@ -56,7 +56,7 @@ public struct ImageMetadata
         
         switch self.nativeOrientation
         {
-        case .Left, .Right, .LeftMirrored, .RightMirrored:
+        case .left, .right, .leftMirrored, .rightMirrored:
             shouldSwapWidthAndHeight = true
         default:
             shouldSwapWidthAndHeight = false
@@ -75,7 +75,7 @@ public struct ImageMetadata
                 return nil
             }
             
-            let cleanModel = model.stringByReplacingOccurrencesOfString("NIKON", withString: "Nikon")
+            let cleanModel = model.replacingOccurrences(of: "NIKON", with: "Nikon")
             return cleanModel
         }
     }

@@ -9,20 +9,20 @@
 import Foundation
 
 
-public typealias ImageMetadataHandler = (metadata: ImageMetadata) -> Void
+public typealias ImageMetadataHandler = (_ metadata: ImageMetadata) -> Void
 
-public typealias PresentableImageHandler = (image: NSImage, metadata: ImageMetadata) -> Void
+public typealias PresentableImageHandler = (_ image: NSImage, _ metadata: ImageMetadata) -> Void
 
-public typealias ImageLoadingErrorHandler = (error: ErrorType) -> Void
+public typealias ImageLoadingErrorHandler = (_ error: Error) -> Void
 
 
 protocol ImageLoaderProtocol
 {
-    var imageURL: NSURL { get }
+    var imageURL: URL { get }
     var imageMetadata: ImageMetadata? { get }
     
     /** Retrieve metadata about this loader's image, to be called before loading actual image data. */
-    func loadImageMetadata(handler: ImageMetadataHandler, errorHandler: ImageLoadingErrorHandler)
+    func loadImageMetadata(_ handler: ImageMetadataHandler, errorHandler: ImageLoadingErrorHandler)
     
     /** Load thumbnail image. */
     func loadThumbnailImage(maximumPixelDimensions maxPixelSize: NSSize?, handler: PresentableImageHandler, errorHandler: ImageLoadingErrorHandler)

@@ -9,36 +9,33 @@
 import Foundation
 
 
-public typealias ImageCollectionHandler = (collection: ImageCollection) -> Void
-public typealias ImageCollectionErrorHandler = (error: ErrorType) -> Void
+public typealias ImageCollectionHandler = (_ collection: ImageCollection) -> Void
+public typealias ImageCollectionErrorHandler = (_ error: Error) -> Void
 
 
 public class ImageCollection
 {
     public let name:String
     public var images:[Image]
-    public let URL:NSURL
+    public let URL:Foundation.URL
     
-    public init(name: String, images: [Image], URL: NSURL) throws
+    public init(name: String, images: [Image], URL: Foundation.URL) throws
     {
         self.URL = URL
         self.name = name
         self.images = images
     }
     
-    public init(contentsOfURL URL:NSURL) throws {
+    public init(contentsOfURL URL:Foundation.URL) throws {
         self.URL = URL
-        self.name = URL.lastPathComponent ?? "Untitled"
-        self.images = try Image.loadImages(contentsOfURL: URL)
+        self.name = URL.lastPathComponent 
+        self.images = try Image.load(contentsOfURL: URL)
     }
     
     /** Asynchronously initialise an image collection rooted at given URL, with all images found in the subtree prepared up to essential metadata having been loaded. */
-    public class func prepareImageCollection(atURL collectionURL: NSURL, completionHandler: ImageCollectionHandler, errorHandler: ImageCollectionErrorHandler)
-    {
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0))
-        {
-            do
-            {
+    public class func prepare(atURL collectionURL: Foundation.URL, queue:DispatchQueue = DispatchQueue.global(), completionHandler: ImageCollectionHandler, errorHandler: ImageCollectionErrorHandler) {
+        queue.async {
+            do {
                 let imageURLs = try Image.imageURLs(atCollectionURL: collectionURL)
                 var images = [Image]()
                 
@@ -49,24 +46,24 @@ public class ImageCollection
                     _ = image.metadata
                 }
                 
-                let collection = try ImageCollection(name: collectionURL.lastPathComponent ?? "Untitled", images: images, URL: collectionURL)
-                completionHandler(collection: collection)
+                let collection = try ImageCollection(name: collectionURL.lastPathComponent , images: images, URL: collectionURL)
+                completionHandler(collection)
                 
             }
             catch {
-                errorHandler(error: ImageError.LoadingFailed(underlyingError: error))
+                errorHandler(Image.Error.loadingFailed(underlyingError: error))
             }
         }
     }
     
     /** Return any image found in this collection whose URL is included in given input array or URLs. */
-    public func images(forURLs URLs: [NSURL]) -> [Image]
+    public func images(forURLs URLs: [Foundation.URL]) -> [Image]
     {
         var images = [Image]()
         
         for URL in URLs
         {
-            if let i = self.images.indexOf( { (image: Image) -> Bool in
+            if let i = self.images.index( where: { (image: Image) -> Bool in
                 return image.URL == URL
             }) {
                 images.append(self.images[i])
@@ -77,21 +74,21 @@ public class ImageCollection
     }
     
     // TODO: Create a specific type for a sparse distance matrix.
-    public func distanceMatrix(distance:Image.DistanceFunction) -> [[Double]] {
-        return (images.startIndex ..< self.images.endIndex).lazy.flatMap { i in
+    public func distanceMatrix(_ distance:Image.DistanceFunction) -> [[Double]] {
+        return (images.indices).lazy.flatMap { i in
             var row = [Double]()
-            for e in images.startIndex ..< images.endIndex {
+            for e in images.indices {
                 if e == i {
                     row.append(0)
                 }
                 else {
-                    row.append(Double.NaN)
+                    row.append(Double.nan)
                 }
             }
             
-            let iSuccessor = i.successor()
-            for j in (iSuccessor ..< self.images.endIndex) {
-                row[j] = distance(a: images[i], b: images[j])
+            let iSuccessor = (i + 1)
+            for j in (self.images.indices.suffix(from: iSuccessor)) {
+                row[j] = distance(images[i], images[j])
             }
 
             return row
@@ -99,7 +96,7 @@ public class ImageCollection
     }
     
     // TODO: Use a Swot data frame as return type instead?
-    public func distanceTable(distance:Image.DistanceFunction) -> [[Double]] {
+    public func distanceTable(_ distance:Image.DistanceFunction) -> [[Double]] {
         let distMatrix = self.distanceMatrix(distance)
         var distTable = [[Double]]()
         
@@ -110,9 +107,9 @@ public class ImageCollection
         precondition(rowCount == self.images.count)
         precondition(rowCount == colCount)
         
-        for i in images.startIndex ..< images.endIndex {
+        for i in images.indices {
             var row = [Double]()
-            for j in images.startIndex ..< images.endIndex {
+            for j in images.indices {
                 if j < i {
                     row.append(distMatrix[j][i])
                 }

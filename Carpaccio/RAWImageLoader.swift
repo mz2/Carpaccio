@@ -11,28 +11,28 @@ import CoreGraphics
 import CoreImage
 
 
-public enum RAWImageLoaderError: ErrorType
+public enum RAWImageLoaderError: Error
 {
-    case FailedToExtractImageMetadata(message: String)
-    case FailedToLoadThumbnailImage(message: String)
-    case FailedToLoadFullSizeImage(message: String)
+    case failedToExtractImageMetadata(message: String)
+    case failedToLoadThumbnailImage(message: String)
+    case failedToLoadFullSizeImage(message: String)
 }
 
 
 public enum ImageLoadingThumbnailScheme: Int
 {
-    case AlwaysDecodeFullImage
-    case DecodeFullImageIfThumbnailTooSmall
-    case DecodeFullImageIfThumbnailMissing
+    case alwaysDecodeFullImage
+    case decodeFullImageIfThumbnailTooSmall
+    case decodeFullImageIfThumbnailMissing
 }
 
 
 public class RAWImageLoader: ImageLoaderProtocol
 {
-    public let imageURL: NSURL
+    public let imageURL: URL
     public let thumbnailScheme: ImageLoadingThumbnailScheme
     
-    init(imageURL: NSURL, thumbnailScheme: ImageLoadingThumbnailScheme)
+    init(imageURL: URL, thumbnailScheme: ImageLoadingThumbnailScheme)
     {
         self.imageURL = imageURL
         self.thumbnailScheme = thumbnailScheme
@@ -42,8 +42,8 @@ public class RAWImageLoader: ImageLoaderProtocol
         get
         {
             // We intentionally don't store the image source, to not gob up resources, but rather open it anew each time
-            let options: CFDictionary = [String(kCGImageSourceShouldCache): false, String(kCGImageSourceShouldAllowFloat): true]
-            let imageSource = CGImageSourceCreateWithURL(imageURL, options)
+            let options: CFDictionary = [String(kCGImageSourceShouldCache): false, String(kCGImageSourceShouldAllowFloat): true] as NSDictionary as CFDictionary
+            let imageSource = CGImageSourceCreateWithURL(imageURL as CFURL, options)
             return imageSource
         }
     }
@@ -62,26 +62,26 @@ public class RAWImageLoader: ImageLoaderProtocol
         var width: CGFloat? = nil, height: CGFloat? = nil
         
         // Examine EXIF metadata
-        if let EXIF = properties[kCGImagePropertyExifDictionary as! NSString] as? NSDictionary
+        if let EXIF = properties[kCGImagePropertyExifDictionary as NSString] as? NSDictionary
         {
-            aperture = EXIF[kCGImagePropertyExifFNumber as! NSString]?.doubleValue
-            focalLength = EXIF[kCGImagePropertyExifFocalLength as! NSString]?.doubleValue
-            focalLength35mm = EXIF[kCGImagePropertyExifFocalLenIn35mmFilm as! NSString]?.doubleValue
+            aperture = (EXIF[kCGImagePropertyExifFNumber as NSString] as? NSNumber)?.doubleValue
+            focalLength = (EXIF[kCGImagePropertyExifFocalLength as NSString] as? NSNumber)?.doubleValue
+            focalLength35mm = (EXIF[kCGImagePropertyExifFocalLenIn35mmFilm as NSString] as? NSNumber)?.doubleValue
             
-            if let ISOs = EXIF[kCGImagePropertyExifISOSpeedRatings as! NSString]
+            if let ISOs = EXIF[kCGImagePropertyExifISOSpeedRatings as NSString]
             {
                 let ISOArray = NSArray(array: ISOs as! CFArray)
                 if ISOArray.count > 0 {
-                    ISO = ISOArray[0].doubleValue
+                    ISO = (ISOArray[0] as? NSNumber)?.doubleValue
                 }
             }
             
-            shutterSpeed = EXIF[kCGImagePropertyExifExposureTime as! NSString]?.doubleValue
+            shutterSpeed = (EXIF[kCGImagePropertyExifExposureTime as NSString] as? NSNumber)?.doubleValue
             
-            if let w = EXIF[kCGImagePropertyExifPixelXDimension as! NSString]?.doubleValue {
+            if let w = (EXIF[kCGImagePropertyExifPixelXDimension as NSString] as? NSNumber)?.doubleValue {
                 width = CGFloat(w)
             }
-            if let h = EXIF[kCGImagePropertyExifPixelYDimension as! NSString]?.doubleValue {
+            if let h = (EXIF[kCGImagePropertyExifPixelYDimension as NSString] as? NSNumber)?.doubleValue {
                 height = CGFloat(h)
             }
         }
@@ -89,11 +89,11 @@ public class RAWImageLoader: ImageLoaderProtocol
         // Examine TIFF metadata
         var cameraMaker: String? = nil, cameraModel: String? = nil, orientation: CGImagePropertyOrientation? = nil
         
-        if let TIFF = properties[kCGImagePropertyTIFFDictionary as! NSString] as? NSDictionary
+        if let TIFF = properties[kCGImagePropertyTIFFDictionary as NSString] as? NSDictionary
         {
-            cameraMaker = TIFF[kCGImagePropertyTIFFMake as! NSString] as? String
-            cameraModel = TIFF[kCGImagePropertyTIFFModel as! NSString] as? String
-            orientation = CGImagePropertyOrientation(rawValue: TIFF[kCGImagePropertyTIFFOrientation as! NSString]?.unsignedIntValue ?? 1)
+            cameraMaker = TIFF[kCGImagePropertyTIFFMake as NSString] as? String
+            cameraModel = TIFF[kCGImagePropertyTIFFModel as NSString] as? String
+            orientation = CGImagePropertyOrientation(rawValue: (TIFF[kCGImagePropertyTIFFOrientation as NSString] as AnyObject).uint32Value ?? 1)
         }
         
         /*
@@ -102,36 +102,36 @@ public class RAWImageLoader: ImageLoaderProtocol
          */
         if width == nil || height == nil
         {
-            let options: CFDictionary = [String(kCGImageSourceShouldCache): false]
+            let options: CFDictionary = [String(kCGImageSourceShouldCache): false] as NSDictionary as CFDictionary
             let image = CGImageSourceCreateImageAtIndex(imageSource, 0, options)
-            width = CGFloat(CGImageGetWidth(image))
-            height = CGFloat(CGImageGetHeight(image))
+            width = CGFloat((image?.width)!)
+            height = CGFloat((image?.height)!)
         }
         
-        let metadata = ImageMetadata(nativeSize: NSSize(width: width!, height: height!), nativeOrientation: orientation ?? .Up, aperture: aperture, focalLength: focalLength, ISO: ISO, focalLength35mmEquivalent: focalLength35mm, shutterSpeed: shutterSpeed, cameraMaker: cameraMaker, cameraModel: cameraModel)
+        let metadata = ImageMetadata(nativeSize: NSSize(width: width!, height: height!), nativeOrientation: orientation ?? .up, aperture: aperture, focalLength: focalLength, focalLength35mmEquivalent: focalLength35mm, ISO: ISO, shutterSpeed: shutterSpeed, cameraMaker: cameraMaker, cameraModel: cameraModel)
         return metadata
     }()
     
-    private func dumpAllImageMetadata(imageSource: CGImageSource)
+    private func dumpAllImageMetadata(_ imageSource: CGImageSource)
     {
         let metadata = CGImageSourceCopyMetadataAtIndex(imageSource, 0, nil)
         let options: [String: AnyObject] = [String(kCGImageMetadataEnumerateRecursively): true as CFNumber]
         var results = [String: AnyObject]()
 
-        CGImageMetadataEnumerateTagsUsingBlock(metadata!, nil, options) { (path: CFString, tag: CGImageMetadataTag) -> Bool in
+        CGImageMetadataEnumerateTagsUsingBlock(metadata!, nil, options as CFDictionary?) { (path: CFString, tag: CGImageMetadataTag) -> Bool in
             
             if let value = CGImageMetadataTagCopyValue(tag) {
                 results[path as String] = value
             }
             else {
-                results[path as String] = "??"
+                results[path as String] = "??" as NSString
             }
             return true
         }
         
-        print("---- All metadata for \(self.imageURL.path!): ----")
+        print("---- All metadata for \(self.imageURL.path): ----")
         
-        for key in results.keys.sort()
+        for key in results.keys.sorted()
         {
             print("    \(key) = \(results[key]!)")
         }
@@ -139,18 +139,17 @@ public class RAWImageLoader: ImageLoaderProtocol
         print("----")
     }
     
-    public func loadImageMetadata(handler: ImageMetadataHandler, errorHandler: ImageLoadingErrorHandler)
-    {
-        guard let imageSource = self.imageSource else {
+    public func loadImageMetadata(_ handler: ImageMetadataHandler, errorHandler: ImageLoadingErrorHandler) {
+        guard let _ = self.imageSource else {
             precondition(false)
             return
         }
         
         if let metadata = self.imageMetadata {
-            handler(metadata: metadata)
+            handler(metadata)
         }
         else {
-            errorHandler(error: RAWImageLoaderError.FailedToExtractImageMetadata(message: "Failed to read image properties for \(self.imageURL.path!)"))
+            errorHandler(RAWImageLoaderError.failedToExtractImageMetadata(message: "Failed to read image properties for \(self.imageURL.path)"))
         }
     }
     
@@ -164,7 +163,7 @@ public class RAWImageLoader: ImageLoaderProtocol
         let maxPixelSize: CGFloat? = maximumSize?.maximumPixelSize(forImageSize: self.imageMetadata!.size)
         var createFromFullImage: Bool = false
         
-        if self.thumbnailScheme == .AlwaysDecodeFullImage {
+        if self.thumbnailScheme == .alwaysDecodeFullImage {
             createFromFullImage = true
         }
         
@@ -188,36 +187,40 @@ public class RAWImageLoader: ImageLoaderProtocol
             }
         }*/
         
-        var options: [String: AnyObject] = [String(kCGImageSourceCreateThumbnailWithTransform): true, String(createFromFullImage ? kCGImageSourceCreateThumbnailFromImageAlways : kCGImageSourceCreateThumbnailFromImageIfAbsent): true]
+        var options: [String: AnyObject] = [String(kCGImageSourceCreateThumbnailWithTransform): true as AnyObject, String(createFromFullImage ? kCGImageSourceCreateThumbnailFromImageAlways : kCGImageSourceCreateThumbnailFromImageIfAbsent): true as AnyObject]
         
         if let sz = maxPixelSize {
-            options[String(kCGImageSourceThumbnailMaxPixelSize)] = Int(round(sz))
+            options[String(kCGImageSourceThumbnailMaxPixelSize)] = Int(round(sz)) as NSNumber
         }
         
-        let thumbnailImage = CGImageSourceCreateThumbnailAtIndex(source, 0, options)
+        let thumbnailImage = CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary?)
         return thumbnailImage
     }
     
     public func loadThumbnailImage(maximumPixelDimensions maxPixelSize: NSSize?, handler: PresentableImageHandler, errorHandler: ImageLoadingErrorHandler)
     {
-        guard let source = self.imageSource else {
+        guard self.imageSource != nil else {
             precondition(false)
             return
         }
         
-        if let thumbnailImage = _loadThumbnailImage(maximumPixelDimensions: maxPixelSize)
-        {
-            handler(image: NSImage(CGImage: thumbnailImage, size: NSZeroSize), metadata: self.imageMetadata!)
+        if let thumbnailImage = _loadThumbnailImage(maximumPixelDimensions: maxPixelSize) {
+            handler(NSImage(cgImage: thumbnailImage, size: NSZeroSize), self.imageMetadata!)
         }
         else {
-            errorHandler(error: RAWImageLoaderError.FailedToLoadThumbnailImage(message: "Failed to load thumbnail image from \(self.imageURL.path!)"))
+            errorHandler(RAWImageLoaderError.failedToLoadThumbnailImage(message: "Failed to load thumbnail image from \(self.imageURL.path)"))
         }
     }
+    
+    @available(OSX 10.12, *)
+    static let imageBakingColorSpace = CGColorSpace(name: CGColorSpace.extendedLinearSRGB)
+    @available(OSX 10.12, *)
+    static let imageBakingContext = CIContext(options: [kCIContextCacheIntermediates: false, kCIContextUseSoftwareRenderer: false, kCIContextWorkingColorSpace: RAWImageLoader.imageBakingColorSpace, kCIContextOutputColorSpace: RAWImageLoader.imageBakingColorSpace])
     
     public func loadFullSizeImage(maximumPixelDimensions maxPixelSize: NSSize?, handler: PresentableImageHandler, errorHandler: ImageLoadingErrorHandler)
     {
         guard let metadata = self.imageMetadata else {
-            errorHandler(error: RAWImageLoaderError.FailedToExtractImageMetadata(message: "Failed to read properties of \(self.imageURL.path!) to load full-size image")); return
+            errorHandler(RAWImageLoaderError.failedToExtractImageMetadata(message: "Failed to read properties of \(self.imageURL.path) to load full-size image")); return
         }
         
         let scaleFactor: Double
@@ -235,19 +238,19 @@ public class RAWImageLoader: ImageLoaderProtocol
         // NOTE: Having draft mode on appears to be crucial to performance, with a difference of 0.3s vs. 2.5s per image on this iMac 5K, for instance.
         // The quality is still quite excellent for displaying scaled-down presentations in a collection view, subjectively better than what you get from LibRAW with the half-size option.
         let RAWFilter = CIFilter(imageURL: self.imageURL, options: nil)
-        RAWFilter.setValue(true, forKey: kCIInputAllowDraftModeKey)
-        RAWFilter.setValue(scaleFactor, forKey: kCIInputScaleFactorKey)
+        RAWFilter?.setValue(true, forKey: kCIInputAllowDraftModeKey)
+        RAWFilter?.setValue(scaleFactor, forKey: kCIInputScaleFactorKey)
         
-        RAWFilter.setValue(0.5, forKey: kCIInputNoiseReductionAmountKey)
-        RAWFilter.setValue(1.0, forKey: kCIInputColorNoiseReductionAmountKey)
-        RAWFilter.setValue(0.5, forKey: kCIInputNoiseReductionSharpnessAmountKey)
-        RAWFilter.setValue(0.5, forKey: kCIInputNoiseReductionContrastAmountKey)
-        RAWFilter.setValue(1.0, forKey: kCIInputBoostShadowAmountKey)
-        RAWFilter.setValue(true, forKey: kCIInputEnableVendorLensCorrectionKey)
+        RAWFilter?.setValue(0.5, forKey: kCIInputNoiseReductionAmountKey)
+        RAWFilter?.setValue(1.0, forKey: kCIInputColorNoiseReductionAmountKey)
+        RAWFilter?.setValue(0.5, forKey: kCIInputNoiseReductionSharpnessAmountKey)
+        RAWFilter?.setValue(0.5, forKey: kCIInputNoiseReductionContrastAmountKey)
+        RAWFilter?.setValue(1.0, forKey: kCIInputBoostShadowAmountKey)
+        RAWFilter?.setValue(true, forKey: kCIInputEnableVendorLensCorrectionKey)
         
-        var image = RAWFilter.outputImage
+        var image = RAWFilter?.outputImage
         
-        if let filters = image?.autoAdjustmentFiltersWithOptions([kCIImageAutoAdjustEnhance: true, kCIImageAutoAdjustFeatures: [CIFaceFeature()]])
+        if let filters = image?.autoAdjustmentFilters(options: [kCIImageAutoAdjustEnhance: true, kCIImageAutoAdjustFeatures: [CIFaceFeature()]])
         {
             for f in filters
             {
@@ -257,18 +260,39 @@ public class RAWImageLoader: ImageLoaderProtocol
             
             if let image = image
             {
-                var bakedImage = NSImage(size: image.extent.size)
-                bakedImage.cacheMode = .Never
-                bakedImage.lockFocus()
-                NSGraphicsContext.currentContext()?.CIContext?.drawImage(image, inRect: image.extent, fromRect: image.extent)
-                bakedImage.unlockFocus()
+                var bakedImage: NSImage? = nil
+                if #available(OSX 10.12, *)
+                {
+                    // Pixel format and color space set as discussed around 21:50 in https://developer.apple.com/videos/play/wwdc2016/505/
+                    if let cgImage = RAWImageLoader.imageBakingContext.createCGImage(image,
+                                                                                     from: image.extent,
+                                                                                     format: kCIFormatRGBA8,
+                                                                                     colorSpace: RAWImageLoader.imageBakingColorSpace,
+                                                                                     deferred: false)
+                    {
+                        bakedImage = NSImage(cgImage: cgImage, size: NSZeroSize)
+                        print("Created NSImage of size \(bakedImage!.size.width)x\(bakedImage!.size.width) from RAW image of size \(image.extent.size.width)x\(image.extent.size.height)")
+                    }
+                }
                 
-                handler(image: bakedImage, metadata: ImageMetadata(nativeSize: bakedImage.size))
-                return
+                if bakedImage == nil
+                {
+                    bakedImage = NSImage(size: image.extent.size)
+                    bakedImage!.cacheMode = .never
+                    bakedImage!.lockFocus()
+                    NSGraphicsContext.current()?.ciContext?.draw(image, in: image.extent, from: image.extent)
+                    bakedImage!.unlockFocus()
+                }
+                
+                if let bakedImage = bakedImage
+                {
+                    handler(bakedImage, ImageMetadata(nativeSize: bakedImage.size))
+                    return
+                }
             }
         }
         
-        errorHandler(error: RAWImageLoaderError.FailedToLoadFullSizeImage(message: "Failed to load full-size RAW image \(self.imageURL.path!)"))
+        errorHandler(RAWImageLoaderError.failedToLoadFullSizeImage(message: "Failed to load full-size RAW image \(self.imageURL.path)"))
     }
 }
 
@@ -277,12 +301,12 @@ extension NSSize
     init(constrainWidth w: CGFloat)
     {
         self.width = w
-        self.height = CGFloat.max
+        self.height = CGFloat.greatestFiniteMagnitude
     }
     
     init(constrainHeight h: CGFloat)
     {
-        self.width = CGFloat.max
+        self.width = CGFloat.greatestFiniteMagnitude
         self.height = h
     }
     
