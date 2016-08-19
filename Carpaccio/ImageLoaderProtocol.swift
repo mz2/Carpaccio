@@ -9,11 +9,11 @@
 import Foundation
 
 
-public typealias ImageMetadataHandler = (metadata: ImageMetadata) -> Void
+public typealias ImageMetadataHandler = (_ metadata: ImageMetadata) -> Void
 
-public typealias PresentableImageHandler = (image: NSImage, metadata: ImageMetadata) -> Void
+public typealias PresentableImageHandler = (_ image: NSImage, _ metadata: ImageMetadata) -> Void
 
-public typealias ImageLoadingErrorHandler = (error: Error) -> Void
+public typealias ImageLoadingErrorHandler = (_ error: Error) -> Void
 
 
 protocol ImageLoaderProtocol

@@ -9,8 +9,8 @@
 import Foundation
 
 
-public typealias ImageCollectionHandler = (collection: ImageCollection) -> Void
-public typealias ImageCollectionErrorHandler = (error: Error) -> Void
+public typealias ImageCollectionHandler = (_ collection: ImageCollection) -> Void
+public typealias ImageCollectionErrorHandler = (_ error: Error) -> Void
 
 
 public class ImageCollection
@@ -47,11 +47,11 @@ public class ImageCollection
                 }
                 
                 let collection = try ImageCollection(name: collectionURL.lastPathComponent ?? "Untitled", images: images, URL: collectionURL)
-                completionHandler(collection: collection)
+                completionHandler(collection)
                 
             }
             catch {
-                errorHandler(error: Image.Error.loadingFailed(underlyingError: error))
+                errorHandler(Image.Error.loadingFailed(underlyingError: error))
             }
         }
     }
@@ -88,7 +88,7 @@ public class ImageCollection
             
             let iSuccessor = (i + 1)
             for j in (self.images.indices.suffix(from: iSuccessor)) {
-                row[j] = distance(a: images[i], b: images[j])
+                row[j] = distance(images[i], images[j])
             }
 
             return row

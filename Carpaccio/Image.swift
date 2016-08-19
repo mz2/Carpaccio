@@ -11,22 +11,21 @@ import Cocoa
 
 public class Image: Equatable {
     
-    public enum Error:Swift.Error {
+    public enum Error: Swift.Error {
         case urlMissing
         case locationNotEnumerable(URL)
-        case loadingFailed(underlyingError:Swift.Error)
+        case loadingFailed(underlyingError: Swift.Error)
     }
-
     
     public let name: String
     public var thumbnailImage: NSImage? = nil
     public var fullImage: NSImage?
     public let URL: Foundation.URL?
     
-    public typealias MetadataHandler = (metadata: ImageMetadata) -> Void
-    public typealias ErrorHandler = (error: Image.Error) -> Void
+    public typealias MetadataHandler = (_ metadata: ImageMetadata) -> Void
+    public typealias ErrorHandler = (_ error: Image.Error) -> Void
     
-    public typealias DistanceFunction = (a:Image, b:Image)-> Double
+    public typealias DistanceFunction = (_ a:Image, _ b:Image)-> Double
     
     public required init(image: NSImage)
     {
@@ -80,18 +79,18 @@ public class Image: Equatable {
             if store {
                 self.metadata = metadata
             }
-            handler(metadata: metadata)
+            handler(metadata)
 
-            }, errorHandler: { error in errorHandler(error: Error.loadingFailed(underlyingError:error)) })
+            }, errorHandler: { error in errorHandler(Error.loadingFailed(underlyingError:error)) })
     }
     
-    public func fetchThumbnail(presentedHeight: CGFloat? = nil, force: Bool = false, store: Bool = true, completionHandler:(image:NSImage)->Void, errorHandler:(Error)->Void)
+    public func fetchThumbnail(presentedHeight: CGFloat? = nil, force: Bool = false, store: Bool = true, scaleFactor:CGFloat = 2.0, completionHandler:@escaping (_ image:NSImage)->Void, errorHandler:@escaping (Error)->Void)
     {
         if !force
         {
             if let thumb = self.thumbnailImage
             {
-                completionHandler(image: thumb)
+                completionHandler(thumb)
                 return
             }
         }
@@ -101,7 +100,7 @@ public class Image: Equatable {
             return
         }
 
-        self.imageLoader?.loadThumbnailImage(maximumPixelDimensions: presentedHeight != nil ? NSSize(constrainHeight: presentedHeight! * 2.0) : nil, handler: { (thumbnailImage: NSImage, metadata: ImageMetadata) in
+        self.imageLoader?.loadThumbnailImage(maximumPixelDimensions: presentedHeight != nil ? NSSize(constrainHeight: presentedHeight! * scaleFactor) : nil, handler: { (thumbnailImage: NSImage, metadata: ImageMetadata) in
             if self.metadata == nil {
                 self.metadata = metadata
             }
@@ -110,13 +109,13 @@ public class Image: Equatable {
                 self.thumbnailImage = thumbnailImage
             }
             
-            completionHandler(image: thumbnailImage)
+            completionHandler(thumbnailImage)
 
             }, errorHandler: { (error) in errorHandler(.loadingFailed(underlyingError:error)) })
         
     }
     
-    public func fetchFullSizeImage(presentedHeight: CGFloat? = nil, store: Bool = false, scaleFactor:CGFloat = 2.0, completionHandler: (image: NSImage) -> Void, errorHandler: (Error) -> Void)
+    public func fetchFullSizeImage(presentedHeight: CGFloat? = nil, store: Bool = false, scaleFactor:CGFloat = 2.0, completionHandler: @escaping (_ image: NSImage) -> Void, errorHandler: @escaping (Error) -> Void)
     {
         guard self.URL != nil else {
             errorHandler(.urlMissing)
@@ -133,7 +132,7 @@ public class Image: Equatable {
                 self.fullImage = image
             }
             
-            completionHandler(image: image)
+            completionHandler(image)
             
             }, errorHandler: { error in errorHandler(.loadingFailed(underlyingError:error)) }
         )
@@ -153,7 +152,7 @@ public class Image: Equatable {
         return Set(["jpg", "jpeg", "png", "tiff", "tif", "gif"])
     }
 
-    public typealias LoadHandler = (index:Int, total:Int, image:Image) -> Void
+    public typealias LoadHandler = (_ index:Int, _ total:Int, _ image:Image) -> Void
     public typealias LoadErrorHandler = (Error) -> Void
     
     internal class func imageURLs(atCollectionURL URL: Foundation.URL) throws -> [Foundation.URL]
@@ -190,7 +189,7 @@ public class Image: Equatable {
             guard pathExtension.utf8.count > 0 else { return nil }
             
             let image = Image(URL: imageURL)
-            loadHandler?(index: i, total: imageURLs.count, image: image)
+            loadHandler?(i, imageURLs.count, image)
             
             return image
         }
