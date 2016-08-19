@@ -28,7 +28,7 @@ public class ImageCollection
     
     public init(contentsOfURL URL:Foundation.URL) throws {
         self.URL = URL
-        self.name = URL.lastPathComponent ?? "Untitled"
+        self.name = URL.lastPathComponent 
         self.images = try Image.load(contentsOfURL: URL)
     }
     
@@ -46,7 +46,7 @@ public class ImageCollection
                     _ = image.metadata
                 }
                 
-                let collection = try ImageCollection(name: collectionURL.lastPathComponent ?? "Untitled", images: images, URL: collectionURL)
+                let collection = try ImageCollection(name: collectionURL.lastPathComponent , images: images, URL: collectionURL)
                 completionHandler(collection)
                 
             }

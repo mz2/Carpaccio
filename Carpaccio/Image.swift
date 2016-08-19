@@ -37,7 +37,7 @@ public class Image: Equatable {
     public init(URL: Foundation.URL)
     {
         self.URL = URL
-        self.name = URL.lastPathComponent ?? "Untitled"
+        self.name = URL.lastPathComponent 
         self.fullImage = nil
         
         let pathExtension = URL.pathExtension.lowercased()
