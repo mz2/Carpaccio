@@ -264,11 +264,12 @@ public class RAWImageLoader: ImageLoaderProtocol
                 if #available(OSX 10.12, *)
                 {
                     // Pixel format and color space set as discussed around 21:50 in https://developer.apple.com/videos/play/wwdc2016/505/
-                    if let cgImage = RAWImageLoader.imageBakingContext.createCGImage(image,
+                    /*if let cgImage = RAWImageLoader.imageBakingContext.createCGImage(image,
                                                                                      from: image.extent,
                                                                                      format: kCIFormatRGBA8,
                                                                                      colorSpace: RAWImageLoader.imageBakingColorSpace,
-                                                                                     deferred: false)
+                                                                                     deferred: false)*/
+                    if let cgImage = RAWImageLoader.imageBakingContext.createCGImage(image, from: image.extent)
                     {
                         bakedImage = NSImage(cgImage: cgImage, size: NSZeroSize)
                         print("Created NSImage of size \(bakedImage!.size.width)x\(bakedImage!.size.width) from RAW image of size \(image.extent.size.width)x\(image.extent.size.height)")
