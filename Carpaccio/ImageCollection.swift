@@ -9,11 +9,10 @@
 import Foundation
 
 
-public typealias ImageCollectionHandler = (_ collection: ImageCollection) -> Void
-public typealias ImageCollectionErrorHandler = (_ error: Error) -> Void
+public typealias ImageCollectionHandler = (Collection) -> Void
+public typealias ImageCollectionErrorHandler = (Error) -> Void
 
-
-public class ImageCollection
+public class Collection
 {
     public let name:String
     public var images:[Image]
@@ -28,7 +27,7 @@ public class ImageCollection
     
     public init(contentsOfURL URL:Foundation.URL) throws {
         self.URL = URL
-        self.name = URL.lastPathComponent ?? "Untitled"
+        self.name = URL.lastPathComponent 
         self.images = try Image.load(contentsOfURL: URL)
     }
     
@@ -46,7 +45,7 @@ public class ImageCollection
                     _ = image.metadata
                 }
                 
-                let collection = try ImageCollection(name: collectionURL.lastPathComponent ?? "Untitled", images: images, URL: collectionURL)
+                let collection = try Collection(name: collectionURL.lastPathComponent , images: images, URL: collectionURL)
                 completionHandler(collection)
                 
             }
