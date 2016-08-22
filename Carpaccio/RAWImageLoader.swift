@@ -93,7 +93,7 @@ public class RAWImageLoader: ImageLoaderProtocol
         {
             cameraMaker = TIFF[kCGImagePropertyTIFFMake as NSString] as? String
             cameraModel = TIFF[kCGImagePropertyTIFFModel as NSString] as? String
-            orientation = CGImagePropertyOrientation(rawValue: (TIFF[kCGImagePropertyTIFFOrientation as NSString] as AnyObject).uint32Value ?? 1)
+            orientation = CGImagePropertyOrientation(rawValue: (TIFF[kCGImagePropertyTIFFOrientation as NSString] as? NSNumber)?.uint32Value ?? CGImagePropertyOrientation.up.rawValue)
         }
         
         /*
@@ -215,7 +215,7 @@ public class RAWImageLoader: ImageLoaderProtocol
     @available(OSX 10.12, *)
     static let imageBakingColorSpace = CGColorSpace(name: CGColorSpace.extendedLinearSRGB)
     @available(OSX 10.12, *)
-    static let imageBakingContext = CIContext(options: [kCIContextCacheIntermediates: false, kCIContextUseSoftwareRenderer: false, kCIContextWorkingColorSpace: RAWImageLoader.imageBakingColorSpace, kCIContextOutputColorSpace: RAWImageLoader.imageBakingColorSpace])
+    static let imageBakingContext = CIContext(options: [kCIContextCacheIntermediates: false, kCIContextUseSoftwareRenderer: false, kCIContextWorkingColorSpace: RAWImageLoader.imageBakingColorSpace, kCIContextOutputColorSpace: NSScreen.deepest()?.colorSpace?.cgColorSpace ?? RAWImageLoader.imageBakingColorSpace])
     
     public func loadFullSizeImage(maximumPixelDimensions maxPixelSize: NSSize?, handler: PresentableImageHandler, errorHandler: ImageLoadingErrorHandler)
     {
