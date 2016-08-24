@@ -35,21 +35,6 @@ public struct ImageMetadata
         self.shutterSpeed = shutterSpeed
     }
     
-    /*
-    init(LibRAWConverterMetadata metadata: [NSObject: AnyObject])
-    {
-        let aperture = (metadata[RAWConverterMetadataKeyAperture] as? NSNumber)?.doubleValue
-        let focalLength = (metadata[RAWConverterMetadataKeyFocalLength] as? NSNumber)?.doubleValue
-        let ISO = (metadata[RAWConverterMetadataKeyISO] as? NSNumber)?.doubleValue
-        let shutterSpeed = (metadata[RAWConverterMetadataKeyShutterSpeed] as? NSNumber)?.doubleValue
-        
-        let w: CGFloat = CGFloat((metadata[RAWConverterMetadataKeyImageWidth] as? NSNumber)?.doubleValue ?? 0.0)
-        let h: CGFloat = CGFloat((metadata[RAWConverterMetadataKeyImageHeight] as? NSNumber)?.doubleValue ?? 0.0)
-            
-        self.init(nativeSize: NSSize(width: w, height: h), aperture: aperture, focalLength: focalLength, ISO: ISO, shutterSpeed: shutterSpeed)
-    }
-     */
-    
     public var size: NSSize
     {
         let shouldSwapWidthAndHeight: Bool
