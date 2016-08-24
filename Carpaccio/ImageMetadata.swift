@@ -15,6 +15,7 @@ public struct ImageMetadata
     public let aperture: Double?
     public let cameraMaker: String?
     public let cameraModel: String?
+    public let colorSpace: CGColorSpace?
     public let focalLength: Double?
     public let focalLength35mmEquivalent: Double?
     public let ISO: Double?
@@ -22,11 +23,12 @@ public struct ImageMetadata
     public let nativeSize: NSSize
     public let shutterSpeed: TimeInterval?
     
-    init(nativeSize: NSSize, nativeOrientation: CGImagePropertyOrientation = .up, aperture: Double? = nil, focalLength: Double? = nil, focalLength35mmEquivalent: Double? = nil, ISO: Double? = nil, shutterSpeed: TimeInterval? = nil, cameraMaker: String? = nil, cameraModel: String? = nil)
+    init(nativeSize: NSSize, nativeOrientation: CGImagePropertyOrientation = .up, colorSpace: CGColorSpace? = nil, aperture: Double? = nil, focalLength: Double? = nil, focalLength35mmEquivalent: Double? = nil, ISO: Double? = nil, shutterSpeed: TimeInterval? = nil, cameraMaker: String? = nil, cameraModel: String? = nil)
     {
         self.aperture = aperture
         self.cameraMaker = cameraMaker
         self.cameraModel = cameraModel
+        self.colorSpace = colorSpace
         self.focalLength = focalLength
         self.focalLength35mmEquivalent = focalLength35mmEquivalent
         self.ISO = ISO

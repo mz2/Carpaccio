@@ -59,12 +59,18 @@ public class RAWImageLoader: ImageLoaderProtocol
         let properties = NSDictionary(dictionary: CGImageSourceCopyPropertiesAtIndex(imageSource, 0, nil)!)
         
         var aperture: Double? = nil, focalLength: Double? = nil, focalLength35mm: Double? = nil, ISO: Double? = nil, shutterSpeed: Double? = nil
+        var colorSpace: CGColorSpace? = nil
         var width: CGFloat? = nil, height: CGFloat? = nil
         
         // Examine EXIF metadata
         if let EXIF = properties[kCGImagePropertyExifDictionary as NSString] as? NSDictionary
         {
             aperture = (EXIF[kCGImagePropertyExifFNumber as NSString] as? NSNumber)?.doubleValue
+            
+            if let colorSpaceName = EXIF[kCGImagePropertyExifColorSpace] as? NSString {
+                colorSpace = CGColorSpace(name: colorSpaceName)
+            }
+            
             focalLength = (EXIF[kCGImagePropertyExifFocalLength as NSString] as? NSNumber)?.doubleValue
             focalLength35mm = (EXIF[kCGImagePropertyExifFocalLenIn35mmFilm as NSString] as? NSNumber)?.doubleValue
             
@@ -108,7 +114,7 @@ public class RAWImageLoader: ImageLoaderProtocol
             height = CGFloat((image?.height)!)
         }
         
-        let metadata = ImageMetadata(nativeSize: NSSize(width: width!, height: height!), nativeOrientation: orientation ?? .up, aperture: aperture, focalLength: focalLength, focalLength35mmEquivalent: focalLength35mm, ISO: ISO, shutterSpeed: shutterSpeed, cameraMaker: cameraMaker, cameraModel: cameraModel)
+        let metadata = ImageMetadata(nativeSize: NSSize(width: width!, height: height!), nativeOrientation: orientation ?? .up, colorSpace: colorSpace, aperture: aperture, focalLength: focalLength, focalLength35mmEquivalent: focalLength35mm, ISO: ISO, shutterSpeed: shutterSpeed, cameraMaker: cameraMaker, cameraModel: cameraModel)
         return metadata
     }()
     
@@ -212,11 +218,34 @@ public class RAWImageLoader: ImageLoaderProtocol
         }
     }
     
+    static let genericLinearRGBColorSpace = CGColorSpace(name: CGColorSpace.genericRGBLinear)
+    static let sRGBColorSpace = CGColorSpace(name: CGColorSpace.sRGB)
+    
     @available(OSX 10.12, *)
-    static let imageBakingColorSpace = CGColorSpace(name: CGColorSpace.extendedLinearSRGB)
-    @available(OSX 10.12, *)
+    static let imageBakingColorSpace = NSScreen.deepest()?.colorSpace?.cgColorSpace ?? genericLinearRGBColorSpace
+    
+    //@available(OSX 10.12, *)
     //static let imageBakingContext = CIContext(options: [kCIContextCacheIntermediates: false, kCIContextUseSoftwareRenderer: false, kCIContextWorkingColorSpace: RAWImageLoader.imageBakingColorSpace, kCIContextOutputColorSpace: NSScreen.deepest()?.colorSpace?.cgColorSpace ?? RAWImageLoader.imageBakingColorSpace])
-    static let imageBakingContext = CIContext(options: [kCIContextCacheIntermediates: false, kCIContextUseSoftwareRenderer: false])
+    //static let imageBakingContext = CIContext(options: [kCIContextCacheIntermediates: false, kCIContextUseSoftwareRenderer: false])
+    
+    @available(OSX 10.12, *)
+    private static var _imageBakingContexts = [String: CIContext]()
+    
+    @available(OSX 10.12, *)
+    private class func bakingContext(forImageURL URL: URL) -> CIContext
+    {
+        let ext = URL.pathExtension
+        
+        if let context = _imageBakingContexts[ext] {
+            return context
+        }
+        
+        print("Available screens: \(NSScreen.screens()), deepest: \(NSScreen.deepest()), main: \(NSScreen.main())")
+        
+        let context = CIContext(options: [kCIContextCacheIntermediates: false, kCIContextUseSoftwareRenderer: false, kCIContextOutputColorSpace: RAWImageLoader.imageBakingColorSpace, kCIContextWorkingColorSpace: RAWImageLoader.sRGBColorSpace])
+        _imageBakingContexts[ext] = context
+        return context
+    }
     
     public func loadFullSizeImage(maximumPixelDimensions maxPixelSize: NSSize?, handler: PresentableImageHandler, errorHandler: ImageLoadingErrorHandler)
     {
@@ -246,12 +275,12 @@ public class RAWImageLoader: ImageLoaderProtocol
         RAWFilter?.setValue(1.0, forKey: kCIInputColorNoiseReductionAmountKey)
         RAWFilter?.setValue(0.5, forKey: kCIInputNoiseReductionSharpnessAmountKey)
         RAWFilter?.setValue(0.5, forKey: kCIInputNoiseReductionContrastAmountKey)
-        //RAWFilter?.setValue(1.0, forKey: kCIInputBoostShadowAmountKey)
+        RAWFilter?.setValue(1.0, forKey: kCIInputBoostShadowAmountKey)
         RAWFilter?.setValue(true, forKey: kCIInputEnableVendorLensCorrectionKey)
         
-        var image = RAWFilter?.outputImage
+        /*var image = RAWFilter?.outputImage
         
-        if let filters = image?.autoAdjustmentFilters(options: [kCIImageAutoAdjustEnhance: false, kCIImageAutoAdjustFeatures: [CIFaceFeature()]])
+        if let filters = image?.autoAdjustmentFilters(options: [kCIImageAutoAdjustEnhance: false]) //, kCIImageAutoAdjustFeatures: [CIFaceFeature()]])
         {
             for f in filters
             {
@@ -259,17 +288,19 @@ public class RAWImageLoader: ImageLoaderProtocol
                 image = f.outputImage
             }
             
-            if let image = image
+            if let image = image*/
+            if let image = RAWFilter?.outputImage
             {
                 var bakedImage: NSImage? = nil
                 if #available(OSX 10.12, *)
                 {
                     // Pixel format and color space set as discussed around 21:50 in https://developer.apple.com/videos/play/wwdc2016/505/
-                    if let cgImage = RAWImageLoader.imageBakingContext.createCGImage(image,
+                    let context = RAWImageLoader.bakingContext(forImageURL: self.imageURL)
+                    if let cgImage = context.createCGImage(image,
                         from: image.extent,
                         format: kCIFormatRGBA8,
                         colorSpace: RAWImageLoader.imageBakingColorSpace,
-                        deferred: false) // The `deferred: false` argument is important, to avoid significant work on the main thread at drawing time
+                        deferred: false) // The `deferred: false` argument is important, to ensure significant work will not be performed later on the main thread at drawing time
                     {
                         bakedImage = NSImage(cgImage: cgImage, size: NSZeroSize)
                     }
@@ -290,7 +321,7 @@ public class RAWImageLoader: ImageLoaderProtocol
                     return
                 }
             }
-        }
+        //}
         
         errorHandler(RAWImageLoaderError.failedToLoadFullSizeImage(message: "Failed to load full-size RAW image \(self.imageURL.path)"))
     }
