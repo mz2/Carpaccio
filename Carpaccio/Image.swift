@@ -20,6 +20,14 @@ public class Image: Equatable {
     public let name: String
     public var thumbnailImage: NSImage? = nil
     public var fullImage: NSImage?
+
+    public var size: NSSize {
+        guard let size = self.metadata?.size else {
+            return NSZeroSize
+        }
+        return size
+    }
+    
     public let URL: Foundation.URL?
     
     public typealias MetadataHandler = (_ metadata: ImageMetadata) -> Void
