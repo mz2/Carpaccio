@@ -187,10 +187,10 @@ public class RAWImageLoader: ImageLoaderProtocol
             }
         }*/
         
-        var options: [String: AnyObject] = [String(kCGImageSourceCreateThumbnailWithTransform): true as AnyObject, String(createFromFullImage ? kCGImageSourceCreateThumbnailFromImageAlways : kCGImageSourceCreateThumbnailFromImageIfAbsent): true as AnyObject]
+        var options: [String: AnyObject] = [String(kCGImageSourceCreateThumbnailWithTransform): kCFBooleanTrue, String(createFromFullImage ? kCGImageSourceCreateThumbnailFromImageAlways : kCGImageSourceCreateThumbnailFromImageIfAbsent): kCFBooleanTrue]
         
         if let sz = maxPixelSize {
-            options[String(kCGImageSourceThumbnailMaxPixelSize)] = Int(round(sz)) as NSNumber
+            options[String(kCGImageSourceThumbnailMaxPixelSize)] = NSNumber(value: Int(round(sz)))
         }
         
         let thumbnailImage = CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary?)
@@ -215,7 +215,8 @@ public class RAWImageLoader: ImageLoaderProtocol
     @available(OSX 10.12, *)
     static let imageBakingColorSpace = CGColorSpace(name: CGColorSpace.extendedLinearSRGB)
     @available(OSX 10.12, *)
-    static let imageBakingContext = CIContext(options: [kCIContextCacheIntermediates: false, kCIContextUseSoftwareRenderer: false, kCIContextWorkingColorSpace: RAWImageLoader.imageBakingColorSpace, kCIContextOutputColorSpace: NSScreen.deepest()?.colorSpace?.cgColorSpace ?? RAWImageLoader.imageBakingColorSpace])
+    //static let imageBakingContext = CIContext(options: [kCIContextCacheIntermediates: false, kCIContextUseSoftwareRenderer: false, kCIContextWorkingColorSpace: RAWImageLoader.imageBakingColorSpace, kCIContextOutputColorSpace: NSScreen.deepest()?.colorSpace?.cgColorSpace ?? RAWImageLoader.imageBakingColorSpace])
+    static let imageBakingContext = CIContext(options: [kCIContextCacheIntermediates: false, kCIContextUseSoftwareRenderer: false])
     
     public func loadFullSizeImage(maximumPixelDimensions maxPixelSize: NSSize?, handler: PresentableImageHandler, errorHandler: ImageLoadingErrorHandler)
     {
@@ -245,12 +246,12 @@ public class RAWImageLoader: ImageLoaderProtocol
         RAWFilter?.setValue(1.0, forKey: kCIInputColorNoiseReductionAmountKey)
         RAWFilter?.setValue(0.5, forKey: kCIInputNoiseReductionSharpnessAmountKey)
         RAWFilter?.setValue(0.5, forKey: kCIInputNoiseReductionContrastAmountKey)
-        RAWFilter?.setValue(1.0, forKey: kCIInputBoostShadowAmountKey)
+        //RAWFilter?.setValue(1.0, forKey: kCIInputBoostShadowAmountKey)
         RAWFilter?.setValue(true, forKey: kCIInputEnableVendorLensCorrectionKey)
         
         var image = RAWFilter?.outputImage
         
-        if let filters = image?.autoAdjustmentFilters(options: [kCIImageAutoAdjustEnhance: true, kCIImageAutoAdjustFeatures: [CIFaceFeature()]])
+        if let filters = image?.autoAdjustmentFilters(options: [kCIImageAutoAdjustEnhance: false, kCIImageAutoAdjustFeatures: [CIFaceFeature()]])
         {
             for f in filters
             {
@@ -264,15 +265,13 @@ public class RAWImageLoader: ImageLoaderProtocol
                 if #available(OSX 10.12, *)
                 {
                     // Pixel format and color space set as discussed around 21:50 in https://developer.apple.com/videos/play/wwdc2016/505/
-                    /*if let cgImage = RAWImageLoader.imageBakingContext.createCGImage(image,
-                                                                                     from: image.extent,
-                                                                                     format: kCIFormatRGBA8,
-                                                                                     colorSpace: RAWImageLoader.imageBakingColorSpace,
-                                                                                     deferred: false)*/
-                    if let cgImage = RAWImageLoader.imageBakingContext.createCGImage(image, from: image.extent)
+                    if let cgImage = RAWImageLoader.imageBakingContext.createCGImage(image,
+                        from: image.extent,
+                        format: kCIFormatRGBA8,
+                        colorSpace: RAWImageLoader.imageBakingColorSpace,
+                        deferred: false) // The `deferred: false` argument is important, to avoid significant work on the main thread at drawing time
                     {
                         bakedImage = NSImage(cgImage: cgImage, size: NSZeroSize)
-                        print("Created NSImage of size \(bakedImage!.size.width)x\(bakedImage!.size.width) from RAW image of size \(image.extent.size.width)x\(image.extent.size.height)")
                     }
                 }
                 
