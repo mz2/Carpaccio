@@ -12,10 +12,13 @@ import Foundation
 
 public struct ImageMetadata
 {
-    public let aperture: Double?
     public let cameraMaker: String?
     public let cameraModel: String?
     public let colorSpace: CGColorSpace?
+    
+    /** In common tog parlance, this'd be "aperture": f/2.8 etc.*/
+    public let fNumber: Double?
+    
     public let focalLength: Double?
     public let focalLength35mmEquivalent: Double?
     public let ISO: Double?
@@ -23,9 +26,31 @@ public struct ImageMetadata
     public let nativeSize: NSSize
     public let shutterSpeed: TimeInterval?
     
-    init(nativeSize: NSSize, nativeOrientation: CGImagePropertyOrientation = .up, colorSpace: CGColorSpace? = nil, aperture: Double? = nil, focalLength: Double? = nil, focalLength35mmEquivalent: Double? = nil, ISO: Double? = nil, shutterSpeed: TimeInterval? = nil, cameraMaker: String? = nil, cameraModel: String? = nil)
+    /**
+     
+     Date & time best suitable to be interpreted as the image's original creation timestamp.
+ 
+     Some notes:
+     
+     - The value is usually extracted from EXIF or TIFF metadata (in that order), which both appear
+       to save it as a string with one second resolution, without time zone information.
+     
+     - This means the value alone is suitable only for coarse sorting, and typically needs combining
+       with the image filename saved by the camera, which usually contains a numerical sequence. For
+       example, you will encounter images shot in burst mode that will have the same timestamp.
+     
+     - As of this writing (2016-08-25), it is unclear if this limitation is fundamentally about
+       cameras, the EXIF/TIFF metadata specs or (most unlikely) the Core Graphics implementation.
+       However, neither Lightroom, Capture One, FastRawViewer nor RawRightAway display any more
+       detail or timezone-awareness, so it seems like this needs to be accepted as just the way it
+       is.
+     
+    */
+    public let timestamp: Date?
+    
+    init(nativeSize: NSSize, nativeOrientation: CGImagePropertyOrientation = .up, colorSpace: CGColorSpace? = nil, fNumber: Double? = nil, focalLength: Double? = nil, focalLength35mmEquivalent: Double? = nil, ISO: Double? = nil, shutterSpeed: TimeInterval? = nil, cameraMaker: String? = nil, cameraModel: String? = nil, timestamp: Date? = nil)
     {
-        self.aperture = aperture
+        self.fNumber = fNumber
         self.cameraMaker = cameraMaker
         self.cameraModel = cameraModel
         self.colorSpace = colorSpace
@@ -35,6 +60,7 @@ public struct ImageMetadata
         self.nativeOrientation = nativeOrientation
         self.nativeSize = nativeSize
         self.shutterSpeed = shutterSpeed
+        self.timestamp = timestamp
     }
     
     public var size: NSSize
@@ -67,23 +93,23 @@ public struct ImageMetadata
         }
     }
     
-    public var humanReadableAperture: String? {
+    public var humanReadableFNumber: String? {
         get
         {
-            guard let aperture = self.aperture else {
+            guard let fNumber = self.fNumber else {
                 return nil
             }
             
             // Default to showing one decimal place...
-            let oneTenthPrecisionAperture = round(aperture * 10.0) / 10.0
-            let integerApterture = Int(oneTenthPrecisionAperture)
+            let oneTenthPrecisionfNumber = round(fNumber * 10.0) / 10.0
+            let integerApterture = Int(oneTenthPrecisionfNumber)
             
             // ..but avoid displaying .0
-            if oneTenthPrecisionAperture == Double(integerApterture) {
+            if oneTenthPrecisionfNumber == Double(integerApterture) {
                 return "f/\(integerApterture)"
             }
             
-            return "f/\(oneTenthPrecisionAperture)"
+            return "f/\(oneTenthPrecisionfNumber)"
         }
     }
     
@@ -146,7 +172,7 @@ public struct ImageMetadata
     
     public var humanReadableMetadataSummary: String {
         get {
-            return "\(padTail(ofString:self.cleanedUpCameraModel))\(padTail(ofString: self.humanReadableFocalLength))\(padTail(ofString: conditional(string: self.humanReadableFocalLength35mmEquivalent, condition: (self.focalLength35mmEquivalent != self.focalLength))))\(padTail(ofString: self.humanReadableAperture))\(padTail(ofString: self.humanReadableShutterSpeed))\(padTail(ofString: self.humanReadableISO))"
+            return "\(padTail(ofString:self.cleanedUpCameraModel))\(padTail(ofString: self.humanReadableFocalLength))\(padTail(ofString: conditional(string: self.humanReadableFocalLength35mmEquivalent, condition: (self.focalLength35mmEquivalent != self.focalLength))))\(padTail(ofString: self.humanReadableFNumber))\(padTail(ofString: self.humanReadableShutterSpeed))\(padTail(ofString: self.humanReadableISO))"
         }
     }
     

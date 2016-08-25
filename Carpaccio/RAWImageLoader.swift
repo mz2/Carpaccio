@@ -32,6 +32,15 @@ public class RAWImageLoader: ImageLoaderProtocol
     public let imageURL: URL
     public let thumbnailScheme: ImageLoadingThumbnailScheme
     
+    // See ImageMetadata.timestamp for known caveats about EXIF/TIFF
+    // date metadata, as interpreted by this date formatter.
+    private static let dateFormatter: DateFormatter =
+    {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy:MM:dd HH:mm:ss"
+        return formatter
+    }()
+    
     init(imageURL: URL, thumbnailScheme: ImageLoadingThumbnailScheme)
     {
         self.imageURL = imageURL
@@ -58,14 +67,15 @@ public class RAWImageLoader: ImageLoaderProtocol
         
         let properties = NSDictionary(dictionary: CGImageSourceCopyPropertiesAtIndex(imageSource, 0, nil)!)
         
-        var aperture: Double? = nil, focalLength: Double? = nil, focalLength35mm: Double? = nil, ISO: Double? = nil, shutterSpeed: Double? = nil
+        var fNumber: Double? = nil, focalLength: Double? = nil, focalLength35mm: Double? = nil, ISO: Double? = nil, shutterSpeed: Double? = nil
         var colorSpace: CGColorSpace? = nil
         var width: CGFloat? = nil, height: CGFloat? = nil
+        var timestamp: Date? = nil
         
         // Examine EXIF metadata
         if let EXIF = properties[kCGImagePropertyExifDictionary as NSString] as? NSDictionary
         {
-            aperture = (EXIF[kCGImagePropertyExifFNumber as NSString] as? NSNumber)?.doubleValue
+            fNumber = (EXIF[kCGImagePropertyExifFNumber as NSString] as? NSNumber)?.doubleValue
             
             if let colorSpaceName = EXIF[kCGImagePropertyExifColorSpace] as? NSString {
                 colorSpace = CGColorSpace(name: colorSpaceName)
@@ -90,6 +100,10 @@ public class RAWImageLoader: ImageLoaderProtocol
             if let h = (EXIF[kCGImagePropertyExifPixelYDimension as NSString] as? NSNumber)?.doubleValue {
                 height = CGFloat(h)
             }
+            
+            if let originalDateString = (EXIF[kCGImagePropertyExifDateTimeOriginal as NSString] as? String) {
+                timestamp = dateFormatter.date(from: originalDateString)
+            }
         }
         
         // Examine TIFF metadata
@@ -100,6 +114,10 @@ public class RAWImageLoader: ImageLoaderProtocol
             cameraMaker = TIFF[kCGImagePropertyTIFFMake as NSString] as? String
             cameraModel = TIFF[kCGImagePropertyTIFFModel as NSString] as? String
             orientation = CGImagePropertyOrientation(rawValue: (TIFF[kCGImagePropertyTIFFOrientation as NSString] as? NSNumber)?.uint32Value ?? CGImagePropertyOrientation.up.rawValue)
+            
+            if timestamp == nil, let dateTimeString = (TIFF[kCGImagePropertyTIFFDateTime as NSString] as? String) {
+                timestamp = dateFormatter.date(from: dateTimeString)
+            }
         }
         
         /*
@@ -114,7 +132,7 @@ public class RAWImageLoader: ImageLoaderProtocol
             height = CGFloat((image?.height)!)
         }
         
-        let metadata = ImageMetadata(nativeSize: NSSize(width: width!, height: height!), nativeOrientation: orientation ?? .up, colorSpace: colorSpace, aperture: aperture, focalLength: focalLength, focalLength35mmEquivalent: focalLength35mm, ISO: ISO, shutterSpeed: shutterSpeed, cameraMaker: cameraMaker, cameraModel: cameraModel)
+        let metadata = ImageMetadata(nativeSize: NSSize(width: width!, height: height!), nativeOrientation: orientation ?? .up, colorSpace: colorSpace, fNumber: fNumber, focalLength: focalLength, focalLength35mmEquivalent: focalLength35mm, ISO: ISO, shutterSpeed: shutterSpeed, cameraMaker: cameraMaker, cameraModel: cameraModel, timestamp: timestamp)
         return metadata
     }()
     
@@ -222,7 +240,7 @@ public class RAWImageLoader: ImageLoaderProtocol
     static let sRGBColorSpace = CGColorSpace(name: CGColorSpace.sRGB)
     
     @available(OSX 10.12, *)
-    static let imageBakingColorSpace = NSScreen.deepest()?.colorSpace?.cgColorSpace ?? genericLinearRGBColorSpace
+    static let imageBakingColorSpace = genericLinearRGBColorSpace //NSScreen.deepest()?.colorSpace?.cgColorSpace ?? genericLinearRGBColorSpace
     
     //@available(OSX 10.12, *)
     //static let imageBakingContext = CIContext(options: [kCIContextCacheIntermediates: false, kCIContextUseSoftwareRenderer: false, kCIContextWorkingColorSpace: RAWImageLoader.imageBakingColorSpace, kCIContextOutputColorSpace: NSScreen.deepest()?.colorSpace?.cgColorSpace ?? RAWImageLoader.imageBakingColorSpace])
@@ -240,9 +258,7 @@ public class RAWImageLoader: ImageLoaderProtocol
             return context
         }
         
-        print("Available screens: \(NSScreen.screens()), deepest: \(NSScreen.deepest()), main: \(NSScreen.main())")
-        
-        let context = CIContext(options: [kCIContextCacheIntermediates: false, kCIContextUseSoftwareRenderer: false, kCIContextOutputColorSpace: RAWImageLoader.imageBakingColorSpace, kCIContextWorkingColorSpace: RAWImageLoader.sRGBColorSpace])
+        let context = CIContext(options: [kCIContextCacheIntermediates: false, kCIContextUseSoftwareRenderer: false])
         _imageBakingContexts[ext] = context
         return context
     }
