@@ -52,7 +52,6 @@ public class Image: Equatable {
         
         if Image.RAWImageFileExtensions.contains(pathExtension) {
             self.imageLoader = RAWImageLoader(imageURL: URL, thumbnailScheme: .decodeFullImageIfThumbnailTooSmall)
-            //self.imageLoader = RAWImageLoader(imageURL: URL, thumbnailScheme: .AlwaysDecodeFullImage)
         }
         else if Image.bakedImageFileExtensions.contains(pathExtension)
         {
@@ -187,14 +186,18 @@ public class Image: Equatable {
         return imageURLs
     }
     
-    public class func load(contentsOfURL URL:Foundation.URL, loadHandler: LoadHandler? = nil) throws -> [Image]
+    public class func load(contentsOfURL URL:Foundation.URL, loadHandler: LoadHandler? = nil) throws -> (AnyCollection<Image>, Int)
     {
         let imageURLs = try self.imageURLs(atCollectionURL: URL)
         
-        let images = imageURLs.enumerated().flatMap { (i, imageURL) -> Image? in
+        let count = imageURLs.count
+        
+        let images = imageURLs.lazy.enumerated().flatMap { (i, imageURL) -> Image? in
             let pathExtension = imageURL.pathExtension
             
-            guard pathExtension.utf8.count > 0 else { return nil }
+            guard pathExtension.utf8.count > 0 else {
+                return nil
+            }
             
             let image = Image(URL: imageURL)
             loadHandler?(i, imageURLs.count, image)
@@ -202,7 +205,8 @@ public class Image: Equatable {
             return image
         }
         
-        return images
+        let imageCollection = AnyCollection<Image>(images)
+        return (imageCollection, count)
     }
     
     public class func loadAsynchronously(contentsOfURL URL:Foundation.URL, queue:DispatchQueue = DispatchQueue.global(), loadHandler:LoadHandler? = nil, errorHandler:LoadErrorHandler) {

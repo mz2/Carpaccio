@@ -8,6 +8,29 @@
 
 import Foundation
 
+public protocol ImageCollection: class
+{
+    func contains(image: Image) -> Bool
+    var images: AnyCollection<Image> { get }
+    var imageCount: Int { get }
+    var imageURLs: AnyCollection<URL> { get }
+    var name: String { get }
+}
+
+extension Carpaccio.Collection: ImageCollection
+{
+    public func contains(image: Image) -> Bool {
+        return self.images.contains(image)
+    }
+    
+    public var imageURLs: AnyCollection<URL> {
+        get {
+            return AnyCollection<URL>(self.images.lazy.flatMap { image in
+                return image.URL
+            })
+        }
+    }
+}
 
 public typealias ImageCollectionHandler = (Collection) -> Void
 public typealias ImageCollectionErrorHandler = (Error) -> Void
@@ -15,37 +38,47 @@ public typealias ImageCollectionErrorHandler = (Error) -> Void
 public class Collection
 {
     public let name:String
-    public var images:[Image]
+    public var images:AnyCollection<Image>
+    public let imageCount:Int
     public let URL:Foundation.URL
     
-    public init(name: String, images: [Image], URL: Foundation.URL) throws
+    public init(name: String, images: AnyCollection<Image>, imageCount:Int, URL: Foundation.URL) throws
     {
         self.URL = URL
         self.name = name
         self.images = images
+        self.imageCount = imageCount
     }
     
     public init(contentsOfURL URL:Foundation.URL) throws {
         self.URL = URL
-        self.name = URL.lastPathComponent 
-        self.images = try Image.load(contentsOfURL: URL)
+        self.name = URL.lastPathComponent
+        
+        let (images, count) = try Image.load(contentsOfURL: URL)
+        self.images = AnyCollection<Image>(images)
+        self.imageCount = count
     }
     
     /** Asynchronously initialise an image collection rooted at given URL, with all images found in the subtree prepared up to essential metadata having been loaded. */
-    public class func prepare(atURL collectionURL: Foundation.URL, queue:DispatchQueue = DispatchQueue.global(), completionHandler: ImageCollectionHandler, errorHandler: ImageCollectionErrorHandler) {
+    public class func prepare(atURL collectionURL: Foundation.URL,
+                              queue:DispatchQueue = DispatchQueue.global(),
+                              completionHandler: ImageCollectionHandler,
+                              errorHandler: ImageCollectionErrorHandler) {
         queue.async {
             do {
                 let imageURLs = try Image.imageURLs(atCollectionURL: collectionURL)
-                var images = [Image]()
                 
-                for URL in imageURLs
-                {
+                let images = imageURLs.lazy.map { URL -> Image in
                     let image = Image(URL: URL)
-                    images.append(image)
-                    _ = image.metadata
+                    //_ = image.metadata
+                    return image
                 }
                 
-                let collection = try Collection(name: collectionURL.lastPathComponent , images: images, URL: collectionURL)
+                let collection = try Collection(name: collectionURL.lastPathComponent,
+                                                images: AnyCollection<Image>(images),
+                                                imageCount: imageURLs.count,
+                                                URL: collectionURL)
+                
                 completionHandler(collection)
                 
             }
@@ -74,7 +107,7 @@ public class Collection
     
     // TODO: Create a specific type for a sparse distance matrix.
     public func distanceMatrix(_ distance:Image.DistanceFunction) -> [[Double]] {
-        return (images.indices).lazy.flatMap { i in
+        return images.indices.lazy.flatMap { i in
             var row = [Double]()
             for e in images.indices {
                 if e == i {
@@ -85,9 +118,10 @@ public class Collection
                 }
             }
             
-            let iSuccessor = (i + 1)
+            let iSuccessor = self.images.indices.index(after: i)
             for j in (self.images.indices.suffix(from: iSuccessor)) {
-                row[j] = distance(images[i], images[j])
+                let col = self.images.indices.distance(from: self.images.indices.startIndex, to: j)
+                row[col] = distance(images[i], images[j])
             }
 
             return row
@@ -101,19 +135,22 @@ public class Collection
         
         if (distMatrix.count == 0) { return [[Double]]() }
         
-        let rowCount = distMatrix.count
-        let colCount = distMatrix[0].count
-        precondition(rowCount == self.images.count)
-        precondition(rowCount == colCount)
+        //let rowCount = distMatrix.count
+        //let colCount = distMatrix[0].count
+        //precondition(rowCount == self.images.count)
+        //precondition(rowCount == colCount)
         
         for i in images.indices {
+            let iDist = images.indices.distance(from: images.indices.startIndex, to: i)
             var row = [Double]()
             for j in images.indices {
+                let jDist = images.indices.distance(from: images.indices.startIndex, to: i)
+            
                 if j < i {
-                    row.append(distMatrix[j][i])
+                    row.append(distMatrix[jDist][iDist])
                 }
                 else {
-                    row.append(distMatrix[i][j])
+                    row.append(distMatrix[iDist][jDist])
                 }
             }
             distTable.append(row)
