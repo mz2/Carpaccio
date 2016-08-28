@@ -9,13 +9,13 @@
 import Foundation
 
 // From http://moreindirection.blogspot.co.uk/2015/07/gcd-and-parallel-collections-in-swift.html
-extension Array {
-    public func pmap<T>(maxParallelism:Int? = nil, _ transform: ((Element) -> T)) -> [T] {
+extension Swift.Collection where Self.Index == Int {
+    public func pmap<T>(maxParallelism:Int? = nil, _ transform: ((Iterator.Element) -> T)) -> [T] {
         guard !self.isEmpty else {
             return []
         }
         
-        var result: [(Int, [T])] = []
+        var result: [(IntMax, [T])] = []
         
         let group = DispatchGroup()
         
@@ -31,9 +31,11 @@ extension Array {
         }()
         
         // step can never be 0
-        let step = [1, self.count / parallelism].max()!
         
-        var stepIndex = 0
+        let count = self.count.toIntMax()
+        let step = [1, count / IntMax(parallelism)].max()!
+        
+        var stepIndex:IntMax = 0
         repeat {
             let capturedStepIndex = stepIndex
             
@@ -41,8 +43,8 @@ extension Array {
             
             DispatchQueue.global().async(group: group) {
                 for i in (capturedStepIndex * step) ..< ((capturedStepIndex + 1) * step) {
-                    if i < self.count {
-                        let mappedElement = transform(self[i])
+                    if i < count {
+                        let mappedElement = transform(self[Int(i)])
                         stepResult += [mappedElement]
                     }
                 }
@@ -53,7 +55,7 @@ extension Array {
             }
             
             stepIndex += 1
-        } while (stepIndex * step < self.count)
+        } while (stepIndex * step < count)
         
         group.wait()
         

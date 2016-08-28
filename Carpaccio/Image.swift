@@ -171,18 +171,18 @@ public class Image: Equatable {
             throw Error.locationNotEnumerable(URL)
         }
         
-        let imagePaths = (enumerator.allObjects as! [String]).filter
-        {
-            // TODO: should filter out directories etc. here, just in case — or use the enumeration method with options for that
-            let pathExtension = ($0 as NSString).pathExtension.lowercased()
-            return Image.imageFileExtensions.contains(pathExtension)
+        let urls = enumerator.lazy.map { anyPath -> Foundation.URL in
+            let path = anyPath as! String
+            let url = URL.appendingPathComponent(path, isDirectory: false).absoluteURL
+            return url
+        }.filter { url in
+            var isDir:ObjCBool = false
+            let exists = FileManager.default.fileExists(atPath: url.path, isDirectory: &isDir)
+            let pathExtension = (url.lastPathComponent as NSString).pathExtension.lowercased()
+            return exists && !isDir.boolValue && Image.imageFileExtensions.contains(pathExtension)
         }
         
-        let imageURLs = imagePaths.flatMap { (path: String) -> Foundation.URL? in
-            return URL.appendingPathComponent(path, isDirectory: false).absoluteURL
-        }
-        
-        return imageURLs
+        return urls
     }
     
     public class func load(contentsOfURL URL:Foundation.URL, loadHandler: LoadHandler? = nil) throws -> (AnyCollection<Image>, Int)
