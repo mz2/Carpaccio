@@ -66,15 +66,10 @@ public class Image: Equatable {
     private var imageLoader: ImageLoaderProtocol?
     
     public lazy var metadata: ImageMetadata? = {
-        return self.imageLoader?.imageMetadata
+        let metadata = self.imageLoader?.imageMetadata
+        return metadata
     }()
-    
-    public var isMetadataAvailable: Bool {
-        get {
-            return self.metadata != nil
-        }
-    }
-    
+        
     public var presentedImage: NSImage {
         return self.fullImage ?? self.thumbnailImage ?? self.placeholderImage
     }
