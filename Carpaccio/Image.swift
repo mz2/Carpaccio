@@ -51,11 +51,11 @@ public class Image: Equatable {
         let pathExtension = URL.pathExtension.lowercased()
         
         if Image.RAWImageFileExtensions.contains(pathExtension) {
-            self.imageLoader = RAWImageLoader(imageURL: URL, thumbnailScheme: .decodeFullImageIfThumbnailTooSmall)
+            self.imageLoader = RAWImageLoader(imageURL: URL, thumbnailScheme: .fullImageWhenTooSmallThumbnail)
         }
         else if Image.bakedImageFileExtensions.contains(pathExtension)
         {
-            self.imageLoader = RAWImageLoader(imageURL: URL, thumbnailScheme: .decodeFullImageIfThumbnailTooSmall)
+            self.imageLoader = RAWImageLoader(imageURL: URL, thumbnailScheme: .fullImageWhenTooSmallThumbnail)
         }
     }
     
@@ -69,11 +69,15 @@ public class Image: Equatable {
         let metadata = self.imageLoader?.imageMetadata
         return metadata
     }()
-        
+    
     public var presentedImage: NSImage {
         return self.fullImage ?? self.thumbnailImage ?? self.placeholderImage
     }
     
+    @discardableResult public func fetchMetadata() -> Bool {
+        return self.metadata != nil
+    }
+
     public func fetchMetadata(_ store: Bool = true, handler: MetadataHandler, errorHandler: ErrorHandler)
     {
         self.imageLoader?.loadImageMetadata({ (metadata: ImageMetadata) in

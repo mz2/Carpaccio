@@ -18,10 +18,8 @@
 		5F1E22A01CDEAC330083FD6F /* DSC00583.ARW in Resources */ = {isa = PBXBuildFile; fileRef = 5F1E229D1CDEAC330083FD6F /* DSC00583.ARW */; };
 		5F1E22A11CDEAC330083FD6F /* DSC00588.ARW in Resources */ = {isa = PBXBuildFile; fileRef = 5F1E229E1CDEAC330083FD6F /* DSC00588.ARW */; };
 		5F1E22A21CDEAC330083FD6F /* DSC00593.ARW in Resources */ = {isa = PBXBuildFile; fileRef = 5F1E229F1CDEAC330083FD6F /* DSC00593.ARW */; };
-		5F7016211CE3291300173EB6 /* libjasper.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5F7016201CE3291300173EB6 /* libjasper.a */; };
 		5F7016231CE3295900173EB6 /* libjpeg.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5F7016221CE3295900173EB6 /* libjpeg.a */; };
-		5F7016271CE329D400173EB6 /* liblcms2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5F7016261CE329D400173EB6 /* liblcms2.a */; };
-		5FF2F7A21CE1542D00C15E3A /* libraw.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5FF2F7A11CE1542D00C15E3A /* libraw.a */; };
+		5FAD66691D72FD3C006973C9 /* Array+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FAD66681D72FD3C006973C9 /* Array+Extensions.swift */; };
 		5FF2F7A91CE1563400C15E3A /* Image.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FF2F7A71CE1563400C15E3A /* Image.swift */; };
 		5FF2F7AA1CE1563400C15E3A /* ImageCollection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FF2F7A81CE1563400C15E3A /* ImageCollection.swift */; };
 /* End PBXBuildFile section */
@@ -54,6 +52,7 @@
 		5F7016201CE3291300173EB6 /* libjasper.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libjasper.a; path = Libraries/libjasper.a; sourceTree = "<group>"; };
 		5F7016221CE3295900173EB6 /* libjpeg.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libjpeg.a; path = Libraries/libjpeg.a; sourceTree = "<group>"; };
 		5F7016261CE329D400173EB6 /* liblcms2.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = liblcms2.a; path = Libraries/liblcms2.a; sourceTree = "<group>"; };
+		5FAD66681D72FD3C006973C9 /* Array+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Array+Extensions.swift"; sourceTree = "<group>"; };
 		5FF2F7A11CE1542D00C15E3A /* libraw.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libraw.a; path = Libraries/libraw.a; sourceTree = "<group>"; };
 		5FF2F7A71CE1563400C15E3A /* Image.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Image.swift; sourceTree = "<group>"; };
 		5FF2F7A81CE1563400C15E3A /* ImageCollection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageCollection.swift; sourceTree = "<group>"; };
@@ -64,11 +63,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				5FF2F7A21CE1542D00C15E3A /* libraw.a in Frameworks */,
-				5F7016271CE329D400173EB6 /* liblcms2.a in Frameworks */,
 				5F7016231CE3295900173EB6 /* libjpeg.a in Frameworks */,
 				5F1E229C1CDEAABF0083FD6F /* Cocoa.framework in Frameworks */,
-				5F7016211CE3291300173EB6 /* libjasper.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -111,6 +107,7 @@
 				5FF2F7AB1CE1563C00C15E3A /* RAW Converter */,
 				5F1E22801CDEA9D90083FD6F /* Carpaccio.h */,
 				5F1E22821CDEA9D90083FD6F /* Info.plist */,
+				5FAD66681D72FD3C006973C9 /* Array+Extensions.swift */,
 			);
 			path = Carpaccio;
 			sourceTree = "<group>";
@@ -276,6 +273,7 @@
 				2898133A1D4DC26600B1BA5D /* RAWImageLoader.swift in Sources */,
 				28B9AA081D462AFD00C4B03E /* ImageMetadata.swift in Sources */,
 				5FF2F7A91CE1563400C15E3A /* Image.swift in Sources */,
+				5FAD66691D72FD3C006973C9 /* Array+Extensions.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

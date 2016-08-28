@@ -22,23 +22,17 @@ class CarpaccioTests: XCTestCase {
     }
     
     func testSonyRAWConversion() {
-        let img1URL = Bundle(for: self.dynamicType).urlForResource("DSC00583", withExtension: "ARW")!
+        let img1URL = Bundle(for: type(of: self)).url(forResource:"DSC00583", withExtension: "ARW")!
 
         let tempDir = URL(fileURLWithPath:NSTemporaryDirectory() + "/\(UUID().uuidString)")
         
         try! FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true, attributes: [:])
         
-        let converter = try! RAWConverter(URL: img1URL)
+        let converter = RAWImageLoader(imageURL: img1URL, thumbnailScheme: .fullImageWhenThumbnailMissing)
         
-        converter.decodeToDirectoryAtURL(tempDir,
-                                         thumbnailHandler:
-            { thumb in
-                XCTAssert(thumb.size.width > 387 && thumb.size.width < 388, "Unexpected thumbnail width: \(thumb.size.width)")
-                XCTAssert(thumb.size.width > 259 && thumb.size.height < 260, "Unexpected thumbnail height: \(thumb.size.height)")
-            }, imageHandler: { imgURL in
-                if NSImage(contentsOfURL: imgURL) == nil {
-                    XCTFail("Failed to decode image from \(imgURL.path)")
-                }
+        converter.loadThumbnailImage(handler: { thumb, imageMetadata in
+            XCTAssert(thumb.size.width > 1615 && thumb.size.width < 1617, "Unexpected thumbnail width: \(thumb.size.width)")
+            XCTAssert(thumb.size.width > 1079 && thumb.size.height < 1081, "Unexpected thumbnail height: \(thumb.size.height)")
         }) { err in
             XCTFail("Error: \(err)")
         }
@@ -47,8 +41,8 @@ class CarpaccioTests: XCTestCase {
     }
     
     func testDistanceMatrixComputation() {
-        let resourcesDir = Bundle(for: self.dynamicType).resourceURL!
-        let imgColl = try! ImageCollection(contentsOfURL: resourcesDir)
+        let resourcesDir = Bundle(for: type(of: self)).resourceURL!
+        let imgColl = try! Collection(contentsOfURL: resourcesDir)
         
         // just checking that the matrix computation succeeds.
         let distances = imgColl.distanceMatrix { a, b in
@@ -71,8 +65,8 @@ class CarpaccioTests: XCTestCase {
     }
     
     func testDistanceTableComputation() {
-        let resourcesDir = Bundle(for: self.dynamicType).resourceURL!
-        let imgColl = try! ImageCollection(contentsOfURL: resourcesDir)
+        let resourcesDir = Bundle(for: type(of: self)).resourceURL!
+        let imgColl = try! Collection(contentsOfURL: resourcesDir)
         
         let distances = imgColl.distanceTable { a, b in
             return Double.infinity

@@ -62,15 +62,16 @@ public class Collection
     /** Asynchronously initialise an image collection rooted at given URL, with all images found in the subtree prepared up to essential metadata having been loaded. */
     public class func prepare(atURL collectionURL: Foundation.URL,
                               queue:DispatchQueue = DispatchQueue.global(),
+                              maxMetadataLoadParallelism:Int? = nil,
                               completionHandler: ImageCollectionHandler,
                               errorHandler: ImageCollectionErrorHandler) {
         queue.async {
             do {
                 let imageURLs = try Image.imageURLs(atCollectionURL: collectionURL)
                 
-                let images = imageURLs.lazy.map { URL -> Image in
+                let images = imageURLs.pmap(maxParallelism:maxMetadataLoadParallelism) { URL -> Image in
                     let image = Image(URL: URL)
-                    //_ = image.metadata
+                    image.fetchMetadata()
                     return image
                 }
                 

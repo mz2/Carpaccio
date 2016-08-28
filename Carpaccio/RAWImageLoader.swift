@@ -10,27 +10,24 @@
 import CoreGraphics
 import CoreImage
 
-
-public enum RAWImageLoaderError: Error
+public enum RAWImageLoaderError: Swift.Error
 {
     case failedToExtractImageMetadata(message: String)
     case failedToLoadThumbnailImage(message: String)
     case failedToLoadFullSizeImage(message: String)
 }
 
-
-public enum ImageLoadingThumbnailScheme: Int
-{
-    case alwaysDecodeFullImage
-    case decodeFullImageIfThumbnailTooSmall
-    case decodeFullImageIfThumbnailMissing
-}
-
-
 public class RAWImageLoader: ImageLoaderProtocol
 {
+    public enum ThumbnailScheme: Int
+    {
+        case decodeFullImage
+        case fullImageWhenTooSmallThumbnail
+        case fullImageWhenThumbnailMissing
+    }
+    
     public let imageURL: URL
-    public let thumbnailScheme: ImageLoadingThumbnailScheme
+    public let thumbnailScheme: ThumbnailScheme
     
     // See ImageMetadata.timestamp for known caveats about EXIF/TIFF
     // date metadata, as interpreted by this date formatter.
@@ -41,7 +38,7 @@ public class RAWImageLoader: ImageLoaderProtocol
         return formatter
     }()
     
-    init(imageURL: URL, thumbnailScheme: ImageLoadingThumbnailScheme)
+    init(imageURL: URL, thumbnailScheme: ThumbnailScheme)
     {
         self.imageURL = imageURL
         self.thumbnailScheme = thumbnailScheme
@@ -51,7 +48,7 @@ public class RAWImageLoader: ImageLoaderProtocol
         get
         {
             // We intentionally don't store the image source, to not gob up resources, but rather open it anew each time
-            let options: CFDictionary = [String(kCGImageSourceShouldCache): false, String(kCGImageSourceShouldAllowFloat): true] as NSDictionary as CFDictionary
+            let options = [String(kCGImageSourceShouldCache): false, String(kCGImageSourceShouldAllowFloat): true] as NSDictionary as CFDictionary
             let imageSource = CGImageSourceCreateWithURL(imageURL as CFURL, options)
             return imageSource
         }
@@ -63,9 +60,11 @@ public class RAWImageLoader: ImageLoaderProtocol
             return nil
         }
         
-        //self.dumpAllImageMetadata(imageSource)
+        guard let imageProperties = CGImageSourceCopyPropertiesAtIndex(imageSource, 0, nil) else {
+            return nil
+        }
         
-        let properties = NSDictionary(dictionary: CGImageSourceCopyPropertiesAtIndex(imageSource, 0, nil)!)
+        let properties = NSDictionary(dictionary: imageProperties)
         
         var fNumber: Double? = nil, focalLength: Double? = nil, focalLength35mm: Double? = nil, ISO: Double? = nil, shutterSpeed: Double? = nil
         var colorSpace: CGColorSpace? = nil
@@ -73,18 +72,18 @@ public class RAWImageLoader: ImageLoaderProtocol
         var timestamp: Date? = nil
         
         // Examine EXIF metadata
-        if let EXIF = properties[kCGImagePropertyExifDictionary as NSString] as? NSDictionary
+        if let EXIF = properties[kCGImagePropertyExifDictionary as String] as? NSDictionary
         {
-            fNumber = (EXIF[kCGImagePropertyExifFNumber as NSString] as? NSNumber)?.doubleValue
+            fNumber = (EXIF[kCGImagePropertyExifFNumber as String] as? NSNumber)?.doubleValue
             
             if let colorSpaceName = EXIF[kCGImagePropertyExifColorSpace] as? NSString {
                 colorSpace = CGColorSpace(name: colorSpaceName)
             }
             
-            focalLength = (EXIF[kCGImagePropertyExifFocalLength as NSString] as? NSNumber)?.doubleValue
-            focalLength35mm = (EXIF[kCGImagePropertyExifFocalLenIn35mmFilm as NSString] as? NSNumber)?.doubleValue
+            focalLength = (EXIF[kCGImagePropertyExifFocalLength as String] as? NSNumber)?.doubleValue
+            focalLength35mm = (EXIF[kCGImagePropertyExifFocalLenIn35mmFilm as String] as? NSNumber)?.doubleValue
             
-            if let ISOs = EXIF[kCGImagePropertyExifISOSpeedRatings as NSString]
+            if let ISOs = EXIF[kCGImagePropertyExifISOSpeedRatings as String]
             {
                 let ISOArray = NSArray(array: ISOs as! CFArray)
                 if ISOArray.count > 0 {
@@ -92,16 +91,16 @@ public class RAWImageLoader: ImageLoaderProtocol
                 }
             }
             
-            shutterSpeed = (EXIF[kCGImagePropertyExifExposureTime as NSString] as? NSNumber)?.doubleValue
+            shutterSpeed = (EXIF[kCGImagePropertyExifExposureTime as String] as? NSNumber)?.doubleValue
             
-            if let w = (EXIF[kCGImagePropertyExifPixelXDimension as NSString] as? NSNumber)?.doubleValue {
+            if let w = (EXIF[kCGImagePropertyExifPixelXDimension as String] as? NSNumber)?.doubleValue {
                 width = CGFloat(w)
             }
-            if let h = (EXIF[kCGImagePropertyExifPixelYDimension as NSString] as? NSNumber)?.doubleValue {
+            if let h = (EXIF[kCGImagePropertyExifPixelYDimension as String] as? NSNumber)?.doubleValue {
                 height = CGFloat(h)
             }
             
-            if let originalDateString = (EXIF[kCGImagePropertyExifDateTimeOriginal as NSString] as? String) {
+            if let originalDateString = (EXIF[kCGImagePropertyExifDateTimeOriginal as String] as? String) {
                 timestamp = dateFormatter.date(from: originalDateString)
             }
         }
@@ -109,13 +108,13 @@ public class RAWImageLoader: ImageLoaderProtocol
         // Examine TIFF metadata
         var cameraMaker: String? = nil, cameraModel: String? = nil, orientation: CGImagePropertyOrientation? = nil
         
-        if let TIFF = properties[kCGImagePropertyTIFFDictionary as NSString] as? NSDictionary
+        if let TIFF = properties[kCGImagePropertyTIFFDictionary as String] as? NSDictionary
         {
-            cameraMaker = TIFF[kCGImagePropertyTIFFMake as NSString] as? String
-            cameraModel = TIFF[kCGImagePropertyTIFFModel as NSString] as? String
-            orientation = CGImagePropertyOrientation(rawValue: (TIFF[kCGImagePropertyTIFFOrientation as NSString] as? NSNumber)?.uint32Value ?? CGImagePropertyOrientation.up.rawValue)
+            cameraMaker = TIFF[kCGImagePropertyTIFFMake as String] as? String
+            cameraModel = TIFF[kCGImagePropertyTIFFModel as String] as? String
+            orientation = CGImagePropertyOrientation(rawValue: (TIFF[kCGImagePropertyTIFFOrientation as String] as? NSNumber)?.uint32Value ?? CGImagePropertyOrientation.up.rawValue)
             
-            if timestamp == nil, let dateTimeString = (TIFF[kCGImagePropertyTIFFDateTime as NSString] as? String) {
+            if timestamp == nil, let dateTimeString = (TIFF[kCGImagePropertyTIFFDateTime as String] as? String) {
                 timestamp = dateFormatter.date(from: dateTimeString)
             }
         }
@@ -142,7 +141,7 @@ public class RAWImageLoader: ImageLoaderProtocol
         let options: [String: AnyObject] = [String(kCGImageMetadataEnumerateRecursively): true as CFNumber]
         var results = [String: AnyObject]()
 
-        CGImageMetadataEnumerateTagsUsingBlock(metadata!, nil, options as CFDictionary?) { (path: CFString, tag: CGImageMetadataTag) -> Bool in
+        CGImageMetadataEnumerateTagsUsingBlock(metadata!, nil, options as CFDictionary?) { path, tag in
             
             if let value = CGImageMetadataTagCopyValue(tag) {
                 results[path as String] = value
@@ -177,17 +176,17 @@ public class RAWImageLoader: ImageLoaderProtocol
         }
     }
     
-    private func _loadThumbnailImage(maximumPixelDimensions maximumSize: NSSize?) -> CGImage?
+    private func loadThumbnailImage(maximumPixelDimensions maximumSize: NSSize? = nil) -> CGImage?
     {
         guard let source = self.imageSource else {
             precondition(false)
             return nil
         }
         
-        let maxPixelSize: CGFloat? = maximumSize?.maximumPixelSize(forImageSize: self.imageMetadata!.size)
-        var createFromFullImage: Bool = false
+        let maxPixelSize = maximumSize?.maximumPixelSize(forImageSize: self.imageMetadata!.size)
+        var createFromFullImage = false
         
-        if self.thumbnailScheme == .alwaysDecodeFullImage {
+        if self.thumbnailScheme == .decodeFullImage {
             createFromFullImage = true
         }
         
@@ -221,14 +220,14 @@ public class RAWImageLoader: ImageLoaderProtocol
         return thumbnailImage
     }
     
-    public func loadThumbnailImage(maximumPixelDimensions maxPixelSize: NSSize?, handler: PresentableImageHandler, errorHandler: ImageLoadingErrorHandler)
+    public func loadThumbnailImage(maximumPixelDimensions maxPixelSize: NSSize? = nil, handler: PresentableImageHandler, errorHandler: ImageLoadingErrorHandler)
     {
         guard self.imageSource != nil else {
             precondition(false)
             return
         }
         
-        if let thumbnailImage = _loadThumbnailImage(maximumPixelDimensions: maxPixelSize) {
+        if let thumbnailImage = loadThumbnailImage(maximumPixelDimensions: maxPixelSize) {
             handler(NSImage(cgImage: thumbnailImage, size: NSZeroSize), self.imageMetadata!)
         }
         else {
