@@ -14,9 +14,9 @@ public typealias ImageCollectionErrorHandler = (Error) -> Void
 
 public class Collection
 {
-    public let name:String
-    public var images:[Image]
-    public let URL:Foundation.URL
+    public let name: String
+    public var images: [Image]
+    public let URL: Foundation.URL?
     
     public init(name: String, images: [Image], URL: Foundation.URL) throws
     {
@@ -25,7 +25,7 @@ public class Collection
         self.images = images
     }
     
-    public init(contentsOfURL URL:Foundation.URL) throws {
+    public init(contentsOfURL URL: Foundation.URL) throws {
         self.URL = URL
         self.name = URL.lastPathComponent 
         self.images = try Image.load(contentsOfURL: URL)

@@ -23,7 +23,7 @@
 		5F7016271CE329D400173EB6 /* liblcms2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5F7016261CE329D400173EB6 /* liblcms2.a */; };
 		5FF2F7A21CE1542D00C15E3A /* libraw.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5FF2F7A11CE1542D00C15E3A /* libraw.a */; };
 		5FF2F7A91CE1563400C15E3A /* Image.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FF2F7A71CE1563400C15E3A /* Image.swift */; };
-		5FF2F7AA1CE1563400C15E3A /* ImageCollection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FF2F7A81CE1563400C15E3A /* ImageCollection.swift */; };
+		5FF2F7AA1CE1563400C15E3A /* Collection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FF2F7A81CE1563400C15E3A /* Collection.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -56,7 +56,7 @@
 		5F7016261CE329D400173EB6 /* liblcms2.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = liblcms2.a; path = Libraries/liblcms2.a; sourceTree = "<group>"; };
 		5FF2F7A11CE1542D00C15E3A /* libraw.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libraw.a; path = Libraries/libraw.a; sourceTree = "<group>"; };
 		5FF2F7A71CE1563400C15E3A /* Image.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Image.swift; sourceTree = "<group>"; };
-		5FF2F7A81CE1563400C15E3A /* ImageCollection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageCollection.swift; sourceTree = "<group>"; };
+		5FF2F7A81CE1563400C15E3A /* Collection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Collection.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -139,7 +139,7 @@
 			isa = PBXGroup;
 			children = (
 				5FF2F7A71CE1563400C15E3A /* Image.swift */,
-				5FF2F7A81CE1563400C15E3A /* ImageCollection.swift */,
+				5FF2F7A81CE1563400C15E3A /* Collection.swift */,
 				289813371D4C8C2A00B1BA5D /* Utility.swift */,
 			);
 			name = Image;
@@ -271,7 +271,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				289813341D494B1300B1BA5D /* ImageLoaderProtocol.swift in Sources */,
-				5FF2F7AA1CE1563400C15E3A /* ImageCollection.swift in Sources */,
+				5FF2F7AA1CE1563400C15E3A /* Collection.swift in Sources */,
 				289813381D4C8C2A00B1BA5D /* Utility.swift in Sources */,
 				2898133A1D4DC26600B1BA5D /* RAWImageLoader.swift in Sources */,
 				28B9AA081D462AFD00C4B03E /* ImageMetadata.swift in Sources */,
