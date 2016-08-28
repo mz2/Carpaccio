@@ -59,9 +59,15 @@ public class Collection
         self.imageCount = count
     }
     
+    public enum SortingScheme {
+        case none
+        case byName
+    }
+    
     /** Asynchronously initialise an image collection rooted at given URL, with all images found in the subtree prepared up to essential metadata having been loaded. */
     public class func prepare(atURL collectionURL: Foundation.URL,
                               queue:DispatchQueue = DispatchQueue.global(),
+                              sortingScheme:SortingScheme = .none,
                               maxMetadataLoadParallelism:Int? = nil,
                               completionHandler: ImageCollectionHandler,
                               errorHandler: ImageCollectionErrorHandler) {
@@ -75,8 +81,20 @@ public class Collection
                     return image
                 }
                 
+                let returnedImages:AnyCollection<Image>
+                
+                switch sortingScheme {
+                    case .none:
+                    returnedImages = AnyCollection<Image>(images)
+                    
+                case .byName:
+                    returnedImages = AnyCollection<Image>(images.sorted { image1, image2 in
+                        return image1.name.compare(image2.name) == .orderedAscending
+                    })
+                }
+
                 let collection = try Collection(name: collectionURL.lastPathComponent,
-                                                images: AnyCollection<Image>(images),
+                                                images: returnedImages,
                                                 imageCount: imageURLs.count,
                                                 URL: collectionURL)
                 
