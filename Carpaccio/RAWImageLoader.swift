@@ -343,7 +343,7 @@ public class RAWImageLoader: ImageLoaderProtocol
     }
 }
 
-extension NSSize
+public extension NSSize
 {
     init(constrainWidth w: CGFloat)
     {
