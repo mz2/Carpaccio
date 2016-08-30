@@ -1,4 +1,3 @@
-
 //
 //  BakedImageLoader.swift
 //  Carpaccio

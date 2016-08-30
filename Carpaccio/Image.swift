@@ -73,30 +73,29 @@ open class Image: Equatable, Hashable {
         if Image.RAWImageFileExtensions.contains(pathExtension)
         {
             //return RAWImageLoader(imageURL: URL, thumbnailScheme: .AlwaysDecodeFullImage)
-            cachedImageLoader = RAWImageLoader(imageURL: URL, thumbnailScheme: .decodeFullImageIfThumbnailTooSmall)
+            cachedImageLoader = RAWImageLoader(imageURL: URL, thumbnailScheme: .fullImageWhenTooSmallThumbnail)
         }
         else if Image.bakedImageFileExtensions.contains(pathExtension)
         {
-            cachedImageLoader = RAWImageLoader(imageURL: URL, thumbnailScheme: .decodeFullImageIfThumbnailTooSmall)
+            cachedImageLoader = RAWImageLoader(imageURL: URL, thumbnailScheme: .fullImageWhenTooSmallThumbnail)
         }
         
         return cachedImageLoader
     }
     
     public lazy var metadata: ImageMetadata? = {
-        return self.imageLoader?.imageMetadata
+        let metadata = self.imageLoader?.imageMetadata
+        return metadata
     }()
-    
-    public var isMetadataAvailable: Bool {
-        get {
-            return self.metadata != nil
-        }
-    }
     
     public var presentedImage: NSImage {
         return self.fullImage ?? self.thumbnailImage ?? self.placeholderImage
     }
     
+    @discardableResult public func fetchMetadata() -> Bool {
+        return self.metadata != nil
+    }
+
     public func fetchMetadata(_ store: Bool = true, handler: MetadataHandler, errorHandler: ErrorHandler)
     {
         self.imageLoader?.loadImageMetadata({ (metadata: ImageMetadata) in
@@ -190,28 +189,32 @@ open class Image: Equatable, Hashable {
             throw Error.locationNotEnumerable(URL)
         }
         
-        let imagePaths = (enumerator.allObjects as! [String]).filter
-        {
-            // TODO: should filter out directories etc. here, just in case — or use the enumeration method with options for that
-            let pathExtension = ($0 as NSString).pathExtension.lowercased()
-            return Image.imageFileExtensions.contains(pathExtension)
+        let urls = enumerator.lazy.map { anyPath -> Foundation.URL in
+            let path = anyPath as! String
+            let url = URL.appendingPathComponent(path, isDirectory: false).absoluteURL
+            return url
+        }.filter { url in
+            var isDir:ObjCBool = false
+            let exists = FileManager.default.fileExists(atPath: url.path, isDirectory: &isDir)
+            let pathExtension = (url.lastPathComponent as NSString).pathExtension.lowercased()
+            return exists && !isDir.boolValue && Image.imageFileExtensions.contains(pathExtension)
         }
         
-        let imageURLs = imagePaths.flatMap { (path: String) -> Foundation.URL? in
-            return URL.appendingPathComponent(path, isDirectory: false).absoluteURL
-        }
-        
-        return imageURLs
+        return urls
     }
     
-    public class func load(contentsOfURL URL:Foundation.URL, loadHandler: LoadHandler? = nil) throws -> [Image]
+    public class func load(contentsOfURL URL:Foundation.URL, loadHandler: LoadHandler? = nil) throws -> (AnyCollection<Image>, Int)
     {
         let imageURLs = try self.imageURLs(atCollectionURL: URL)
         
-        let images = imageURLs.enumerated().flatMap { (i, imageURL) -> Image? in
+        let count = imageURLs.count
+        
+        let images = imageURLs.lazy.enumerated().flatMap { (i, imageURL) -> Image? in
             let pathExtension = imageURL.pathExtension
             
-            guard pathExtension.utf8.count > 0 else { return nil }
+            guard pathExtension.utf8.count > 0 else {
+                return nil
+            }
             
             let image = Image(URL: imageURL)
             loadHandler?(i, imageURLs.count, image)
@@ -219,7 +222,8 @@ open class Image: Equatable, Hashable {
             return image
         }
         
-        return images
+        let imageCollection = AnyCollection<Image>(images)
+        return (imageCollection, count)
     }
     
     public class func loadAsynchronously(contentsOfURL URL:Foundation.URL, queue:DispatchQueue = DispatchQueue.global(), loadHandler:LoadHandler? = nil, errorHandler:LoadErrorHandler) {

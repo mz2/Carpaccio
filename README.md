@@ -1,11 +1,17 @@
 ### Carpaccio [![Carthage compatible](https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat)](https://github.com/Carthage/Carthage)
-##### Cocoa wrapper for the libraw RAW converter library
+##### Pure Swift goodness for RAW and other image + metadata handling
 
-Carpaccio is a Cocoa wrapper to the [LibRaw](http://www.libraw.org/docs/API-CXX-eng.html) C / C++ RAW image conversion library.
+Carpaccio is a Swift library that allows decoding image data from file formats supported by CoreImage (including all the various RAW file formats supported).
+
+- thumbnails
+- metadata
+- full sized image 
+
+Carpaccio is fast: it uses multiple CPU cores efficiently in parallel for all of metadata, thumbnail and image data decoding.
+
+Carpaccio began as a Cocoa wrapper to the [LibRaw](http://www.libraw.org/docs/API-CXX-eng.html) C / C++ RAW image conversion library but all dependencies on LibRaw have been severed by now.
 
 #### INSTALLATION
-
-Carpaccio includes with it a copy of [LibRaw](http://www.libraw.org/docs/API-CXX-eng.html) 0.17 built for OSX & its headers. The framework has no 3rd party dependencies other than that bundled library & headers. 
 
 ##### Carthage
 
@@ -63,29 +69,23 @@ $ git submodule add https://github.com/mz2/Carpaccio.git
 Adapting from a test included in the test suite for the framework, here's how you can use Carpaccio:
 
 ```Swift
-        let img1URL = NSBundle(forClass: self.dynamicType).URLForResource("DSC00583", withExtension: "ARW")!
-        let tempDir = NSURL(fileURLWithPath:NSTemporaryDirectory().stringByAppendingString("/\(NSUUID().UUIDString)"))
-        try! NSFileManager.defaultManager().createDirectoryAtURL(tempDir, withIntermediateDirectories: true, attributes: [:])
+    let converter = RAWImageLoader(imageURL: img1URL, thumbnailScheme: .fullImageWhenThumbnailMissing)
 
-        let converter = RAWConverter(URL: img1URL, convertedImagesRootURL:tempDir)
-
-        converter.decodeContentsOfURL(img1URL,
-                                      thumbnailHandler:
-            { thumb in
-                // do stuff with the thumbnail
-            }, imageHandler: { imgURL in
-                // do stuff with the TIFF image URL
-        }) { err in
-          // handle error
-        }
+    converter.loadThumbnailImage(handler: { thumb, imageMetadata in
+        // deal with thumbnail + metadata 
+    }) { error in
+        // deal with the error 
+    }
 ```
+
+There's a lot more to it though, including different schemes for loading thumbnails or using full size images when thumbnails are not found or are too small, and decoding thumbnails / full images at a specified maximum resolution. 
+
+Documentation and tests are minimal so for now you'll just need to explore the API to discover all the good stuff!
 
 #### TODO
 
 Carpaccio is still a very fresh and raw (har har) library and there are many tasks to make this a more generally useful library.
 
-- [ ] As part of the build process, help with building your own copy of [LibRaw](http://www.libraw.org/docs/API-CXX-eng.html) library instead of assuming one sits under `/usr/local/lib`.
-- [ ] Switch the `RAWConverter` implementation to using the libraw C API instead of the C++ API to allow for a pure Swift implementation.
 - [ ] Add tests for RAWs from a number of different camera vendors.
 - [ ] Travis CI support.
 - [ ] iOS support.

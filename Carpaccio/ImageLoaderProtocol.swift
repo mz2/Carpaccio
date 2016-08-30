@@ -13,7 +13,7 @@ public typealias ImageMetadataHandler = (_ metadata: ImageMetadata) -> Void
 
 public typealias PresentableImageHandler = (_ image: NSImage, _ metadata: ImageMetadata) -> Void
 
-public typealias ImageLoadingErrorHandler = (_ error: Error) -> Void
+public typealias ImageLoadingErrorHandler = (_ error: RAWImageLoaderError) -> Void
 
 
 public protocol ImageLoaderProtocol
