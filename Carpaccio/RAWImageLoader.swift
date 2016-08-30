@@ -6,6 +6,7 @@
 //  Copyright © 2016 Matias Piipari & Co. All rights reserved.
 //
 
+import Foundation
 
 import CoreGraphics
 import CoreImage
@@ -342,7 +343,7 @@ public class RAWImageLoader: ImageLoaderProtocol
     }
 }
 
-extension NSSize
+public extension NSSize
 {
     init(constrainWidth w: CGFloat)
     {

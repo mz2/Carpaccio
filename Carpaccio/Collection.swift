@@ -10,11 +10,13 @@ import Foundation
 
 public protocol ImageCollection: class
 {
-    func contains(image: Image) -> Bool
     var images: AnyCollection<Image> { get }
     var imageCount: Int { get }
     var imageURLs: AnyCollection<URL> { get }
     var name: String { get }
+    var URL: Foundation.URL? { get }
+    
+    func contains(image: Image) -> Bool
 }
 
 extension Carpaccio.Collection: ImageCollection
@@ -40,7 +42,7 @@ public class Collection
     public let name:String
     public var images:AnyCollection<Image>
     public let imageCount:Int
-    public let URL:Foundation.URL
+    public let URL: Foundation.URL?
     
     public init(name: String, images: AnyCollection<Image>, imageCount:Int, URL: Foundation.URL) throws
     {
@@ -50,7 +52,7 @@ public class Collection
         self.imageCount = imageCount
     }
     
-    public init(contentsOfURL URL:Foundation.URL) throws {
+    public init(contentsOfURL URL: Foundation.URL) throws {
         self.URL = URL
         self.name = URL.lastPathComponent
         
@@ -75,7 +77,8 @@ public class Collection
             do {
                 let imageURLs = try Image.imageURLs(atCollectionURL: collectionURL)
                 
-                let images = imageURLs.lazy.pmap(maxParallelism:maxMetadataLoadParallelism) { URL -> Image in
+                //let images = imageURLs.lazy.pmap(maxParallelism:maxMetadataLoadParallelism) { URL -> Image in
+                let images = imageURLs.lazy.map { URL -> Image in
                     let image = Image(URL: URL)
                     image.fetchMetadata()
                     return image

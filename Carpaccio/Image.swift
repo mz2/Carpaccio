@@ -9,7 +9,7 @@
 import Cocoa
 
 
-public class Image: Equatable {
+open class Image: Equatable, Hashable {
     
     public enum Error: Swift.Error {
         case urlMissing
@@ -29,13 +29,16 @@ public class Image: Equatable {
     }
     
     public let URL: Foundation.URL?
+    public let UUID: String = {
+        return Foundation.UUID().uuidString
+    }()
     
     public typealias MetadataHandler = (_ metadata: ImageMetadata) -> Void
     public typealias ErrorHandler = (_ error: Image.Error) -> Void
     
     public typealias DistanceFunction = (_ a:Image, _ b:Image)-> Double
     
-    public required init(image: NSImage)
+    public init(image: NSImage)
     {
         self.fullImage = image
         self.name = image.name() ?? "Untitled"
@@ -47,23 +50,38 @@ public class Image: Equatable {
         self.URL = URL
         self.name = URL.lastPathComponent 
         self.fullImage = nil
-        
-        let pathExtension = URL.pathExtension.lowercased()
-        
-        if Image.RAWImageFileExtensions.contains(pathExtension) {
-            self.imageLoader = RAWImageLoader(imageURL: URL, thumbnailScheme: .fullImageWhenTooSmallThumbnail)
-        }
-        else if Image.bakedImageFileExtensions.contains(pathExtension)
-        {
-            self.imageLoader = RAWImageLoader(imageURL: URL, thumbnailScheme: .fullImageWhenTooSmallThumbnail)
-        }
     }
     
     public var placeholderImage:NSImage {
         return NSImage(named: "ImagePlaceholder")!
     }
+
+    private var cachedImageLoader: ImageLoaderProtocol?
     
-    private var imageLoader: ImageLoaderProtocol?
+    open var imageLoader: ImageLoaderProtocol?
+    {
+        if let loader = cachedImageLoader {
+            return loader
+        }
+        
+        guard let URL = self.URL else {
+            return nil
+        }
+        
+        let pathExtension = URL.pathExtension.lowercased()
+        
+        if Image.RAWImageFileExtensions.contains(pathExtension)
+        {
+            //return RAWImageLoader(imageURL: URL, thumbnailScheme: .AlwaysDecodeFullImage)
+            cachedImageLoader = RAWImageLoader(imageURL: URL, thumbnailScheme: .fullImageWhenTooSmallThumbnail)
+        }
+        else if Image.bakedImageFileExtensions.contains(pathExtension)
+        {
+            cachedImageLoader = RAWImageLoader(imageURL: URL, thumbnailScheme: .fullImageWhenTooSmallThumbnail)
+        }
+        
+        return cachedImageLoader
+    }
     
     public lazy var metadata: ImageMetadata? = {
         let metadata = self.imageLoader?.imageMetadata
@@ -217,6 +235,10 @@ public class Image: Equatable {
                 errorHandler(.loadingFailed(underlyingError: error))
             }
         }
+    }
+    
+    public var hashValue: Int {
+        return UUID.hashValue
     }
 }
 
