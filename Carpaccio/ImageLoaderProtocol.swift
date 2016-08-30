@@ -16,7 +16,7 @@ public typealias PresentableImageHandler = (_ image: NSImage, _ metadata: ImageM
 public typealias ImageLoadingErrorHandler = (_ error: RAWImageLoaderError) -> Void
 
 
-protocol ImageLoaderProtocol
+public protocol ImageLoaderProtocol
 {
     var imageURL: URL { get }
     var imageMetadata: ImageMetadata? { get }
