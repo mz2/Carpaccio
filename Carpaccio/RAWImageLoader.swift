@@ -28,6 +28,7 @@ public class RAWImageLoader: ImageLoaderProtocol
     }
     
     public let imageURL: URL
+    public let cachedImageURL: URL? = nil // For now, we don't implement a disk cache for images loaded by RAWImageLoader
     public let thumbnailScheme: ThumbnailScheme
     
     // See ImageMetadata.timestamp for known caveats about EXIF/TIFF

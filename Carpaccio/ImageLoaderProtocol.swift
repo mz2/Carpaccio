@@ -21,6 +21,9 @@ public protocol ImageLoaderProtocol
     var imageURL: URL { get }
     var imageMetadata: ImageMetadata? { get }
     
+    /** *If*, in addition to `imageURL`, full image image data happens to have been copied into a disk cache location, a direct URL pointing to that location. */
+    var cachedImageURL: URL? { get }
+    
     /** Retrieve metadata about this loader's image, to be called before loading actual image data. */
     func loadImageMetadata(_ handler: ImageMetadataHandler, errorHandler: ImageLoadingErrorHandler)
     
