@@ -170,9 +170,23 @@ public struct ImageMetadata
         }
     }
     
+    static var longTimestampFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateStyle = .long
+        f.timeStyle = .medium
+        return f
+    }()
+    
+    public var humanReadableLongTimestamp: String {
+        if let t = timestamp {
+            return ImageMetadata.longTimestampFormatter.string(from: t)
+        }
+        return ""
+    }
+    
     public var humanReadableMetadataSummary: String {
         get {
-            return "\(padTail(ofString:self.cleanedUpCameraModel))\(padTail(ofString: self.humanReadableFocalLength))\(padTail(ofString: conditional(string: self.humanReadableFocalLength35mmEquivalent, condition: (self.focalLength35mmEquivalent != self.focalLength))))\(padTail(ofString: self.humanReadableFNumber))\(padTail(ofString: self.humanReadableShutterSpeed))\(padTail(ofString: self.humanReadableISO))"
+            return "\(padTail(ofString:self.cleanedUpCameraModel))\(padTail(ofString: self.humanReadableFocalLength))\(padTail(ofString: conditional(string: self.humanReadableFocalLength35mmEquivalent, condition: (self.focalLength35mmEquivalent != self.focalLength))))\(padTail(ofString: self.humanReadableFNumber))\(padTail(ofString: self.humanReadableShutterSpeed))\(padTail(ofString: self.humanReadableISO))\(padTail(ofString: humanReadableLongTimestamp))"
         }
     }
     
