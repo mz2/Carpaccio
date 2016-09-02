@@ -96,12 +96,12 @@ public struct ImageMetadata
     public var humanReadableFNumber: String? {
         get
         {
-            guard let fNumber = self.fNumber else {
+            guard let f = fNumber, f > 0.0 else {
                 return nil
             }
             
             // Default to showing one decimal place...
-            let oneTenthPrecisionfNumber = round(fNumber * 10.0) / 10.0
+            let oneTenthPrecisionfNumber = round(f * 10.0) / 10.0
             let integerApterture = Int(oneTenthPrecisionfNumber)
             
             // ..but avoid displaying .0
@@ -116,7 +116,7 @@ public struct ImageMetadata
     public var humanReadableFocalLength: String? {
         get
         {
-            guard let f = self.focalLength else {
+            guard let f = self.focalLength, f > 0.0 else {
                 return nil
             }
             
@@ -128,7 +128,7 @@ public struct ImageMetadata
     public var humanReadableFocalLength35mmEquivalent: String? {
         get
         {
-            guard let f = self.focalLength35mmEquivalent else {
+            guard let f = self.focalLength35mmEquivalent, f > 0.0 else {
                 return nil
             }
             
@@ -140,7 +140,7 @@ public struct ImageMetadata
     public var humanReadableISO: String? {
         get
         {
-            guard let ISO = self.ISO else {
+            guard let ISO = self.ISO, ISO > 0.0 else {
                 return nil
             }
             
@@ -152,14 +152,11 @@ public struct ImageMetadata
     public var humanReadableShutterSpeed: String? {
         get
         {
-            guard let s = self.shutterSpeed else {
+            guard let s = self.shutterSpeed, s > 0.0 else {
                 return nil
             }
             
-            if s <= 0.0 {
-                return nil
-            }
-            else if s < 1.0
+            if s < 1.0
             {
                 let dividend = Int(round(1.0 / s))
                 return "1/\(dividend)"
@@ -170,23 +167,24 @@ public struct ImageMetadata
         }
     }
     
-    static var longTimestampFormatter: DateFormatter = {
+    static var timestampFormatter: DateFormatter =
+    {
         let f = DateFormatter()
-        f.dateStyle = .long
+        f.dateStyle = .medium
         f.timeStyle = .medium
         return f
     }()
     
-    public var humanReadableLongTimestamp: String {
+    public var humanReadableTimestamp: String {
         if let t = timestamp {
-            return ImageMetadata.longTimestampFormatter.string(from: t)
+            return ImageMetadata.timestampFormatter.string(from: t)
         }
         return ""
     }
     
     public var humanReadableMetadataSummary: String {
         get {
-            return "\(padTail(ofString:self.cleanedUpCameraModel))\(padTail(ofString: self.humanReadableFocalLength))\(padTail(ofString: conditional(string: self.humanReadableFocalLength35mmEquivalent, condition: (self.focalLength35mmEquivalent != self.focalLength))))\(padTail(ofString: self.humanReadableFNumber))\(padTail(ofString: self.humanReadableShutterSpeed))\(padTail(ofString: self.humanReadableISO))\(padTail(ofString: humanReadableLongTimestamp))"
+            return "\(padTail(ofString:self.cleanedUpCameraModel))\(padTail(ofString: self.humanReadableFocalLength))\(padTail(ofString: conditional(string: self.humanReadableFocalLength35mmEquivalent, condition: (self.focalLength35mmEquivalent != self.focalLength))))\(padTail(ofString: self.humanReadableFNumber))\(padTail(ofString: self.humanReadableShutterSpeed))\(padTail(ofString: self.humanReadableISO))"
         }
     }
     
