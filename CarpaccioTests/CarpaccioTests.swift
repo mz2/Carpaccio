@@ -33,6 +33,13 @@ class CarpaccioTests: XCTestCase {
         converter.loadThumbnailImage(handler: { thumb, imageMetadata in
             XCTAssert(thumb.size.width > 1615 && thumb.size.width < 1617, "Unexpected thumbnail width: \(thumb.size.width)")
             XCTAssert(thumb.size.width > 1079 && thumb.size.height < 1081, "Unexpected thumbnail height: \(thumb.size.height)")
+            
+            XCTAssertEqual(imageMetadata.cameraMaker, "SONY")
+            XCTAssertEqual(imageMetadata.cameraModel, "ILCE-7RM2")
+            XCTAssertEqual(imageMetadata.ISO, 125.0)
+            XCTAssertEqual(imageMetadata.nativeSize.width, 7952.0)
+            XCTAssertEqual(imageMetadata.nativeSize.height, 5304.0)
+            XCTAssertEqual(imageMetadata.humanReadableTimestamp, "16 Mar 2016, 16:34:21")
         }) { err in
             XCTFail("Error: \(err)")
         }
