@@ -152,20 +152,14 @@ public class Collection
     // TODO: Use a Swot data frame as return type instead?
     public func distanceTable(_ distance:Image.DistanceFunction) -> [[Double]] {
         let distMatrix = self.distanceMatrix(distance)
-        var distTable = [[Double]]()
         
         if (distMatrix.count == 0) { return [[Double]]() }
         
-        //let rowCount = distMatrix.count
-        //let colCount = distMatrix[0].count
-        //precondition(rowCount == self.images.count)
-        //precondition(rowCount == colCount)
-        
-        for i in images.indices {
+        return images.indices.map { i in
             let iDist = images.indices.distance(from: images.indices.startIndex, to: i)
             
-            for j in images.indices.map { j -> Double  {
-                let jDist = images.indices.distance(from: images.indices.startIndex, to: i)
+            return images.indices.map { j in
+                let jDist = images.indices.distance(from: images.indices.startIndex, to: j)
             
                 if j < i {
                     return distMatrix[jDist][iDist]
@@ -173,10 +167,7 @@ public class Collection
                 
                 return distMatrix[iDist][jDist]
             }
-            distTable.append(row)
         }
-        
-        return distTable
     }
         
 }
