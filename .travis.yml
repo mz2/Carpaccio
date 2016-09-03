@@ -1,0 +1,4 @@
+language: swift
+xcode_project: Carpaccio.xcodeproj
+xcode_scheme: CarpaccioTests
+osx_image: xcode8
