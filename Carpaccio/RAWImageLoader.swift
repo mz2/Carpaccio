@@ -33,7 +33,7 @@ public class RAWImageLoader: ImageLoaderProtocol
     
     // See ImageMetadata.timestamp for known caveats about EXIF/TIFF
     // date metadata, as interpreted by this date formatter.
-    private static let dateFormatter: DateFormatter =
+    private static let EXIFDateFormatter: DateFormatter =
     {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy:MM:dd HH:mm:ss"
@@ -46,18 +46,16 @@ public class RAWImageLoader: ImageLoaderProtocol
         self.thumbnailScheme = thumbnailScheme
     }
     
-    private var imageSource: CGImageSource? {
-        get
-        {
-            // We intentionally don't store the image source, to not gob up resources, but rather open it anew each time
-            let options = [String(kCGImageSourceShouldCache): false, String(kCGImageSourceShouldAllowFloat): true] as NSDictionary as CFDictionary
-            let imageSource = CGImageSourceCreateWithURL(imageURL as CFURL, options)
-            return imageSource
-        }
+    private var imageSource: CGImageSource?
+    {
+        // We intentionally don't store the image source, to not gob up resources, but rather open it anew each time
+        let options = [String(kCGImageSourceShouldCache): false, String(kCGImageSourceShouldAllowFloat): true] as NSDictionary as CFDictionary
+        let imageSource = CGImageSourceCreateWithURL(imageURL as CFURL, options)
+        return imageSource
     }
     
     public lazy var imageMetadata: ImageMetadata? = {
-        
+
         guard let imageSource = self.imageSource else {
             return nil
         }
@@ -103,7 +101,7 @@ public class RAWImageLoader: ImageLoaderProtocol
             }
             
             if let originalDateString = (EXIF[kCGImagePropertyExifDateTimeOriginal as String] as? String) {
-                timestamp = dateFormatter.date(from: originalDateString)
+                timestamp = EXIFDateFormatter.date(from: originalDateString)
             }
         }
         
@@ -117,7 +115,7 @@ public class RAWImageLoader: ImageLoaderProtocol
             orientation = CGImagePropertyOrientation(rawValue: (TIFF[kCGImagePropertyTIFFOrientation as String] as? NSNumber)?.uint32Value ?? CGImagePropertyOrientation.up.rawValue)
             
             if timestamp == nil, let dateTimeString = (TIFF[kCGImagePropertyTIFFDateTime as String] as? String) {
-                timestamp = dateFormatter.date(from: dateTimeString)
+                timestamp = EXIFDateFormatter.date(from: dateTimeString)
             }
         }
         
