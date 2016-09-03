@@ -16,14 +16,17 @@ public typealias PresentableImageHandler = (_ image: BitmapImage, _ metadata: Im
 public typealias ImageLoadingErrorHandler = (_ error: RAWImageLoaderError) -> Void
 
 public struct FullSizedImageLoadingOptions {
-    var maximumPixelDimensions:CGSize?
-    var allowDraftMode = true
-    var noiseReductionAmount = 0.5
-    var colorNoiseReductionAmount = 1.0
-    var noiseReductionSharpnessAmount = 0.5
-    var noiseReductionContrastAmount = 0.5
-    var boostShadowAmount = 1.0
-    var enableVendorLensCorrection = true
+    public var maximumPixelDimensions:CGSize?
+    public var allowDraftMode = true
+    public var noiseReductionAmount = 0.5
+    public var colorNoiseReductionAmount = 1.0
+    public var noiseReductionSharpnessAmount = 0.5
+    public var noiseReductionContrastAmount = 0.5
+    public var boostShadowAmount = 1.0
+    public var enableVendorLensCorrection = true
+    
+    // for some reason compiler is not happy otherwise when this is used from outside.
+    public init() { }
 }
 
 public protocol ImageLoaderProtocol
@@ -35,15 +38,19 @@ public protocol ImageLoaderProtocol
     var cachedImageURL: URL? { get }
     
     /** Retrieve metadata about this loader's image, to be called before loading actual image data. */
-    func loadImageMetadata(_ handler: ImageMetadataHandler, errorHandler: ImageLoadingErrorHandler)
-    
-    /** Load thumbnail image. */
     func loadThumbnailImage(maximumPixelDimensions maxPixelSize: CGSize?,
                             handler: PresentableImageHandler,
                             errorHandler: ImageLoadingErrorHandler)
     
+    /** Load thumbnail image. */
+    func loadImageMetadata(_ handler: ImageMetadataHandler,
+                           errorHandler: ImageLoadingErrorHandler)
+    
     /** Load full-size image. */
     func loadFullSizeImage(options: FullSizedImageLoadingOptions,
                            handler: PresentableImageHandler,
+                           errorHandler: ImageLoadingErrorHandler)
+    
+    func loadFullSizeImage(handler: PresentableImageHandler,
                            errorHandler: ImageLoadingErrorHandler)
 }

@@ -9,6 +9,18 @@
 import AppKit
 
 extension NSImage:BitmapImage {
+    
+    public var cgImage:CGImage? {
+        return self.cgImage(forProposedRect: nil, context: nil, hints: nil)
+    }
+}
+
+extension BitmapImage {
+    
+    public var nsImage:NSImage {
+        return self as! NSImage
+    }
+    
 }
 
 extension NSImage {

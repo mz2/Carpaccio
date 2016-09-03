@@ -15,6 +15,8 @@ public protocol BitmapImage:NSObjectProtocol {
     var size: CGSize { get }
     
     func scaled(height: CGFloat, screenScaleFactor: CGFloat) -> BitmapImage
+    
+    var cgImage:CGImage? { get }
 }
 
 public extension BitmapImage {

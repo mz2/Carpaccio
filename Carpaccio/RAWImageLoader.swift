@@ -263,7 +263,11 @@ public class RAWImageLoader: ImageLoaderProtocol
         return context
     }
     
-    public func loadFullSizeImage(options: FullSizedImageLoadingOptions = FullSizedImageLoadingOptions(),
+    public func loadFullSizeImage(handler: PresentableImageHandler, errorHandler: ImageLoadingErrorHandler) {
+        self.loadFullSizeImage(options: FullSizedImageLoadingOptions(), handler: handler, errorHandler: errorHandler)
+    }
+    
+    public func loadFullSizeImage(options: FullSizedImageLoadingOptions,
                                   handler: PresentableImageHandler,
                                   errorHandler: ImageLoadingErrorHandler)
     {
