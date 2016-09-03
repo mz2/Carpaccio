@@ -39,7 +39,17 @@ class CarpaccioTests: XCTestCase {
             XCTAssertEqual(imageMetadata.ISO, 125.0)
             XCTAssertEqual(imageMetadata.nativeSize.width, 7952.0)
             XCTAssertEqual(imageMetadata.nativeSize.height, 5304.0)
-            XCTAssertEqual(imageMetadata.humanReadableTimestamp, "16 Mar 2016, 16:34:21")
+            
+            let testedComponents:Set<Calendar.Component> = [.year, .month, .day, .hour, .minute, .second]
+            let date = imageMetadata.timestamp!
+            let components = Calendar(identifier: .gregorian).dateComponents(testedComponents, from: date)
+            
+            XCTAssertEqual(components.year, 2016)
+            XCTAssertEqual(components.day, 16)
+            XCTAssertEqual(components.month, 3)
+            XCTAssertEqual(components.hour, 16)
+            XCTAssertEqual(components.minute, 34)
+            XCTAssertEqual(components.second, 21)
         }) { err in
             XCTFail("Error: \(err)")
         }
