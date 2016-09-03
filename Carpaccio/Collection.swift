@@ -163,20 +163,20 @@ public class Collection
         
         for i in images.indices {
             let iDist = images.indices.distance(from: images.indices.startIndex, to: i)
-            var row = [Double]()
-            for j in images.indices {
+            
+            for j in images.indices.map { j -> Double  {
                 let jDist = images.indices.distance(from: images.indices.startIndex, to: i)
             
                 if j < i {
-                    row.append(distMatrix[jDist][iDist])
+                    return distMatrix[jDist][iDist]
                 }
-                else {
-                    row.append(distMatrix[iDist][jDist])
-                }
+                
+                return distMatrix[iDist][jDist]
             }
             distTable.append(row)
         }
         
         return distTable
     }
+        
 }
