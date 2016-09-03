@@ -77,8 +77,7 @@ public class Collection
             do {
                 let imageURLs = try Image.imageURLs(atCollectionURL: collectionURL)
                 
-                //let images = imageURLs.lazy.pmap(maxParallelism:maxMetadataLoadParallelism) { URL -> Image in
-                let images = imageURLs.lazy.map { URL -> Image in
+                let images = imageURLs.lazy.pmap(maxParallelism:maxMetadataLoadParallelism) { URL -> Image in
                     let image = Image(URL: URL)
                     image.fetchMetadata()
                     return image
