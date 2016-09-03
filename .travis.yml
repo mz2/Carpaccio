@@ -1,5 +1,4 @@
 language: objective-c
 xcode_workspace: Carpaccio.xcworkspace
-xcode_scheme: Carpaccio
+xcode_scheme: Carpaccio-iOS
 osx_image: xcode8
-script: xcodebuild -project Carpaccio.xcodeproj -scheme CarpaccioTests
