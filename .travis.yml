@@ -2,3 +2,4 @@ language: objective-c
 xcode_project: Carpaccio.xcodeproj
 xcode_scheme: CarpaccioTests
 osx_image: xcode8
+script: xcodebuild -project Carpaccio.xcodeproj -scheme CarpaccioTests
