@@ -8,9 +8,23 @@
 
 /* Begin PBXBuildFile section */
 		289813341D494B1300B1BA5D /* ImageLoaderProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 289813331D494B1300B1BA5D /* ImageLoaderProtocol.swift */; };
-		289813381D4C8C2A00B1BA5D /* Utility.swift in Sources */ = {isa = PBXBuildFile; fileRef = 289813371D4C8C2A00B1BA5D /* Utility.swift */; };
+		289813381D4C8C2A00B1BA5D /* CGSize+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 289813371D4C8C2A00B1BA5D /* CGSize+Extensions.swift */; };
 		2898133A1D4DC26600B1BA5D /* RAWImageLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 289813391D4DC26600B1BA5D /* RAWImageLoader.swift */; };
 		28B9AA081D462AFD00C4B03E /* ImageMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28B9AA071D462AFD00C4B03E /* ImageMetadata.swift */; };
+		5F020A051D7B334A004C1DE6 /* ImageLoaderProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 289813331D494B1300B1BA5D /* ImageLoaderProtocol.swift */; };
+		5F020A061D7B334A004C1DE6 /* Collection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FF2F7A81CE1563400C15E3A /* Collection.swift */; };
+		5F020A071D7B334A004C1DE6 /* CGSize+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 289813371D4C8C2A00B1BA5D /* CGSize+Extensions.swift */; };
+		5F020A081D7B334A004C1DE6 /* RAWImageLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 289813391D4DC26600B1BA5D /* RAWImageLoader.swift */; };
+		5F020A091D7B334A004C1DE6 /* ImageMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28B9AA071D462AFD00C4B03E /* ImageMetadata.swift */; };
+		5F020A0A1D7B334A004C1DE6 /* Image.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FF2F7A71CE1563400C15E3A /* Image.swift */; };
+		5F020A0B1D7B334A004C1DE6 /* Collection+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FAD66681D72FD3C006973C9 /* Collection+Extensions.swift */; };
+		5F020A0D1D7B334A004C1DE6 /* libjpeg.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5F7016221CE3295900173EB6 /* libjpeg.a */; };
+		5F020A101D7B334A004C1DE6 /* Carpaccio.h in Headers */ = {isa = PBXBuildFile; fileRef = 5F1E22801CDEA9D90083FD6F /* Carpaccio.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		5F020A1B1D7B3D16004C1DE6 /* BitmapImage+OSX.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F020A1A1D7B3D16004C1DE6 /* BitmapImage+OSX.swift */; };
+		5F020A1C1D7B3D1D004C1DE6 /* BitmapImage+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F020A181D7B3D08004C1DE6 /* BitmapImage+iOS.swift */; };
+		5F020A1E1D7B460C004C1DE6 /* BitmapImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F020A1D1D7B460C004C1DE6 /* BitmapImage.swift */; };
+		5F020A1F1D7B460C004C1DE6 /* BitmapImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F020A1D1D7B460C004C1DE6 /* BitmapImage.swift */; };
+		5F020A211D7B4BFA004C1DE6 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5F020A201D7B4BFA004C1DE6 /* UIKit.framework */; };
 		5F1E22811CDEA9D90083FD6F /* Carpaccio.h in Headers */ = {isa = PBXBuildFile; fileRef = 5F1E22801CDEA9D90083FD6F /* Carpaccio.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		5F1E22881CDEA9D90083FD6F /* Carpaccio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5F1E227D1CDEA9D90083FD6F /* Carpaccio.framework */; };
 		5F1E228D1CDEA9D90083FD6F /* CarpaccioTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F1E228C1CDEA9D90083FD6F /* CarpaccioTests.swift */; };
@@ -20,6 +34,11 @@
 		5F1E22A21CDEAC330083FD6F /* DSC00593.ARW in Resources */ = {isa = PBXBuildFile; fileRef = 5F1E229F1CDEAC330083FD6F /* DSC00593.ARW */; };
 		5F7016231CE3295900173EB6 /* libjpeg.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5F7016221CE3295900173EB6 /* libjpeg.a */; };
 		5FAD66691D72FD3C006973C9 /* Collection+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FAD66681D72FD3C006973C9 /* Collection+Extensions.swift */; };
+		5FB593031D7B4DE300FB0086 /* Carpaccio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5F020A151D7B334A004C1DE6 /* Carpaccio.framework */; };
+		5FB593091D7B4DE800FB0086 /* CarpaccioTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F1E228C1CDEA9D90083FD6F /* CarpaccioTests.swift */; };
+		5FB5930A1D7B4E4A00FB0086 /* DSC00583.ARW in Resources */ = {isa = PBXBuildFile; fileRef = 5F1E229D1CDEAC330083FD6F /* DSC00583.ARW */; };
+		5FB5930B1D7B4E4A00FB0086 /* DSC00588.ARW in Resources */ = {isa = PBXBuildFile; fileRef = 5F1E229E1CDEAC330083FD6F /* DSC00588.ARW */; };
+		5FB5930C1D7B4E4A00FB0086 /* DSC00593.ARW in Resources */ = {isa = PBXBuildFile; fileRef = 5F1E229F1CDEAC330083FD6F /* DSC00593.ARW */; };
 		5FF2F7A91CE1563400C15E3A /* Image.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FF2F7A71CE1563400C15E3A /* Image.swift */; };
 		5FF2F7AA1CE1563400C15E3A /* Collection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FF2F7A81CE1563400C15E3A /* Collection.swift */; };
 /* End PBXBuildFile section */
@@ -32,17 +51,31 @@
 			remoteGlobalIDString = 5F1E227C1CDEA9D90083FD6F;
 			remoteInfo = Carpaccio;
 		};
+		5FB593041D7B4DE300FB0086 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 5F1E22741CDEA9D90083FD6F /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 5F020A031D7B334A004C1DE6;
+			remoteInfo = "Carpaccio-iOS";
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		289813331D494B1300B1BA5D /* ImageLoaderProtocol.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageLoaderProtocol.swift; sourceTree = "<group>"; };
-		289813371D4C8C2A00B1BA5D /* Utility.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Utility.swift; sourceTree = "<group>"; };
+		289813371D4C8C2A00B1BA5D /* CGSize+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "CGSize+Extensions.swift"; sourceTree = "<group>"; };
 		289813391D4DC26600B1BA5D /* RAWImageLoader.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RAWImageLoader.swift; sourceTree = "<group>"; };
 		28B9AA071D462AFD00C4B03E /* ImageMetadata.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageMetadata.swift; sourceTree = "<group>"; };
+		5F020A151D7B334A004C1DE6 /* Carpaccio.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Carpaccio.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		5F020A161D7B334A004C1DE6 /* Carpaccio-iOS-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "Carpaccio-iOS-Info.plist"; path = "/Users/mz2/Projects/Sashimi/Carthage/Checkouts/Carpaccio/Carpaccio-iOS-Info.plist"; sourceTree = "<absolute>"; };
+		5F020A181D7B3D08004C1DE6 /* BitmapImage+iOS.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "BitmapImage+iOS.swift"; path = "Carpaccio/BitmapImage+iOS.swift"; sourceTree = "<group>"; };
+		5F020A1A1D7B3D16004C1DE6 /* BitmapImage+OSX.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "BitmapImage+OSX.swift"; path = "Carpaccio/BitmapImage+OSX.swift"; sourceTree = "<group>"; };
+		5F020A1D1D7B460C004C1DE6 /* BitmapImage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BitmapImage.swift; path = Carpaccio/BitmapImage.swift; sourceTree = "<group>"; };
+		5F020A201D7B4BFA004C1DE6 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS10.0.sdk/System/Library/Frameworks/UIKit.framework; sourceTree = DEVELOPER_DIR; };
+		5F020A311D7B4C09004C1DE6 /* CarpaccioTests-iOS-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "CarpaccioTests-iOS-Info.plist"; path = "/Users/mz2/Projects/Sashimi/Carthage/Checkouts/Carpaccio/CarpaccioTests-iOS-Info.plist"; sourceTree = "<absolute>"; };
 		5F1E227D1CDEA9D90083FD6F /* Carpaccio.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Carpaccio.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		5F1E22801CDEA9D90083FD6F /* Carpaccio.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Carpaccio.h; sourceTree = "<group>"; };
 		5F1E22821CDEA9D90083FD6F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		5F1E22871CDEA9D90083FD6F /* CarpaccioTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CarpaccioTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		5F1E22871CDEA9D90083FD6F /* CarpaccioTests-OSX.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "CarpaccioTests-OSX.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		5F1E228C1CDEA9D90083FD6F /* CarpaccioTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarpaccioTests.swift; sourceTree = "<group>"; };
 		5F1E228E1CDEA9D90083FD6F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		5F1E229B1CDEAABF0083FD6F /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
@@ -53,12 +86,23 @@
 		5F7016221CE3295900173EB6 /* libjpeg.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libjpeg.a; path = Libraries/libjpeg.a; sourceTree = "<group>"; };
 		5F7016261CE329D400173EB6 /* liblcms2.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = liblcms2.a; path = Libraries/liblcms2.a; sourceTree = "<group>"; };
 		5FAD66681D72FD3C006973C9 /* Collection+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Collection+Extensions.swift"; sourceTree = "<group>"; };
+		5FB592FE1D7B4DE300FB0086 /* CarpaccioTests-iOS.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "CarpaccioTests-iOS.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		5FB593021D7B4DE300FB0086 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = Info.plist; path = "CarpaccioTests-iOS/Info.plist"; sourceTree = SOURCE_ROOT; };
 		5FF2F7A11CE1542D00C15E3A /* libraw.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libraw.a; path = Libraries/libraw.a; sourceTree = "<group>"; };
 		5FF2F7A71CE1563400C15E3A /* Image.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Image.swift; sourceTree = "<group>"; };
 		5FF2F7A81CE1563400C15E3A /* Collection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Collection.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		5F020A0C1D7B334A004C1DE6 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5F020A211D7B4BFA004C1DE6 /* UIKit.framework in Frameworks */,
+				5F020A0D1D7B334A004C1DE6 /* libjpeg.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		5F1E22791CDEA9D90083FD6F /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -76,16 +120,38 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		5FB592FB1D7B4DE300FB0086 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5FB593031D7B4DE300FB0086 /* Carpaccio.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		5F020A171D7B3CF2004C1DE6 /* Crossplatform Bitmap Image */ = {
+			isa = PBXGroup;
+			children = (
+				5F020A1D1D7B460C004C1DE6 /* BitmapImage.swift */,
+				5F020A181D7B3D08004C1DE6 /* BitmapImage+iOS.swift */,
+				5F020A1A1D7B3D16004C1DE6 /* BitmapImage+OSX.swift */,
+			);
+			name = "Crossplatform Bitmap Image";
+			sourceTree = "<group>";
+		};
 		5F1E22731CDEA9D90083FD6F = {
 			isa = PBXGroup;
 			children = (
+				5F020A171D7B3CF2004C1DE6 /* Crossplatform Bitmap Image */,
 				5FF2F7AD1CE1568E00C15E3A /* Frameworks */,
 				5F1E227F1CDEA9D90083FD6F /* Carpaccio */,
 				5F1E228B1CDEA9D90083FD6F /* CarpaccioTests */,
+				5FB592FF1D7B4DE300FB0086 /* CarpaccioTests-iOS */,
 				5F1E227E1CDEA9D90083FD6F /* Products */,
+				5F020A161D7B334A004C1DE6 /* Carpaccio-iOS-Info.plist */,
+				5F020A311D7B4C09004C1DE6 /* CarpaccioTests-iOS-Info.plist */,
 			);
 			sourceTree = "<group>";
 		};
@@ -93,7 +159,9 @@
 			isa = PBXGroup;
 			children = (
 				5F1E227D1CDEA9D90083FD6F /* Carpaccio.framework */,
-				5F1E22871CDEA9D90083FD6F /* CarpaccioTests.xctest */,
+				5F1E22871CDEA9D90083FD6F /* CarpaccioTests-OSX.xctest */,
+				5F020A151D7B334A004C1DE6 /* Carpaccio.framework */,
+				5FB592FE1D7B4DE300FB0086 /* CarpaccioTests-iOS.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -124,6 +192,14 @@
 			path = CarpaccioTests;
 			sourceTree = "<group>";
 		};
+		5FB592FF1D7B4DE300FB0086 /* CarpaccioTests-iOS */ = {
+			isa = PBXGroup;
+			children = (
+				5FB593021D7B4DE300FB0086 /* Info.plist */,
+			);
+			path = "CarpaccioTests-iOS";
+			sourceTree = "<group>";
+		};
 		5FF2F7AB1CE1563C00C15E3A /* RAW Converter */ = {
 			isa = PBXGroup;
 			children = (
@@ -137,7 +213,7 @@
 			children = (
 				5FF2F7A71CE1563400C15E3A /* Image.swift */,
 				5FF2F7A81CE1563400C15E3A /* Collection.swift */,
-				289813371D4C8C2A00B1BA5D /* Utility.swift */,
+				289813371D4C8C2A00B1BA5D /* CGSize+Extensions.swift */,
 			);
 			name = Image;
 			sourceTree = "<group>";
@@ -145,6 +221,7 @@
 		5FF2F7AD1CE1568E00C15E3A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				5F020A201D7B4BFA004C1DE6 /* UIKit.framework */,
 				5F7016261CE329D400173EB6 /* liblcms2.a */,
 				5F7016221CE3295900173EB6 /* libjpeg.a */,
 				5F7016201CE3291300173EB6 /* libjasper.a */,
@@ -157,6 +234,14 @@
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
+		5F020A0F1D7B334A004C1DE6 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5F020A101D7B334A004C1DE6 /* Carpaccio.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		5F1E227A1CDEA9D90083FD6F /* Headers */ = {
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
@@ -168,9 +253,27 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
-		5F1E227C1CDEA9D90083FD6F /* Carpaccio */ = {
+		5F020A031D7B334A004C1DE6 /* Carpaccio-iOS */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 5F1E22911CDEA9D90083FD6F /* Build configuration list for PBXNativeTarget "Carpaccio" */;
+			buildConfigurationList = 5F020A121D7B334A004C1DE6 /* Build configuration list for PBXNativeTarget "Carpaccio-iOS" */;
+			buildPhases = (
+				5F020A041D7B334A004C1DE6 /* Sources */,
+				5F020A0C1D7B334A004C1DE6 /* Frameworks */,
+				5F020A0F1D7B334A004C1DE6 /* Headers */,
+				5F020A111D7B334A004C1DE6 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "Carpaccio-iOS";
+			productName = Carpaccio;
+			productReference = 5F020A151D7B334A004C1DE6 /* Carpaccio.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		5F1E227C1CDEA9D90083FD6F /* Carpaccio-OSX */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 5F1E22911CDEA9D90083FD6F /* Build configuration list for PBXNativeTarget "Carpaccio-OSX" */;
 			buildPhases = (
 				5F1E22781CDEA9D90083FD6F /* Sources */,
 				5F1E22791CDEA9D90083FD6F /* Frameworks */,
@@ -181,14 +284,14 @@
 			);
 			dependencies = (
 			);
-			name = Carpaccio;
+			name = "Carpaccio-OSX";
 			productName = Carpaccio;
 			productReference = 5F1E227D1CDEA9D90083FD6F /* Carpaccio.framework */;
 			productType = "com.apple.product-type.framework";
 		};
-		5F1E22861CDEA9D90083FD6F /* CarpaccioTests */ = {
+		5F1E22861CDEA9D90083FD6F /* CarpaccioTests-OSX */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 5F1E22941CDEA9D90083FD6F /* Build configuration list for PBXNativeTarget "CarpaccioTests" */;
+			buildConfigurationList = 5F1E22941CDEA9D90083FD6F /* Build configuration list for PBXNativeTarget "CarpaccioTests-OSX" */;
 			buildPhases = (
 				5F1E22831CDEA9D90083FD6F /* Sources */,
 				5F1E22841CDEA9D90083FD6F /* Frameworks */,
@@ -199,9 +302,27 @@
 			dependencies = (
 				5F1E228A1CDEA9D90083FD6F /* PBXTargetDependency */,
 			);
-			name = CarpaccioTests;
+			name = "CarpaccioTests-OSX";
 			productName = CarpaccioTests;
-			productReference = 5F1E22871CDEA9D90083FD6F /* CarpaccioTests.xctest */;
+			productReference = 5F1E22871CDEA9D90083FD6F /* CarpaccioTests-OSX.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		5FB592FD1D7B4DE300FB0086 /* CarpaccioTests-iOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 5FB593061D7B4DE300FB0086 /* Build configuration list for PBXNativeTarget "CarpaccioTests-iOS" */;
+			buildPhases = (
+				5FB592FA1D7B4DE300FB0086 /* Sources */,
+				5FB592FB1D7B4DE300FB0086 /* Frameworks */,
+				5FB592FC1D7B4DE300FB0086 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				5FB593051D7B4DE300FB0086 /* PBXTargetDependency */,
+			);
+			name = "CarpaccioTests-iOS";
+			productName = "CarpaccioTests-iOS";
+			productReference = 5FB592FE1D7B4DE300FB0086 /* CarpaccioTests-iOS.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
 /* End PBXNativeTarget section */
@@ -222,6 +343,11 @@
 						CreatedOnToolsVersion = 7.3;
 						LastSwiftMigration = 0800;
 					};
+					5FB592FD1D7B4DE300FB0086 = {
+						CreatedOnToolsVersion = 8.0;
+						DevelopmentTeam = 7LT87MAUR9;
+						ProvisioningStyle = Automatic;
+					};
 				};
 			};
 			buildConfigurationList = 5F1E22771CDEA9D90083FD6F /* Build configuration list for PBXProject "Carpaccio" */;
@@ -236,13 +362,22 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				5F1E227C1CDEA9D90083FD6F /* Carpaccio */,
-				5F1E22861CDEA9D90083FD6F /* CarpaccioTests */,
+				5F1E227C1CDEA9D90083FD6F /* Carpaccio-OSX */,
+				5F020A031D7B334A004C1DE6 /* Carpaccio-iOS */,
+				5F1E22861CDEA9D90083FD6F /* CarpaccioTests-OSX */,
+				5FB592FD1D7B4DE300FB0086 /* CarpaccioTests-iOS */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		5F020A111D7B334A004C1DE6 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		5F1E227B1CDEA9D90083FD6F /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -260,20 +395,48 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		5FB592FC1D7B4DE300FB0086 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5FB5930C1D7B4E4A00FB0086 /* DSC00593.ARW in Resources */,
+				5FB5930A1D7B4E4A00FB0086 /* DSC00583.ARW in Resources */,
+				5FB5930B1D7B4E4A00FB0086 /* DSC00588.ARW in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		5F020A041D7B334A004C1DE6 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5F020A051D7B334A004C1DE6 /* ImageLoaderProtocol.swift in Sources */,
+				5F020A061D7B334A004C1DE6 /* Collection.swift in Sources */,
+				5F020A071D7B334A004C1DE6 /* CGSize+Extensions.swift in Sources */,
+				5F020A1F1D7B460C004C1DE6 /* BitmapImage.swift in Sources */,
+				5F020A081D7B334A004C1DE6 /* RAWImageLoader.swift in Sources */,
+				5F020A091D7B334A004C1DE6 /* ImageMetadata.swift in Sources */,
+				5F020A0A1D7B334A004C1DE6 /* Image.swift in Sources */,
+				5F020A1C1D7B3D1D004C1DE6 /* BitmapImage+iOS.swift in Sources */,
+				5F020A0B1D7B334A004C1DE6 /* Collection+Extensions.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		5F1E22781CDEA9D90083FD6F /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 				289813341D494B1300B1BA5D /* ImageLoaderProtocol.swift in Sources */,
 				5FF2F7AA1CE1563400C15E3A /* Collection.swift in Sources */,
-				289813381D4C8C2A00B1BA5D /* Utility.swift in Sources */,
+				289813381D4C8C2A00B1BA5D /* CGSize+Extensions.swift in Sources */,
+				5F020A1E1D7B460C004C1DE6 /* BitmapImage.swift in Sources */,
 				2898133A1D4DC26600B1BA5D /* RAWImageLoader.swift in Sources */,
 				28B9AA081D462AFD00C4B03E /* ImageMetadata.swift in Sources */,
 				5FF2F7A91CE1563400C15E3A /* Image.swift in Sources */,
 				5FAD66691D72FD3C006973C9 /* Collection+Extensions.swift in Sources */,
+				5F020A1B1D7B3D16004C1DE6 /* BitmapImage+OSX.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -285,17 +448,80 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		5FB592FA1D7B4DE300FB0086 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5FB593091D7B4DE800FB0086 /* CarpaccioTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
 		5F1E228A1CDEA9D90083FD6F /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 5F1E227C1CDEA9D90083FD6F /* Carpaccio */;
+			target = 5F1E227C1CDEA9D90083FD6F /* Carpaccio-OSX */;
 			targetProxy = 5F1E22891CDEA9D90083FD6F /* PBXContainerItemProxy */;
+		};
+		5FB593051D7B4DE300FB0086 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 5F020A031D7B334A004C1DE6 /* Carpaccio-iOS */;
+			targetProxy = 5FB593041D7B4DE300FB0086 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		5F020A131D7B334A004C1DE6 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				FRAMEWORK_VERSION = A;
+				GCC_TREAT_WARNINGS_AS_ERRORS = YES;
+				INFOPLIST_FILE = "Carpaccio-iOS-Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = com.piipari.Carpaccio;
+				PRODUCT_MODULE_NAME = Carpaccio;
+				PRODUCT_NAME = Carpaccio;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_TREAT_WARNINGS_AS_ERRORS = YES;
+				SWIFT_VERSION = 3.0;
+			};
+			name = Debug;
+		};
+		5F020A141D7B334A004C1DE6 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				FRAMEWORK_VERSION = A;
+				GCC_TREAT_WARNINGS_AS_ERRORS = YES;
+				INFOPLIST_FILE = "Carpaccio-iOS-Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = com.piipari.Carpaccio;
+				PRODUCT_MODULE_NAME = Carpaccio;
+				PRODUCT_NAME = Carpaccio;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
+				SWIFT_TREAT_WARNINGS_AS_ERRORS = YES;
+				SWIFT_VERSION = 3.0;
+			};
+			name = Release;
+		};
 		5F1E228F1CDEA9D90083FD6F /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -337,6 +563,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = $SRCROOT/Include;
+				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/Libraries";
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -382,6 +609,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = $SRCROOT/Include;
+				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/Libraries";
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = macosx;
@@ -404,9 +632,9 @@
 				INFOPLIST_FILE = Carpaccio/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
-				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/Libraries";
 				PRODUCT_BUNDLE_IDENTIFIER = com.piipari.Carpaccio;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_MODULE_NAME = Carpaccio;
+				PRODUCT_NAME = Carpaccio;
 				SKIP_INSTALL = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_TREAT_WARNINGS_AS_ERRORS = YES;
@@ -428,9 +656,9 @@
 				INFOPLIST_FILE = Carpaccio/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
-				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/Libraries";
 				PRODUCT_BUNDLE_IDENTIFIER = com.piipari.Carpaccio;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_MODULE_NAME = Carpaccio;
+				PRODUCT_NAME = Carpaccio;
 				SKIP_INSTALL = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
 				SWIFT_TREAT_WARNINGS_AS_ERRORS = YES;
@@ -463,9 +691,55 @@
 			};
 			name = Release;
 		};
+		5FB593071D7B4DE300FB0086 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_SUSPICIOUS_MOVES = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				DEVELOPMENT_TEAM = 7LT87MAUR9;
+				INFOPLIST_FILE = "CarpaccioTests-iOS/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.piipari.CarpaccioTests-iOS";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 3.0;
+			};
+			name = Debug;
+		};
+		5FB593081D7B4DE300FB0086 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_SUSPICIOUS_MOVES = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				DEVELOPMENT_TEAM = 7LT87MAUR9;
+				INFOPLIST_FILE = "CarpaccioTests-iOS/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.piipari.CarpaccioTests-iOS";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 3.0;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		5F020A121D7B334A004C1DE6 /* Build configuration list for PBXNativeTarget "Carpaccio-iOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5F020A131D7B334A004C1DE6 /* Debug */,
+				5F020A141D7B334A004C1DE6 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		5F1E22771CDEA9D90083FD6F /* Build configuration list for PBXProject "Carpaccio" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -475,7 +749,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		5F1E22911CDEA9D90083FD6F /* Build configuration list for PBXNativeTarget "Carpaccio" */ = {
+		5F1E22911CDEA9D90083FD6F /* Build configuration list for PBXNativeTarget "Carpaccio-OSX" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				5F1E22921CDEA9D90083FD6F /* Debug */,
@@ -484,7 +758,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		5F1E22941CDEA9D90083FD6F /* Build configuration list for PBXNativeTarget "CarpaccioTests" */ = {
+		5F1E22941CDEA9D90083FD6F /* Build configuration list for PBXNativeTarget "CarpaccioTests-OSX" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				5F1E22951CDEA9D90083FD6F /* Debug */,
@@ -492,6 +766,14 @@
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
+		};
+		5FB593061D7B4DE300FB0086 /* Build configuration list for PBXNativeTarget "CarpaccioTests-iOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5FB593071D7B4DE300FB0086 /* Debug */,
+				5FB593081D7B4DE300FB0086 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
 		};
 /* End XCConfigurationList section */
 	};

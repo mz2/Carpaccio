@@ -7,14 +7,24 @@
 //
 
 import Foundation
-
+import QuartzCore
 
 public typealias ImageMetadataHandler = (_ metadata: ImageMetadata) -> Void
 
-public typealias PresentableImageHandler = (_ image: NSImage, _ metadata: ImageMetadata) -> Void
+public typealias PresentableImageHandler = (_ image: BitmapImage, _ metadata: ImageMetadata) -> Void
 
 public typealias ImageLoadingErrorHandler = (_ error: RAWImageLoaderError) -> Void
 
+public struct FullSizedImageLoadingOptions {
+    var maximumPixelDimensions:CGSize?
+    var allowDraftMode = true
+    var noiseReductionAmount = 0.5
+    var colorNoiseReductionAmount = 1.0
+    var noiseReductionSharpnessAmount = 0.5
+    var noiseReductionContrastAmount = 0.5
+    var boostShadowAmount = 1.0
+    var enableVendorLensCorrection = true
+}
 
 public protocol ImageLoaderProtocol
 {
@@ -28,8 +38,12 @@ public protocol ImageLoaderProtocol
     func loadImageMetadata(_ handler: ImageMetadataHandler, errorHandler: ImageLoadingErrorHandler)
     
     /** Load thumbnail image. */
-    func loadThumbnailImage(maximumPixelDimensions maxPixelSize: NSSize?, handler: PresentableImageHandler, errorHandler: ImageLoadingErrorHandler)
+    func loadThumbnailImage(maximumPixelDimensions maxPixelSize: CGSize?,
+                            handler: PresentableImageHandler,
+                            errorHandler: ImageLoadingErrorHandler)
     
     /** Load full-size image. */
-    func loadFullSizeImage(maximumPixelDimensions maxPixelSize: NSSize?, handler: PresentableImageHandler, errorHandler: ImageLoadingErrorHandler)
+    func loadFullSizeImage(options: FullSizedImageLoadingOptions,
+                           handler: PresentableImageHandler,
+                           errorHandler: ImageLoadingErrorHandler)
 }

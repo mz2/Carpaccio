@@ -8,7 +8,8 @@
 
 
 import Foundation
-
+import QuartzCore
+import ImageIO
 
 public struct ImageMetadata
 {
@@ -23,7 +24,7 @@ public struct ImageMetadata
     public let focalLength35mmEquivalent: Double?
     public let ISO: Double?
     public let nativeOrientation: CGImagePropertyOrientation
-    public let nativeSize: NSSize
+    public let nativeSize: CGSize
     public let shutterSpeed: TimeInterval?
     
     /**
@@ -48,7 +49,7 @@ public struct ImageMetadata
     */
     public let timestamp: Date?
     
-    public init(nativeSize: NSSize, nativeOrientation: CGImagePropertyOrientation = .up, colorSpace: CGColorSpace? = nil, fNumber: Double? = nil, focalLength: Double? = nil, focalLength35mmEquivalent: Double? = nil, ISO: Double? = nil, shutterSpeed: TimeInterval? = nil, cameraMaker: String? = nil, cameraModel: String? = nil, timestamp: Date? = nil)
+    public init(nativeSize: CGSize, nativeOrientation: CGImagePropertyOrientation = .up, colorSpace: CGColorSpace? = nil, fNumber: Double? = nil, focalLength: Double? = nil, focalLength35mmEquivalent: Double? = nil, ISO: Double? = nil, shutterSpeed: TimeInterval? = nil, cameraMaker: String? = nil, cameraModel: String? = nil, timestamp: Date? = nil)
     {
         self.fNumber = fNumber
         self.cameraMaker = cameraMaker
@@ -63,7 +64,7 @@ public struct ImageMetadata
         self.timestamp = timestamp
     }
     
-    public var size: NSSize
+    public var size: CGSize
     {
         let shouldSwapWidthAndHeight: Bool
         
@@ -76,7 +77,7 @@ public struct ImageMetadata
         }
         
         if shouldSwapWidthAndHeight {
-            return NSSize(width: self.nativeSize.height, height: self.nativeSize.width)
+            return CGSize(width: self.nativeSize.height, height: self.nativeSize.width)
         }
         
         return self.nativeSize

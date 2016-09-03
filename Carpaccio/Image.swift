@@ -6,8 +6,8 @@
 //  Copyright © 2016 Matias Piipari & Co. All rights reserved.
 //
 
-import Cocoa
-
+import Foundation
+import QuartzCore
 
 open class Image: Equatable, Hashable {
     
@@ -18,12 +18,12 @@ open class Image: Equatable, Hashable {
     }
     
     public let name: String
-    public var thumbnailImage: NSImage? = nil
-    public var fullImage: NSImage?
+    public var thumbnailImage: BitmapImage? = nil
+    public var fullImage: BitmapImage?
 
-    public var size: NSSize {
+    public var size: CGSize {
         guard let size = self.metadata?.size else {
-            return NSZeroSize
+            return CGSize.zero
         }
         return size
     }
@@ -38,7 +38,7 @@ open class Image: Equatable, Hashable {
     
     public typealias DistanceFunction = (_ a:Image, _ b:Image)-> Double
     
-    public init(image: NSImage)
+    public init(image: BitmapImage)
     {
         self.fullImage = image
         self.name = image.name() ?? "Untitled"
@@ -52,8 +52,8 @@ open class Image: Equatable, Hashable {
         self.fullImage = nil
     }
     
-    public var placeholderImage:NSImage {
-        return NSImage(named: "ImagePlaceholder")!
+    public var placeholderImage:BitmapImage {
+        return BitmapImageUtility.image(named:"ImagePlaceholder")!
     }
 
     private var cachedImageLoader: ImageLoaderProtocol?
@@ -88,7 +88,7 @@ open class Image: Equatable, Hashable {
         return metadata
     }()
     
-    public var presentedImage: NSImage {
+    public var presentedImage: BitmapImage {
         return self.fullImage ?? self.thumbnailImage ?? self.placeholderImage
     }
     
@@ -108,7 +108,7 @@ open class Image: Equatable, Hashable {
             }, errorHandler: { error in errorHandler(Error.loadingFailed(underlyingError:error)) })
     }
     
-    public func fetchThumbnail(presentedHeight: CGFloat? = nil, force: Bool = false, store: Bool = true, scaleFactor:CGFloat = 2.0, completionHandler:@escaping (_ image:NSImage)->Void, errorHandler:@escaping (Error)->Void)
+    public func fetchThumbnail(presentedHeight: CGFloat? = nil, force: Bool = false, store: Bool = true, scaleFactor:CGFloat = 2.0, completionHandler:@escaping (_ image:BitmapImage)->Void, errorHandler:@escaping (Error)->Void)
     {
         if !force
         {
@@ -124,7 +124,7 @@ open class Image: Equatable, Hashable {
             return
         }
 
-        self.imageLoader?.loadThumbnailImage(maximumPixelDimensions: presentedHeight != nil ? NSSize(constrainHeight: presentedHeight! * scaleFactor) : nil, handler: { (thumbnailImage: NSImage, metadata: ImageMetadata) in
+        self.imageLoader?.loadThumbnailImage(maximumPixelDimensions: presentedHeight != nil ? CGSize(constrainHeight: presentedHeight! * scaleFactor) : nil, handler: { (thumbnailImage: BitmapImage, metadata: ImageMetadata) in
             if self.metadata == nil {
                 self.metadata = metadata
             }
@@ -139,14 +139,25 @@ open class Image: Equatable, Hashable {
         
     }
     
-    public func fetchFullSizeImage(presentedHeight: CGFloat? = nil, store: Bool = false, scaleFactor:CGFloat = 2.0, completionHandler: @escaping (_ image: NSImage) -> Void, errorHandler: @escaping (Error) -> Void)
+    public func fetchFullSizeImage(presentedHeight: CGFloat? = nil, store: Bool = false, scaleFactor:CGFloat = 2.0, completionHandler: @escaping (_ image: BitmapImage) -> Void, errorHandler: @escaping (Error) -> Void)
     {
         guard self.URL != nil else {
             errorHandler(.urlMissing)
             return
         }
-
-        self.imageLoader?.loadFullSizeImage(maximumPixelDimensions: presentedHeight != nil ? NSSize(constrainHeight: presentedHeight! * scaleFactor) : nil, handler: { (image: NSImage, metadata: ImageMetadata) in
+        
+        let maxDimensions:CGSize? = {
+            if let presentedHeight = presentedHeight {
+                return CGSize(constrainHeight: presentedHeight * scaleFactor)
+            }
+            
+            return nil
+        }()
+        
+        var options = FullSizedImageLoadingOptions()
+        options.maximumPixelDimensions = maxDimensions
+        
+        self.imageLoader?.loadFullSizeImage(options:options, handler: { image, metadata in
             
             if self.metadata == nil {
                 self.metadata = metadata

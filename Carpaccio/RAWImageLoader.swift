@@ -10,6 +10,7 @@ import Foundation
 
 import CoreGraphics
 import CoreImage
+import ImageIO
 
 public enum RAWImageLoaderError: Swift.Error
 {
@@ -19,7 +20,7 @@ public enum RAWImageLoaderError: Swift.Error
 }
 
 public class RAWImageLoader: ImageLoaderProtocol
-{
+{    
     public enum ThumbnailScheme: Int
     {
         case decodeFullImage
@@ -131,7 +132,7 @@ public class RAWImageLoader: ImageLoaderProtocol
             height = CGFloat((image?.height)!)
         }
         
-        let metadata = ImageMetadata(nativeSize: NSSize(width: width!, height: height!), nativeOrientation: orientation ?? .up, colorSpace: colorSpace, fNumber: fNumber, focalLength: focalLength, focalLength35mmEquivalent: focalLength35mm, ISO: ISO, shutterSpeed: shutterSpeed, cameraMaker: cameraMaker, cameraModel: cameraModel, timestamp: timestamp)
+        let metadata = ImageMetadata(nativeSize: CGSize(width: width!, height: height!), nativeOrientation: orientation ?? .up, colorSpace: colorSpace, fNumber: fNumber, focalLength: focalLength, focalLength35mmEquivalent: focalLength35mm, ISO: ISO, shutterSpeed: shutterSpeed, cameraMaker: cameraMaker, cameraModel: cameraModel, timestamp: timestamp)
         return metadata
     }()
     
@@ -176,7 +177,7 @@ public class RAWImageLoader: ImageLoaderProtocol
         }
     }
     
-    private func loadThumbnailImage(maximumPixelDimensions maximumSize: NSSize? = nil) -> CGImage?
+    private func loadThumbnailImage(maximumPixelDimensions maximumSize: CGSize? = nil) -> CGImage?
     {
         guard let source = self.imageSource else {
             precondition(false)
@@ -220,7 +221,7 @@ public class RAWImageLoader: ImageLoaderProtocol
         return thumbnailImage
     }
     
-    public func loadThumbnailImage(maximumPixelDimensions maxPixelSize: NSSize? = nil, handler: PresentableImageHandler, errorHandler: ImageLoadingErrorHandler)
+    public func loadThumbnailImage(maximumPixelDimensions maxPixelSize: CGSize? = nil, handler: PresentableImageHandler, errorHandler: ImageLoadingErrorHandler)
     {
         guard self.imageSource != nil else {
             precondition(false)
@@ -228,7 +229,7 @@ public class RAWImageLoader: ImageLoaderProtocol
         }
         
         if let thumbnailImage = loadThumbnailImage(maximumPixelDimensions: maxPixelSize) {
-            handler(NSImage(cgImage: thumbnailImage, size: NSZeroSize), self.imageMetadata!)
+            handler(BitmapImageUtility.image(cgImage: thumbnailImage, size: CGSize.zero), self.imageMetadata!)
         }
         else {
             errorHandler(RAWImageLoaderError.failedToLoadThumbnailImage(message: "Failed to load thumbnail image from \(self.imageURL.path)"))
@@ -249,7 +250,7 @@ public class RAWImageLoader: ImageLoaderProtocol
     private static var _imageBakingContexts = [String: CIContext]()
     
     @available(OSX 10.12, *)
-    private class func bakingContext(forImageURL URL: URL) -> CIContext
+    private static func bakingContext(forImageURL URL: URL) -> CIContext
     {
         let ext = URL.pathExtension
         
@@ -262,7 +263,9 @@ public class RAWImageLoader: ImageLoaderProtocol
         return context
     }
     
-    public func loadFullSizeImage(maximumPixelDimensions maxPixelSize: NSSize?, handler: PresentableImageHandler, errorHandler: ImageLoadingErrorHandler)
+    public func loadFullSizeImage(options: FullSizedImageLoadingOptions = FullSizedImageLoadingOptions(),
+                                  handler: PresentableImageHandler,
+                                  errorHandler: ImageLoadingErrorHandler)
     {
         guard let metadata = self.imageMetadata else {
             errorHandler(RAWImageLoaderError.failedToExtractImageMetadata(message: "Failed to read properties of \(self.imageURL.path) to load full-size image")); return
@@ -270,7 +273,7 @@ public class RAWImageLoader: ImageLoaderProtocol
         
         let scaleFactor: Double
         
-        if let sz = maxPixelSize
+        if let sz = options.maximumPixelDimensions
         {
             let imageSize = metadata.size
             let height = sz.scaledHeight(forImageSize: imageSize)
@@ -280,18 +283,28 @@ public class RAWImageLoader: ImageLoaderProtocol
             scaleFactor = 1.0
         }
         
-        // NOTE: Having draft mode on appears to be crucial to performance, with a difference of 0.3s vs. 2.5s per image on this iMac 5K, for instance.
-        // The quality is still quite excellent for displaying scaled-down presentations in a collection view, subjectively better than what you get from LibRAW with the half-size option.
-        let RAWFilter = CIFilter(imageURL: self.imageURL, options: nil)
-        RAWFilter?.setValue(true, forKey: kCIInputAllowDraftModeKey)
-        RAWFilter?.setValue(scaleFactor, forKey: kCIInputScaleFactorKey)
+        let fail = {
+            errorHandler(.failedToLoadFullSizeImage(message: "Failed to load full-size RAW image \(self.imageURL.path)"))
+        }
         
-        RAWFilter?.setValue(0.5, forKey: kCIInputNoiseReductionAmountKey)
-        RAWFilter?.setValue(1.0, forKey: kCIInputColorNoiseReductionAmountKey)
-        RAWFilter?.setValue(0.5, forKey: kCIInputNoiseReductionSharpnessAmountKey)
-        RAWFilter?.setValue(0.5, forKey: kCIInputNoiseReductionContrastAmountKey)
-        RAWFilter?.setValue(1.0, forKey: kCIInputBoostShadowAmountKey)
-        RAWFilter?.setValue(true, forKey: kCIInputEnableVendorLensCorrectionKey)
+        guard let RAWFilter = CIFilter(imageURL: self.imageURL, options: nil) else {
+            fail()
+            return
+        }
+        
+        // NOTE: Having draft mode on appears to be crucial to performance, 
+        // with a difference of 0.3s vs. 2.5s per image on this iMac 5K, for instance.
+        // The quality is still quite excellent for displaying scaled-down presentations in a collection view, 
+        // subjectively better than what you get from LibRAW with the half-size option.
+        RAWFilter.setValue(true, forKey: kCIInputAllowDraftModeKey)
+        RAWFilter.setValue(scaleFactor, forKey: kCIInputScaleFactorKey)
+        
+        RAWFilter.setValue(options.noiseReductionAmount, forKey: kCIInputNoiseReductionAmountKey)
+        RAWFilter.setValue(options.colorNoiseReductionAmount, forKey: kCIInputColorNoiseReductionAmountKey)
+        RAWFilter.setValue(options.noiseReductionSharpnessAmount, forKey: kCIInputNoiseReductionSharpnessAmountKey)
+        RAWFilter.setValue(options.noiseReductionContrastAmount, forKey: kCIInputNoiseReductionContrastAmountKey)
+        RAWFilter.setValue(options.boostShadowAmount, forKey: kCIInputBoostShadowAmountKey)
+        RAWFilter.setValue(options.enableVendorLensCorrection, forKey: kCIInputEnableVendorLensCorrectionKey)
         
         /*var image = RAWFilter?.outputImage
         
@@ -304,9 +317,9 @@ public class RAWImageLoader: ImageLoaderProtocol
             }
             
             if let image = image*/
-            if let image = RAWFilter?.outputImage
+            if let image = RAWFilter.outputImage
             {
-                var bakedImage: NSImage? = nil
+                var bakedImage: BitmapImage? = nil
                 if #available(OSX 10.12, *)
                 {
                     // Pixel format and color space set as discussed around 21:50 in https://developer.apple.com/videos/play/wwdc2016/505/
@@ -317,32 +330,27 @@ public class RAWImageLoader: ImageLoaderProtocol
                         colorSpace: RAWImageLoader.imageBakingColorSpace,
                         deferred: false) // The `deferred: false` argument is important, to ensure significant work will not be performed later on the main thread at drawing time
                     {
-                        bakedImage = NSImage(cgImage: cgImage, size: NSZeroSize)
+                        bakedImage = BitmapImageUtility.image(cgImage: cgImage, size: CGSize.zero)
                     }
                 }
                 
                 if bakedImage == nil
                 {
-                    bakedImage = NSImage(size: image.extent.size)
-                    bakedImage!.cacheMode = .never
-                    bakedImage!.lockFocus()
-                    NSGraphicsContext.current()?.ciContext?.draw(image, in: image.extent, from: image.extent)
-                    bakedImage!.unlockFocus()
+                    bakedImage = BitmapImageUtility.image(ciImage: image)
                 }
                 
-                if let bakedImage = bakedImage
-                {
-                    handler(bakedImage, ImageMetadata(nativeSize: bakedImage.size))
+                guard let nonNilNakedImage = bakedImage else {
+                    fail()
                     return
                 }
+
+                handler(nonNilNakedImage, ImageMetadata(nativeSize: nonNilNakedImage.size))
             }
         //}
-        
-        errorHandler(RAWImageLoaderError.failedToLoadFullSizeImage(message: "Failed to load full-size RAW image \(self.imageURL.path)"))
     }
 }
 
-public extension NSSize
+public extension CGSize
 {
     init(constrainWidth w: CGFloat)
     {
@@ -357,7 +365,7 @@ public extension NSSize
     }
     
     /** Assuming this NSSize value describes desired maximum width and/or height of a scaled output image, return appropriate value for the `kCGImageSourceThumbnailMaxPixelSize` option. */
-    func maximumPixelSize(forImageSize imageSize: NSSize) -> CGFloat
+    func maximumPixelSize(forImageSize imageSize: CGSize) -> CGFloat
     {
         let widthIsUnconstrained = self.width > imageSize.width
         let heightIsUnconstrained = self.height > imageSize.height
@@ -386,7 +394,7 @@ public extension NSSize
         return min(self.width, self.height)
     }
     
-    func scaledHeight(forImageSize imageSize: NSSize) -> CGFloat
+    func scaledHeight(forImageSize imageSize: CGSize) -> CGFloat
     {
         return min(imageSize.height, self.height)
     }

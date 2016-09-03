@@ -6,7 +6,7 @@
 //  Copyright © 2016 Matias Piipari & Co. All rights reserved.
 //
 
-#import <Cocoa/Cocoa.h>
+@import Foundation;
 
 //! Project version number for Carpaccio.
 FOUNDATION_EXPORT double CarpaccioVersionNumber;
