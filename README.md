@@ -9,7 +9,7 @@ Carpaccio is a Swift library for macOS and iOS that allows fast decoding of imag
 
 Carpaccio uses multiple CPU cores efficiently in parallel for all of metadata, thumbnail and image data decoding.
 
-Carpaccio began as a Cocoa wrapper to the [LibRaw](http://www.libraw.org/docs/API-CXX-eng.html) C / C++ RAW image conversion library but all dependencies on LibRaw have been severed by now.
+There are no 3rd party dependencies (CoreImage filter is used for RAW decoding).
 
 #### INSTALLATION
 
