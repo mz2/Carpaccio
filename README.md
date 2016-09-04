@@ -1,13 +1,13 @@
 ### Carpaccio [![Carthage compatible](https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat)](https://github.com/Carthage/Carthage) [![Build Status](https://travis-ci.org/mz2/Carpaccio.svg?branch=master)](https://travis-ci.org/mz2/Carpaccio)
 ##### Pure Swift goodness for RAW and other image + metadata handling
 
-Carpaccio is a Swift library that allows decoding image data & EXIF metadata from file formats supported by CoreImage (including all the various RAW file formats supported, using the CoreImage RAW decoding capability).
+Carpaccio is a Swift library for macOS and iOS that allows fast decoding of image data & EXIF metadata from file formats supported by CoreImage (including all the various RAW file formats supported, using the CoreImage RAW decoding capability).
 
 - thumbnails
 - metadata
 - full sized image 
 
-Carpaccio is fast: it uses multiple CPU cores efficiently in parallel for all of metadata, thumbnail and image data decoding.
+Carpaccio uses multiple CPU cores efficiently in parallel for all of metadata, thumbnail and image data decoding.
 
 Carpaccio began as a Cocoa wrapper to the [LibRaw](http://www.libraw.org/docs/API-CXX-eng.html) C / C++ RAW image conversion library but all dependencies on LibRaw have been severed by now.
 
@@ -87,5 +87,5 @@ Documentation and tests are minimal so for now you'll just need to explore the A
 Carpaccio is still a very fresh and raw (har har) library and there are many tasks to make this a more generally useful library.
 
 - [ ] Add tests for RAWs from a number of different camera vendors.
-- [ ] Travis CI support.
-- [ ] iOS support.
+- [x] Travis CI support.
+- [x] iOS support.
