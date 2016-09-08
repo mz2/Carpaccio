@@ -60,7 +60,7 @@ $ git submodule add https://github.com/mz2/Carpaccio.git
 - Click on the `+` button under the "Embedded Binaries" section.
 - Select the `Carpaccio.xcodeproj` nested inside a `Products` folder now visible.
 
-> The `Carthage.framework` is automagically added as a target dependency, linked framework and embedded framework in a copy files build phase which is all you need to build on the simulator and a device.
+> The `Carpaccio.framework` is automagically added as a target dependency, linked framework and embedded framework in a copy files build phase which is all you need to build on the simulator and a device.
 
 (This manual installation section was shamelessly ripped from the excellent [Alamofire](github.com/alamofire/Alamofire) instructions.)
 
