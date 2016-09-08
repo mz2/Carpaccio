@@ -42,6 +42,9 @@ public protocol ImageLoaderProtocol
                             handler: @escaping PresentableImageHandler,
                             errorHandler: @escaping ImageLoadingErrorHandler)
     
+    func loadThumbnailImage(handler: @escaping PresentableImageHandler,
+                            errorHandler: @escaping ImageLoadingErrorHandler)
+    
     /** Load image metadata. */
     func loadImageMetadata(_ handler: @escaping ImageMetadataHandler,
                            errorHandler: @escaping ImageLoadingErrorHandler)
@@ -56,6 +59,12 @@ public protocol ImageLoaderProtocol
 }
 
 public extension ImageLoaderProtocol {
+    func loadThumbnailImage(handler: @escaping PresentableImageHandler,
+                            errorHandler: @escaping ImageLoadingErrorHandler) {
+        self.loadThumbnailImage(maximumPixelDimensions: nil,
+                                handler: handler, errorHandler: errorHandler)
+    }
+    
     func loadFullSizeImage(handler: @escaping PresentableImageHandler,
                            errorHandler: @escaping ImageLoadingErrorHandler) {
         self.loadFullSizeImage(options:FullSizedImageLoadingOptions(),
