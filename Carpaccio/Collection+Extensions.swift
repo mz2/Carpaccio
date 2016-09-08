@@ -10,7 +10,7 @@ import Foundation
 
 // From http://moreindirection.blogspot.co.uk/2015/07/gcd-and-parallel-collections-in-swift.html
 extension Swift.Collection where Self.Index == Int {
-    public func pmap<T>(maxParallelism:Int? = nil, _ transform: ((Iterator.Element) -> T)) -> [T] {
+    public func pmap<T>(maxParallelism:Int? = nil, _ transform: @escaping ((Iterator.Element) -> T)) -> [T] {
         if let maxParallelism = maxParallelism, maxParallelism == 1 {
             return self.map(transform)
         }

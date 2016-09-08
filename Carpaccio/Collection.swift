@@ -71,8 +71,8 @@ public class Collection
                               queue:DispatchQueue = DispatchQueue.global(),
                               sortingScheme:SortingScheme = .none,
                               maxMetadataLoadParallelism:Int? = nil,
-                              completionHandler: ImageCollectionHandler,
-                              errorHandler: ImageCollectionErrorHandler) {
+                              completionHandler: @escaping ImageCollectionHandler,
+                              errorHandler: @escaping ImageCollectionErrorHandler) {
         queue.async {
             do {
                 let imageURLs = try Image.imageURLs(atCollectionURL: collectionURL)

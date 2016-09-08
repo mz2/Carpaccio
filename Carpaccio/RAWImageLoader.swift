@@ -263,13 +263,16 @@ public class RAWImageLoader: ImageLoaderProtocol
         return context
     }
     
-    public func loadFullSizeImage(handler: PresentableImageHandler, errorHandler: ImageLoadingErrorHandler) {
-        self.loadFullSizeImage(options: FullSizedImageLoadingOptions(), handler: handler, errorHandler: errorHandler)
+    public func loadFullSizeImage(handler: PresentableImageHandler,
+                                  errorHandler: @escaping ImageLoadingErrorHandler) {
+        self.loadFullSizeImage(options: FullSizedImageLoadingOptions(),
+                               handler: handler,
+                               errorHandler: errorHandler)
     }
     
     public func loadFullSizeImage(options: FullSizedImageLoadingOptions,
                                   handler: PresentableImageHandler,
-                                  errorHandler: ImageLoadingErrorHandler)
+                                  errorHandler: @escaping ImageLoadingErrorHandler)
     {
         guard let metadata = self.imageMetadata else {
             errorHandler(RAWImageLoaderError.failedToExtractImageMetadata(message: "Failed to read properties of \(self.imageURL.path) to load full-size image")); return

@@ -237,7 +237,7 @@ open class Image: Equatable, Hashable {
         return (imageCollection, count)
     }
     
-    public class func loadAsynchronously(contentsOfURL URL:Foundation.URL, queue:DispatchQueue = DispatchQueue.global(), loadHandler:LoadHandler? = nil, errorHandler:LoadErrorHandler) {
+    public class func loadAsynchronously(contentsOfURL URL:Foundation.URL, queue:DispatchQueue = DispatchQueue.global(), loadHandler:LoadHandler? = nil, errorHandler:@escaping LoadErrorHandler) {
         queue.async {
             do {
                 _ = try load(contentsOfURL: URL, loadHandler: loadHandler)

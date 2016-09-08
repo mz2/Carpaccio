@@ -49,8 +49,8 @@ public protocol ImageLoaderProtocol
     /** Load full-size image. */
     func loadFullSizeImage(options: FullSizedImageLoadingOptions,
                            handler: PresentableImageHandler,
-                           errorHandler: ImageLoadingErrorHandler)
+                           errorHandler: @escaping ImageLoadingErrorHandler)
     
     func loadFullSizeImage(handler: PresentableImageHandler,
-                           errorHandler: ImageLoadingErrorHandler)
+                           errorHandler: @escaping ImageLoadingErrorHandler)
 }
