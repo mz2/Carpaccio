@@ -73,18 +73,21 @@ struct BitmapImageUtility {
         return NSImage(cgImage: cgImage, size: size)
     }
     
-    static func image(ciImage image: CIImage) -> BitmapImage? {
+    static func image(ciImage image: CIImage) -> BitmapImage?
+    {
+        let bitmapImage = self.image(sized: image.extent.size) as! NSImage
+        bitmapImage.cacheMode = .never
+        bitmapImage.lockFocus()
+        
         guard let ciContext = NSGraphicsContext.current()?.ciContext else {
+            bitmapImage.unlockFocus()
             return nil
         }
         
-        let returnedImage = self.image(sized: image.extent.size) as! NSImage
-        returnedImage.cacheMode = .never
-        returnedImage.lockFocus()
         ciContext.draw(image, in: image.extent, from: image.extent)
-        returnedImage.unlockFocus()
+        bitmapImage.unlockFocus()
         
-        return returnedImage
+        return bitmapImage
     }
 
 }
