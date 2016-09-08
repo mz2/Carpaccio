@@ -20,7 +20,9 @@ public enum RAWImageLoaderError: Swift.Error
 }
 
 public class RAWImageLoader: ImageLoaderProtocol
-{    
+{
+
+    
     public enum ThumbnailScheme: Int
     {
         case decodeFullImage
@@ -163,7 +165,8 @@ public class RAWImageLoader: ImageLoaderProtocol
         print("----")
     }
     
-    public func loadImageMetadata(_ handler: ImageMetadataHandler, errorHandler: ImageLoadingErrorHandler) {
+    public func loadImageMetadata(_ handler: @escaping ImageMetadataHandler,
+                                  errorHandler: @escaping ImageLoadingErrorHandler) {
         guard let _ = self.imageSource else {
             precondition(false)
             return
@@ -221,8 +224,11 @@ public class RAWImageLoader: ImageLoaderProtocol
         return thumbnailImage
     }
     
-    public func loadThumbnailImage(maximumPixelDimensions maxPixelSize: CGSize? = nil, handler: PresentableImageHandler, errorHandler: ImageLoadingErrorHandler)
-    {
+    
+    /** Retrieve metadata about this loader's image, to be called before loading actual image data. */
+    public func loadThumbnailImage(maximumPixelDimensions maxPixelSize: CGSize?,
+                                   handler: @escaping PresentableImageHandler,
+                                   errorHandler: @escaping ImageLoadingErrorHandler) {
         guard self.imageSource != nil else {
             precondition(false)
             return
@@ -263,7 +269,7 @@ public class RAWImageLoader: ImageLoaderProtocol
         return context
     }
     
-    public func loadFullSizeImage(handler: PresentableImageHandler,
+    public func loadFullSizeImage(handler: @escaping PresentableImageHandler,
                                   errorHandler: @escaping ImageLoadingErrorHandler) {
         self.loadFullSizeImage(options: FullSizedImageLoadingOptions(),
                                handler: handler,
@@ -271,7 +277,7 @@ public class RAWImageLoader: ImageLoaderProtocol
     }
     
     public func loadFullSizeImage(options: FullSizedImageLoadingOptions,
-                                  handler: PresentableImageHandler,
+                                  handler: @escaping PresentableImageHandler,
                                   errorHandler: @escaping ImageLoadingErrorHandler)
     {
         guard let metadata = self.imageMetadata else {

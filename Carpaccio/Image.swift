@@ -96,7 +96,9 @@ open class Image: Equatable, Hashable {
         return self.metadata != nil
     }
 
-    public func fetchMetadata(_ store: Bool = true, handler: MetadataHandler, errorHandler: ErrorHandler)
+    public func fetchMetadata(_ store: Bool = true,
+                              handler: @escaping MetadataHandler,
+                              errorHandler: @escaping ErrorHandler)
     {
         self.imageLoader?.loadImageMetadata({ (metadata: ImageMetadata) in
             

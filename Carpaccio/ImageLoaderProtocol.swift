@@ -39,18 +39,26 @@ public protocol ImageLoaderProtocol
     
     /** Retrieve metadata about this loader's image, to be called before loading actual image data. */
     func loadThumbnailImage(maximumPixelDimensions maxPixelSize: CGSize?,
-                            handler: PresentableImageHandler,
-                            errorHandler: ImageLoadingErrorHandler)
+                            handler: @escaping PresentableImageHandler,
+                            errorHandler: @escaping ImageLoadingErrorHandler)
     
-    /** Load thumbnail image. */
-    func loadImageMetadata(_ handler: ImageMetadataHandler,
-                           errorHandler: ImageLoadingErrorHandler)
+    /** Load image metadata. */
+    func loadImageMetadata(_ handler: @escaping ImageMetadataHandler,
+                           errorHandler: @escaping ImageLoadingErrorHandler)
     
     /** Load full-size image. */
     func loadFullSizeImage(options: FullSizedImageLoadingOptions,
-                           handler: PresentableImageHandler,
+                           handler: @escaping PresentableImageHandler,
                            errorHandler: @escaping ImageLoadingErrorHandler)
     
-    func loadFullSizeImage(handler: PresentableImageHandler,
+    func loadFullSizeImage(handler: @escaping PresentableImageHandler,
                            errorHandler: @escaping ImageLoadingErrorHandler)
+}
+
+public extension ImageLoaderProtocol {
+    func loadFullSizeImage(handler: @escaping PresentableImageHandler,
+                           errorHandler: @escaping ImageLoadingErrorHandler) {
+        self.loadFullSizeImage(options:FullSizedImageLoadingOptions(),
+                               handler: handler, errorHandler: errorHandler)
+    }
 }
