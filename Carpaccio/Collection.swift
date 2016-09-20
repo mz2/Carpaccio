@@ -77,10 +77,16 @@ public class Collection
             do {
                 let imageURLs = try Image.imageURLs(atCollectionURL: collectionURL)
                 
-                let images = imageURLs.lazy.pmap(maxParallelism:maxMetadataLoadParallelism) { URL -> Image in
-                    let image = Image(URL: URL)
-                    image.fetchMetadata()
-                    return image
+                let images = imageURLs.lazy.parallelFlatMap(maxParallelism:maxMetadataLoadParallelism) { URL -> Image? in
+                    do {
+                        let image = try Image(URL: URL)
+                        image.fetchMetadata()
+                        return image
+                    }
+                    catch {
+                        print("ERROR! Failed to load image at '\(URL.path)'")
+                        return nil
+                    }
                 }
                 
                 let returnedImages:AnyCollection<Image>

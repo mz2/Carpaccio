@@ -21,8 +21,6 @@ public enum RAWImageLoaderError: Swift.Error
 
 public class RAWImageLoader: ImageLoaderProtocol
 {
-
-    
     public enum ThumbnailScheme: Int
     {
         case decodeFullImage
@@ -43,7 +41,7 @@ public class RAWImageLoader: ImageLoaderProtocol
         return formatter
     }()
     
-    init(imageURL: URL, thumbnailScheme: ThumbnailScheme)
+    public init(imageURL: URL, thumbnailScheme: ThumbnailScheme)
     {
         self.imageURL = imageURL
         self.thumbnailScheme = thumbnailScheme

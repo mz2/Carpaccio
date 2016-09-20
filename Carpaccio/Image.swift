@@ -12,6 +12,7 @@ import QuartzCore
 open class Image: Equatable, Hashable {
     
     public enum Error: Swift.Error {
+        case noFileExtension // FIXME: lift this restriction.
         case urlMissing
         case locationNotEnumerable(URL)
         case loadingFailed(underlyingError: Swift.Error)
@@ -38,14 +39,15 @@ open class Image: Equatable, Hashable {
     
     public typealias DistanceFunction = (_ a:Image, _ b:Image)-> Double
     
-    public init(image: BitmapImage)
+    public init(image: BitmapImage, imageLoader:ImageLoaderProtocol)
     {
         self.fullImage = image
+        self.cachedImageLoader = imageLoader
+        self.URL = imageLoader.imageURL
         self.name = image.name() ?? "Untitled"
-        self.URL = nil
     }
     
-    public init(URL: Foundation.URL)
+    public init(URL: Foundation.URL) throws
     {
         self.URL = URL
         self.name = URL.lastPathComponent 
@@ -100,17 +102,20 @@ open class Image: Equatable, Hashable {
                               handler: @escaping MetadataHandler,
                               errorHandler: @escaping ErrorHandler)
     {
-        self.imageLoader?.loadImageMetadata({ (metadata: ImageMetadata) in
-            
+        self.imageLoader?.loadImageMetadata({ metadata in
             if store {
                 self.metadata = metadata
             }
             handler(metadata)
-
-            }, errorHandler: { error in errorHandler(Error.loadingFailed(underlyingError:error)) })
+        }, errorHandler: { error in errorHandler(Error.loadingFailed(underlyingError:error)) })
     }
     
-    public func fetchThumbnail(presentedHeight: CGFloat? = nil, force: Bool = false, store: Bool = true, scaleFactor:CGFloat = 2.0, completionHandler:@escaping (_ image:BitmapImage)->Void, errorHandler:@escaping (Error)->Void)
+    public func fetchThumbnail(presentedHeight: CGFloat? = nil,
+                               force: Bool = false,
+                               store: Bool = true,
+                               scaleFactor:CGFloat = 2.0,
+                               completionHandler:@escaping (_ image:BitmapImage)->Void,
+                               errorHandler:@escaping (Error)->Void)
     {
         if !force
         {
@@ -222,14 +227,14 @@ open class Image: Equatable, Hashable {
         
         let count = imageURLs.count
         
-        let images = imageURLs.lazy.enumerated().flatMap { (i, imageURL) -> Image? in
+        let images = try imageURLs.lazy.enumerated().flatMap { (i, imageURL) -> Image? in
             let pathExtension = imageURL.pathExtension
             
             guard pathExtension.utf8.count > 0 else {
                 return nil
             }
             
-            let image = Image(URL: imageURL)
+            let image = try Image(URL: imageURL)
             loadHandler?(i, imageURLs.count, image)
             
             return image

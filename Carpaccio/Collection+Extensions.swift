@@ -10,9 +10,17 @@ import Foundation
 
 // From http://moreindirection.blogspot.co.uk/2015/07/gcd-and-parallel-collections-in-swift.html
 extension Swift.Collection where Self.Index == Int {
-    public func pmap<T>(maxParallelism:Int? = nil, _ transform: @escaping ((Iterator.Element) -> T)) -> [T] {
+    public func parallelMap<T>(maxParallelism:Int? = nil,
+                            _ transform: @escaping ((Iterator.Element) -> T)) -> [T]
+    {
+        return self.parallelFlatMap(maxParallelism: maxParallelism, transform)
+    }
+    
+    public func parallelFlatMap<T>(maxParallelism:Int? = nil,
+                                _ transform: @escaping ((Iterator.Element) -> T?)) -> [T]
+    {
         if let maxParallelism = maxParallelism, maxParallelism == 1 {
-            return self.map(transform)
+            return self.flatMap(transform)
         }
         
         guard !self.isEmpty else {
@@ -23,7 +31,7 @@ extension Swift.Collection where Self.Index == Int {
         
         let group = DispatchGroup()
         
-        let lock = DispatchQueue(label: "pmap")
+        let lock = DispatchQueue(label: "pflatmap")
         
         let parallelism:Int = {
             if let maxParallelism = maxParallelism {
@@ -48,8 +56,9 @@ extension Swift.Collection where Self.Index == Int {
             DispatchQueue.global().async(group: group) {
                 for i in (capturedStepIndex * step) ..< ((capturedStepIndex + 1) * step) {
                     if i < count {
-                        let mappedElement = transform(self[Int(i)])
-                        stepResult += [mappedElement]
+                        if let mappedElement = transform(self[Int(i)]) {
+                            stepResult += [mappedElement]
+                        }
                     }
                 }
                 
