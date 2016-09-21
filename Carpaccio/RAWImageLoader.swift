@@ -355,7 +355,7 @@ public class RAWImageLoader: ImageLoaderProtocol
                     return
                 }
 
-                handler(nonNilNakedImage, ImageMetadata(nativeSize: nonNilNakedImage.size))
+                handler(nonNilNakedImage, metadata) //ImageMetadata(nativeSize: nonNilNakedImage.size))
             }
         //}
     }

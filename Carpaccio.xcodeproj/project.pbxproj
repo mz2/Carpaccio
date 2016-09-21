@@ -11,6 +11,8 @@
 		289813381D4C8C2A00B1BA5D /* CGSize+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 289813371D4C8C2A00B1BA5D /* CGSize+Extensions.swift */; };
 		2898133A1D4DC26600B1BA5D /* RAWImageLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 289813391D4DC26600B1BA5D /* RAWImageLoader.swift */; };
 		28B9AA081D462AFD00C4B03E /* ImageMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28B9AA071D462AFD00C4B03E /* ImageMetadata.swift */; };
+		3DFA1C341D92F6EC00E03503 /* iphone5.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 3DFA1C311D92F6D600E03503 /* iphone5.jpg */; };
+		3DFA1C351D92F6EC00E03503 /* iphone5.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 3DFA1C311D92F6D600E03503 /* iphone5.jpg */; };
 		5F020A051D7B334A004C1DE6 /* ImageLoaderProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 289813331D494B1300B1BA5D /* ImageLoaderProtocol.swift */; };
 		5F020A061D7B334A004C1DE6 /* Collection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FF2F7A81CE1563400C15E3A /* Collection.swift */; };
 		5F020A071D7B334A004C1DE6 /* CGSize+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 289813371D4C8C2A00B1BA5D /* CGSize+Extensions.swift */; };
@@ -65,6 +67,7 @@
 		289813371D4C8C2A00B1BA5D /* CGSize+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "CGSize+Extensions.swift"; sourceTree = "<group>"; };
 		289813391D4DC26600B1BA5D /* RAWImageLoader.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RAWImageLoader.swift; sourceTree = "<group>"; };
 		28B9AA071D462AFD00C4B03E /* ImageMetadata.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageMetadata.swift; sourceTree = "<group>"; };
+		3DFA1C311D92F6D600E03503 /* iphone5.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = iphone5.jpg; sourceTree = "<group>"; };
 		5F020A151D7B334A004C1DE6 /* Carpaccio.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Carpaccio.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		5F020A161D7B334A004C1DE6 /* Carpaccio-iOS-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "Carpaccio-iOS-Info.plist"; path = "/Users/mz2/Projects/Sashimi/Carthage/Checkouts/Carpaccio/Carpaccio-iOS-Info.plist"; sourceTree = "<absolute>"; };
 		5F020A181D7B3D08004C1DE6 /* BitmapImage+iOS.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "BitmapImage+iOS.swift"; path = "Carpaccio/BitmapImage+iOS.swift"; sourceTree = "<group>"; };
@@ -180,6 +183,7 @@
 		5F1E228B1CDEA9D90083FD6F /* CarpaccioTests */ = {
 			isa = PBXGroup;
 			children = (
+				3DFA1C311D92F6D600E03503 /* iphone5.jpg */,
 				5F1E229D1CDEAC330083FD6F /* DSC00583.ARW */,
 				5F1E229E1CDEAC330083FD6F /* DSC00588.ARW */,
 				5F1E229F1CDEAC330083FD6F /* DSC00593.ARW */,
@@ -385,6 +389,7 @@
 			files = (
 				5F1E22A21CDEAC330083FD6F /* DSC00593.ARW in Resources */,
 				5F1E22A01CDEAC330083FD6F /* DSC00583.ARW in Resources */,
+				3DFA1C341D92F6EC00E03503 /* iphone5.jpg in Resources */,
 				5F1E22A11CDEAC330083FD6F /* DSC00588.ARW in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -395,6 +400,7 @@
 			files = (
 				5FB5930C1D7B4E4A00FB0086 /* DSC00593.ARW in Resources */,
 				5FB5930A1D7B4E4A00FB0086 /* DSC00583.ARW in Resources */,
+				3DFA1C351D92F6EC00E03503 /* iphone5.jpg in Resources */,
 				5FB5930B1D7B4E4A00FB0086 /* DSC00588.ARW in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
