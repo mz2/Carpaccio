@@ -18,7 +18,6 @@
 		5F020A091D7B334A004C1DE6 /* ImageMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28B9AA071D462AFD00C4B03E /* ImageMetadata.swift */; };
 		5F020A0A1D7B334A004C1DE6 /* Image.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FF2F7A71CE1563400C15E3A /* Image.swift */; };
 		5F020A0B1D7B334A004C1DE6 /* Collection+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FAD66681D72FD3C006973C9 /* Collection+Extensions.swift */; };
-		5F020A0D1D7B334A004C1DE6 /* libjpeg.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5F7016221CE3295900173EB6 /* libjpeg.a */; };
 		5F020A101D7B334A004C1DE6 /* Carpaccio.h in Headers */ = {isa = PBXBuildFile; fileRef = 5F1E22801CDEA9D90083FD6F /* Carpaccio.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		5F020A1B1D7B3D16004C1DE6 /* BitmapImage+OSX.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F020A1A1D7B3D16004C1DE6 /* BitmapImage+OSX.swift */; };
 		5F020A1C1D7B3D1D004C1DE6 /* BitmapImage+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F020A181D7B3D08004C1DE6 /* BitmapImage+iOS.swift */; };
@@ -32,7 +31,6 @@
 		5F1E22A01CDEAC330083FD6F /* DSC00583.ARW in Resources */ = {isa = PBXBuildFile; fileRef = 5F1E229D1CDEAC330083FD6F /* DSC00583.ARW */; };
 		5F1E22A11CDEAC330083FD6F /* DSC00588.ARW in Resources */ = {isa = PBXBuildFile; fileRef = 5F1E229E1CDEAC330083FD6F /* DSC00588.ARW */; };
 		5F1E22A21CDEAC330083FD6F /* DSC00593.ARW in Resources */ = {isa = PBXBuildFile; fileRef = 5F1E229F1CDEAC330083FD6F /* DSC00593.ARW */; };
-		5F7016231CE3295900173EB6 /* libjpeg.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5F7016221CE3295900173EB6 /* libjpeg.a */; };
 		5FAD66691D72FD3C006973C9 /* Collection+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FAD66681D72FD3C006973C9 /* Collection+Extensions.swift */; };
 		5FB593031D7B4DE300FB0086 /* Carpaccio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5F020A151D7B334A004C1DE6 /* Carpaccio.framework */; };
 		5FB593091D7B4DE800FB0086 /* CarpaccioTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F1E228C1CDEA9D90083FD6F /* CarpaccioTests.swift */; };
@@ -96,7 +94,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				5F020A211D7B4BFA004C1DE6 /* UIKit.framework in Frameworks */,
-				5F020A0D1D7B334A004C1DE6 /* libjpeg.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -104,7 +101,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				5F7016231CE3295900173EB6 /* libjpeg.a in Frameworks */,
 				5F1E229C1CDEAABF0083FD6F /* Cocoa.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
