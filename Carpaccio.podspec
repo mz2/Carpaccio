@@ -8,7 +8,7 @@
 
 Pod::Spec.new do |s|
   s.name             = 'Carpaccio'
-  s.version          = '0.0.3'
+  s.version          = '0.0.4'
   s.summary          = 'A pure Swift library for decoding image data and EXIF metadata (including RAW files).'
 
   s.description      = <<-DESC
@@ -18,7 +18,7 @@ Carpaccio is a Swift library that allows decoding image data from file formats s
   s.homepage         = 'https://github.com/mz2/Carpaccio'
   s.license          = { :type => 'MIT', :file => 'LICENSE' }
   s.author           = { 'Matias Piipari' => 'matias.piipari@gmail.com' }
-  s.source           = { :git => 'https://github.com/mz2/Carpaccio.git', :branch => 'master' }
+  s.source           = { :git => 'https://github.com/mz2/Carpaccio.git', :tag => '0.0.4' }
   
   s.module_name      = 'Carpaccio'
   
