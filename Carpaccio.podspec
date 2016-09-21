@@ -19,6 +19,8 @@ Carpaccio is a Swift library that allows decoding image data from file formats s
   s.license          = { :type => 'MIT', :file => 'LICENSE' }
   s.author           = { 'Matias Piipari' => 'matias.piipari@gmail.com' }
   s.source           = { :git => 'https://github.com/mz2/Carpaccio.git', :tag => '0.0.4' }
+
+  s.social_media_url = 'https://twitter.com/mz2'
   
   s.module_name      = 'Carpaccio'
   
