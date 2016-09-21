@@ -110,6 +110,43 @@ open class Image: Equatable, Hashable {
         }, errorHandler: { error in errorHandler(Error.loadingFailed(underlyingError:error)) })
     }
     
+    public func fetchThumbnailSynchronously(presentedHeight: CGFloat? = nil,
+                                            force: Bool = false,
+                                            store: Bool = true,
+                                            scaleFactor:CGFloat = 2.0) throws -> BitmapImage
+    {
+        precondition(!Thread.isMainThread)
+        
+        let semaphore = DispatchSemaphore(value: 0)
+        
+        var image:BitmapImage? = nil
+        var err: Error?
+        DispatchQueue.global().async {
+            self.fetchThumbnail(presentedHeight: presentedHeight,
+                                force: force,
+                                store: store,
+                                scaleFactor: scaleFactor,
+                                completionHandler:
+                { bitmap in // completion handler
+                    image = bitmap
+                    semaphore.signal()
+                })
+                { error in // error handler
+                    err = error
+                    semaphore.signal()
+                }
+        }
+        
+        semaphore.wait()
+        
+        if let err = err {
+            throw err
+        }
+        
+        return image!
+    }
+                                            
+    
     public func fetchThumbnail(presentedHeight: CGFloat? = nil,
                                force: Bool = false,
                                store: Bool = true,
