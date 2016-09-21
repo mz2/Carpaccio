@@ -28,6 +28,6 @@ Carpaccio is a Swift library that allows decoding image data from file formats s
   s.ios.deployment_target = '9.0'
   s.osx.deployment_target = '10.10'
 
-  s.ios.source_files = 'Carpaccio/*.swift', 'Carpaccio/iOS/*.swift'
-  s.osx.source_files = 'Carpaccio/*.swift', 'Carpaccio/OSX/*.swift'
+  s.ios.source_files = ['Carpaccio/*.swift', 'Carpaccio/iOS/*.swift']
+  s.osx.source_files = ['Carpaccio/*.swift', 'Carpaccio/OSX/*.swift']
 end
