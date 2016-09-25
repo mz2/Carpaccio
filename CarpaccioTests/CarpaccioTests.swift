@@ -56,11 +56,52 @@ class CarpaccioTests: XCTestCase {
         
         try! FileManager.default.removeItem(at: tempDir)
     }
-    
+	
+	func testiPhone5Image()
+	{
+		let img1URL = Bundle(for: type(of: self)).url(forResource:"iphone5", withExtension: "jpg")!
+		
+		let tempDir = URL(fileURLWithPath:NSTemporaryDirectory() + "/\(UUID().uuidString)")
+		
+		try! FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true, attributes: [:])
+		
+		let converter = RAWImageLoader(imageURL: img1URL, thumbnailScheme: .fullImageWhenThumbnailMissing)
+		
+		converter.loadFullSizeImage(handler: { image, imageMetadata in
+			XCTAssertEqual(image.size.width, 2448.0)
+			XCTAssertEqual(image.size.height, 3264.0)
+			
+			XCTAssertEqual(imageMetadata.cameraMaker, "Apple")
+			XCTAssertEqual(imageMetadata.cameraModel, "iPhone 5")
+			XCTAssertEqual(imageMetadata.ISO, 50.0)
+			XCTAssertEqual(imageMetadata.nativeSize.width, 3264.0)
+			XCTAssertEqual(imageMetadata.nativeSize.height, 2448.0)
+			XCTAssertEqualWithAccuracy(imageMetadata.fNumber!, 2.4, accuracy: 0.01)
+			XCTAssertEqualWithAccuracy(imageMetadata.focalLength!, 4.12, accuracy: 0.01)
+			XCTAssertEqualWithAccuracy(imageMetadata.focalLength35mmEquivalent!, 33.0, accuracy: 0.000000001)
+			XCTAssertEqualWithAccuracy(imageMetadata.shutterSpeed!, 0.00145772, accuracy: 0.00000001)
+			
+			let testedComponents:Set<Calendar.Component> = [.year, .month, .day, .hour, .minute, .second]
+			let date = imageMetadata.timestamp!
+			let components = Calendar(identifier: .gregorian).dateComponents(testedComponents, from: date)
+
+			XCTAssertEqual(components.year, 2016)
+			XCTAssertEqual(components.day, 8)
+			XCTAssertEqual(components.month, 9)
+			XCTAssertEqual(components.hour, 11)
+			XCTAssertEqual(components.minute, 56)
+			XCTAssertEqual(components.second, 3)
+		}) { err in
+			XCTFail("Error: \(err)")
+		}
+		
+		try! FileManager.default.removeItem(at: tempDir)
+	}
+	
     func testDistanceMatrixComputation() {
         let resourcesDir = Bundle(for: type(of: self)).resourceURL!
         let imgColl = try! Collection(contentsOfURL: resourcesDir)
-        
+			
         // just checking that the matrix computation succeeds.
         let distances = imgColl.distanceMatrix { a, b in
             return Double.infinity
@@ -80,6 +121,7 @@ class CarpaccioTests: XCTestCase {
             }
         }
     }
+	
     
     func testDistanceTableComputation() {
         let resourcesDir = Bundle(for: type(of: self)).resourceURL!
