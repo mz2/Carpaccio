@@ -34,13 +34,13 @@ public extension BitmapImage {
         }
     }
     
-    public func width(forHeight height: CGFloat) -> CGFloat
+    public func proportionalWidth(forHeight height: CGFloat) -> CGFloat
     {
-        return self.size.width(forHeight: height)
+        return self.size.proportionalWidth(forHeight: height)
     }
     
-    public func height(forWidth width: CGFloat) -> CGFloat
+    public func proportionalHeight(forWidth width: CGFloat) -> CGFloat
     {
-        return self.size.height(forWidth: width)
+        return self.size.proportionalHeight(forWidth: width)
     }
 }

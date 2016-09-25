@@ -27,12 +27,12 @@ extension CGSize
         }
     }
     
-    public func width(forHeight height: CGFloat) -> CGFloat
+    public func proportionalWidth(forHeight height: CGFloat) -> CGFloat
     {
         return height * self.widthToHeightRatio
     }
     
-    public func height(forWidth width: CGFloat) -> CGFloat
+    public func proportionalHeight(forWidth width: CGFloat) -> CGFloat
     {
         return width / self.widthToHeightRatio
     }

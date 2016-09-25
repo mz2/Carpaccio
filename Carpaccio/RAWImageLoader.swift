@@ -218,10 +218,60 @@ public class RAWImageLoader: ImageLoaderProtocol
             options[String(kCGImageSourceThumbnailMaxPixelSize)] = NSNumber(value: Int(round(sz)))
         }
         
-        let thumbnailImage = CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary?)
-        return thumbnailImage
+        if let thumbnailImage = CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary?)
+        {
+            let thumbnailImage = cropToNativeProportionsIfNeeded(thumbnailImage: thumbnailImage)
+            return thumbnailImage
+        }
+        return nil
     }
     
+    /**
+     
+     If the proportions of thumbnail image don't match those of the native full size, crop to the same proportions.
+     
+     This, for example, can happen with Nikon RAW files, where the smallest thumbnail included in a NEF file can be 4:3,
+     while the actual full-size image is 3:2. In that case, the thumbnail will contain black bars around the actual image,
+     to extend 3:2 to 4:3 proportions. The solution: crop.
+     
+     */
+    private func cropToNativeProportionsIfNeeded(thumbnailImage thumbnail: CGImage) -> CGImage
+    {
+        guard let metadata = imageMetadata else {
+            return thumbnail;
+        }
+        
+        var cropRect: CGRect? = nil
+        
+        if metadata.isLandscape
+        {
+            let expectedHeight = metadata.nativeSize.proportionalHeight(forWidth: CGFloat(thumbnail.width))
+            let d = Int(round(abs(expectedHeight - CGFloat(thumbnail.height))))
+            if (d >= 1)
+            {
+                let cropAmount: CGFloat = 0.5 * (d % 2 == 0 ? CGFloat(d) : CGFloat(d + 1))
+                cropRect = CGRect(x: 0.0, y: cropAmount, width: CGFloat(thumbnail.width), height: CGFloat(thumbnail.height) - 2.0 * cropAmount)
+                NSLog("Will crop \(self.imageURL.lastPathComponent) horizontally by \(cropAmount)px")
+            }
+        }
+        else if metadata.isPortrait
+        {
+            let expectedWidth = metadata.nativeSize.proportionalWidth(forHeight: CGFloat(thumbnail.height))
+            let d = Int(round(abs(expectedWidth - CGFloat(thumbnail.width))))
+            if (d >= 1)
+            {
+                let cropAmount: CGFloat = 0.5 * (d % 2 == 0 ? CGFloat(d) : CGFloat(d + 1))
+                cropRect = CGRect(x: cropAmount, y: 0.0, width: CGFloat(thumbnail.width) - 2.0 * cropAmount, height: CGFloat(thumbnail.height))
+                NSLog("Will crop \(self.imageURL.lastPathComponent) vertically by \(cropAmount)px")
+            }
+        }
+        
+        if let r = cropRect, let croppedThumbnail = thumbnail.cropping(to: r) {
+            return croppedThumbnail
+        }
+        
+        return thumbnail
+    }
     
     /** Retrieve metadata about this loader's image, to be called before loading actual image data. */
     public func loadThumbnailImage(maximumPixelDimensions maxPixelSize: CGSize?,
@@ -391,7 +441,7 @@ public extension CGSize
         }
         else if widthIsUnconstrained {
             if ratio > 1.0 {
-                return imageSize.width(forHeight: self.height)
+                return imageSize.proportionalWidth(forHeight: self.height)
             }
             return self.height
         }
@@ -399,7 +449,7 @@ public extension CGSize
             if ratio > 1.0 {
                 return self.width
             }
-            return imageSize.height(forWidth: self.width)
+            return imageSize.proportionalHeight(forWidth: self.width)
         }
         
         return min(self.width, self.height)

@@ -83,6 +83,18 @@ public struct ImageMetadata
         return self.nativeSize
     }
     
+    public var isLandscape: Bool {
+        return size.width > size.height
+    }
+    
+    public var isPortrait: Bool {
+        return size.width < size.height
+    }
+    
+    public var isSquare: Bool {
+        return size.width == size.height
+    }
+
     public var cleanedUpCameraModel: String? {
         get {
             guard let model = self.cameraModel else {
