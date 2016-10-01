@@ -245,24 +245,22 @@ public class RAWImageLoader: ImageLoaderProtocol
         
         if metadata.isLandscape
         {
-            let expectedHeight = metadata.nativeSize.proportionalHeight(forWidth: CGFloat(thumbnail.width))
+            let expectedHeight = metadata.size.proportionalHeight(forWidth: CGFloat(thumbnail.width))
             let d = Int(round(abs(expectedHeight - CGFloat(thumbnail.height))))
             if (d >= 1)
             {
                 let cropAmount: CGFloat = 0.5 * (d % 2 == 0 ? CGFloat(d) : CGFloat(d + 1))
                 cropRect = CGRect(x: 0.0, y: cropAmount, width: CGFloat(thumbnail.width), height: CGFloat(thumbnail.height) - 2.0 * cropAmount)
-                NSLog("Will crop \(self.imageURL.lastPathComponent) horizontally by \(cropAmount)px")
             }
         }
         else if metadata.isPortrait
         {
-            let expectedWidth = metadata.nativeSize.proportionalWidth(forHeight: CGFloat(thumbnail.height))
+            let expectedWidth = metadata.size.proportionalWidth(forHeight: CGFloat(thumbnail.height))
             let d = Int(round(abs(expectedWidth - CGFloat(thumbnail.width))))
             if (d >= 1)
             {
                 let cropAmount: CGFloat = 0.5 * (d % 2 == 0 ? CGFloat(d) : CGFloat(d + 1))
                 cropRect = CGRect(x: cropAmount, y: 0.0, width: CGFloat(thumbnail.width) - 2.0 * cropAmount, height: CGFloat(thumbnail.height))
-                NSLog("Will crop \(self.imageURL.lastPathComponent) vertically by \(cropAmount)px")
             }
         }
         
