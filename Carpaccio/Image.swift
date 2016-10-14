@@ -30,6 +30,18 @@ open class Image: Equatable, Hashable {
     }
     
     public let URL: Foundation.URL?
+    
+    private var _directoryPath: String?
+    public var directoryPath: String? {
+        if let url = URL {
+            if _directoryPath == nil {
+                _directoryPath = url.deletingLastPathComponent().path
+            }
+            return _directoryPath
+        }
+        return nil
+    }
+    
     public let UUID: String = {
         return Foundation.UUID().uuidString
     }()
@@ -229,67 +241,6 @@ open class Image: Equatable, Hashable {
 
     public class var bakedImageFileExtensions:Set<String> {
         return Set(["jpg", "jpeg", "png", "tiff", "tif", "gif"])
-    }
-
-    public typealias LoadHandler = (_ index:Int, _ total:Int, _ image:Image) -> Void
-    public typealias LoadErrorHandler = (Error) -> Void
-    
-    internal class func imageURLs(atCollectionURL URL: Foundation.URL) throws -> [Foundation.URL]
-    {
-        let fileManager = FileManager.default
-        
-        let path = URL.path
-        
-        guard let enumerator = fileManager.enumerator(atPath: path) else {
-            throw Error.locationNotEnumerable(URL)
-        }
-        
-        let urls = enumerator.lazy.map { anyPath -> Foundation.URL in
-            let path = anyPath as! String
-            let url = URL.appendingPathComponent(path, isDirectory: false).absoluteURL
-            return url
-        }.filter { url in
-            var isDir:ObjCBool = false
-            let exists = FileManager.default.fileExists(atPath: url.path, isDirectory: &isDir)
-            let pathExtension = (url.lastPathComponent as NSString).pathExtension.lowercased()
-            return exists && !isDir.boolValue && Image.imageFileExtensions.contains(pathExtension)
-        }
-        
-        return urls
-    }
-    
-    public class func load(contentsOfURL URL:Foundation.URL, loadHandler: LoadHandler? = nil) throws -> (AnyCollection<Image>, Int)
-    {
-        let imageURLs = try self.imageURLs(atCollectionURL: URL)
-        
-        let count = imageURLs.count
-        
-        let images = try imageURLs.lazy.enumerated().flatMap { (i, imageURL) -> Image? in
-            let pathExtension = imageURL.pathExtension
-            
-            guard pathExtension.utf8.count > 0 else {
-                return nil
-            }
-            
-            let image = try Image(URL: imageURL)
-            loadHandler?(i, imageURLs.count, image)
-            
-            return image
-        }
-        
-        let imageCollection = AnyCollection<Image>(images)
-        return (imageCollection, count)
-    }
-    
-    public class func loadAsynchronously(contentsOfURL URL:Foundation.URL, queue:DispatchQueue = DispatchQueue.global(), loadHandler:LoadHandler? = nil, errorHandler:@escaping LoadErrorHandler) {
-        queue.async {
-            do {
-                _ = try load(contentsOfURL: URL, loadHandler: loadHandler)
-            }
-            catch {
-                errorHandler(.loadingFailed(underlyingError: error))
-            }
-        }
     }
     
     public var hashValue: Int {

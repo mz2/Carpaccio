@@ -56,7 +56,7 @@ public class Collection
         self.URL = URL
         self.name = URL.lastPathComponent
         
-        let (images, count) = try Image.load(contentsOfURL: URL)
+        let (images, count) = try Collection.load(contentsOfURL: URL)
         self.images = AnyCollection<Image>(images)
         self.imageCount = count
     }
@@ -66,16 +66,40 @@ public class Collection
         case byName
     }
     
+    class func imageURLs(atCollectionURL URL: URL) throws -> [URL]
+    {
+        let fileManager = FileManager.default
+        let path = URL.path
+        
+        guard let enumerator = fileManager.enumerator(atPath: path) else {
+            throw Image.Error.locationNotEnumerable(URL)
+        }
+        
+        let urls = enumerator.lazy.map { anyPath -> Foundation.URL in
+            let path = anyPath as! String
+            let url = URL.appendingPathComponent(path, isDirectory: false).absoluteURL
+            return url
+            }.filter { url in
+                if let attributes = enumerator.fileAttributes, attributes[.type] as! FileAttributeType == .typeRegular {
+                    let pathExtension = (url.lastPathComponent as NSString).pathExtension.lowercased()
+                    return Image.imageFileExtensions.contains(pathExtension)
+                }
+                return false
+        }
+        
+        return urls
+    }
+    
     /** Asynchronously initialise an image collection rooted at given URL, with all images found in the subtree prepared up to essential metadata having been loaded. */
-    public class func prepare(atURL collectionURL: Foundation.URL,
-                              queue:DispatchQueue = DispatchQueue.global(),
-                              sortingScheme:SortingScheme = .none,
-                              maxMetadataLoadParallelism:Int? = nil,
+    public class func prepare(atURL collectionURL: URL,
+                              queue: DispatchQueue = DispatchQueue.global(),
+                              sortingScheme: SortingScheme = .none,
+                              maxMetadataLoadParallelism: Int? = nil,
                               completionHandler: @escaping ImageCollectionHandler,
                               errorHandler: @escaping ImageCollectionErrorHandler) {
         queue.async {
             do {
-                let imageURLs = try Image.imageURLs(atCollectionURL: collectionURL)
+                let imageURLs = try self.imageURLs(atCollectionURL: collectionURL)
                 
                 let images = imageURLs.lazy.parallelFlatMap(maxParallelism:maxMetadataLoadParallelism) { URL -> Image? in
                     do {
@@ -108,6 +132,42 @@ public class Collection
                 
                 completionHandler(collection)
                 
+            }
+            catch {
+                errorHandler(Image.Error.loadingFailed(underlyingError: error))
+            }
+        }
+    }
+    
+    public typealias ImageLoadHandler = (_ index:Int, _ total:Int, _ image:Image) -> Void
+    public typealias ImageLoadErrorHandler = (Error) -> Void
+    
+    public class func load(contentsOfURL URL: Foundation.URL, loadHandler: ImageLoadHandler? = nil) throws -> (AnyCollection<Image>, Int)
+    {
+        let imageURLs = try Collection.imageURLs(atCollectionURL: URL)
+        let count = imageURLs.count
+        
+        let images = try imageURLs.lazy.enumerated().flatMap { (i, imageURL) -> Image? in
+            let pathExtension = imageURL.pathExtension
+            
+            guard pathExtension.utf8.count > 0 else {
+                return nil
+            }
+            
+            let image = try Image(URL: imageURL)
+            loadHandler?(i, imageURLs.count, image)
+            
+            return image
+        }
+        
+        let imageCollection = AnyCollection<Image>(images)
+        return (imageCollection, count)
+    }
+    
+    public class func loadAsynchronously(contentsOfURL URL:Foundation.URL, queue:DispatchQueue = DispatchQueue.global(), loadHandler: ImageLoadHandler? = nil, errorHandler:@escaping ImageLoadErrorHandler) {
+        queue.async {
+            do {
+                _ = try load(contentsOfURL: URL, loadHandler: loadHandler)
             }
             catch {
                 errorHandler(Image.Error.loadingFailed(underlyingError: error))
