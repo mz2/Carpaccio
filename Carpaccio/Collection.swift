@@ -37,14 +37,14 @@ extension Carpaccio.Collection: ImageCollection
 public typealias ImageCollectionHandler = (Collection) -> Void
 public typealias ImageCollectionErrorHandler = (Error) -> Void
 
-public class Collection
+open class Collection
 {
     public let name:String
     public var images:AnyCollection<Image>
     public let imageCount:Int
     public let URL: Foundation.URL?
     
-    public init(name: String, images: AnyCollection<Image>, imageCount:Int, URL: Foundation.URL) throws
+    public required init(name: String, images: AnyCollection<Image>, imageCount:Int, URL: Foundation.URL) throws
     {
         self.URL = URL
         self.name = name
@@ -124,14 +124,12 @@ public class Collection
                         return image1.name.compare(image2.name) == .orderedAscending
                     })
                 }
-
-                let collection = try Collection(name: collectionURL.lastPathComponent,
-                                                images: returnedImages,
-                                                imageCount: imageURLs.count,
-                                                URL: collectionURL)
                 
+                let collection = try self.init(name: collectionURL.lastPathComponent,
+                                               images: returnedImages,
+                                               imageCount: imageURLs.count,
+                                               URL: collectionURL)
                 completionHandler(collection)
-                
             }
             catch {
                 errorHandler(Image.Error.loadingFailed(underlyingError: error))
