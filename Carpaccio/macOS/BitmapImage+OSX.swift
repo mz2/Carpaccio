@@ -59,21 +59,21 @@ extension NSImage {
     
 }
 
-struct BitmapImageUtility {
+public struct BitmapImageUtility {
     
-    static func image(named string:String) -> BitmapImage? {
+    public static func image(named string:String) -> BitmapImage? {
         return NSImage(named: string)
     }
     
-    static func image(sized size: CGSize) -> BitmapImage {
+    public static func image(sized size: CGSize) -> BitmapImage {
         return NSImage(size: size)
     }
     
-    static func image(cgImage: CGImage, size: CGSize) -> BitmapImage {
+    public static func image(cgImage: CGImage, size: CGSize) -> BitmapImage {
         return NSImage(cgImage: cgImage, size: size)
     }
     
-    static func image(ciImage image: CIImage) -> BitmapImage?
+    public static func image(ciImage image: CIImage) -> BitmapImage?
     {
         let bitmapImage = self.image(sized: image.extent.size) as! NSImage
         bitmapImage.cacheMode = .never
@@ -90,4 +90,19 @@ struct BitmapImageUtility {
         return bitmapImage
     }
 
+    public static func image(_ overlay: BitmapImage, overlayedOn background: BitmapImage) -> NSImage {
+        let newImage = BitmapImageUtility.image(sized: background.size) as! NSImage
+        
+        newImage.lockFocus()
+        
+        var newImageRect = CGRect.zero
+        newImageRect.size = newImage.size
+        
+        (background as! NSImage).draw(in: newImageRect)
+        (overlay as! NSImage).draw(in: newImageRect)
+        
+        newImage.unlockFocus()
+        
+        return newImage
+    }
 }
