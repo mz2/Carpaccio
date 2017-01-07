@@ -66,7 +66,7 @@ open class Collection
         case byName
     }
     
-    class func imageURLs(atCollectionURL URL: URL) throws -> [URL]
+    public class func imageURLs(atCollectionURL URL: URL) throws -> [URL]
     {
         let fileManager = FileManager.default
         let path = URL.path
