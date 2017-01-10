@@ -21,7 +21,7 @@ test_ios:
   script:
     - xcodebuild -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 6,OS=10.2' -workspace Carpaccio.xcworkspace -scheme Carpaccio-iOS clean test | xcpretty
   dependencies:
-    - build_project
+    - build_ios
   tags:
     - xcode-8.2
     - macos-10.11
