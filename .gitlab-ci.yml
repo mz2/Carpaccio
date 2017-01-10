@@ -1,23 +1,25 @@
 stages:
-  - build
+  - build_macos
+  - build_ios
   - test_ios
 
-build_project:
-  stage: build
+build_macos:
+  stage: build_macos
   script:
-    - ssh-keyscan github.com | sort -u - ~/.ssh/known_hosts -o ~/.ssh/known_hosts
-    - git submodule sync
-    - git submodule update --init --recursive
-    - carthage bootstrap --use-ssh --use-submodules --platform mac
     - xcodebuild -workspace Carpaccio.xcworkspace -scheme Carpaccio-OSX clean build
   tags:
     - xcode-8.2
     - macos-10.11
 
+build_ios:
+  stage: build_ios
+  script:
+   - xcodebuild -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 6,OS=10.2' -workspace Carpaccio.xcworkspace -scheme Carpaccio-iOS clean build | xcpretty
+
 test_ios:
   stage: test_ios
   script:
-    - xcodebuild -sdk iphonesimulator -workspace Carpaccio.xcworkspace -scheme Carpaccio-iOS -destination 'platform=iOS Simulator,name=iPhone 6,OS=10.0' clean test | xcpretty
+    - xcodebuild -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 6,OS=10.2' -workspace Carpaccio.xcworkspace -scheme Carpaccio-iOS clean test | xcpretty
   dependencies:
     - build_project
   tags:
