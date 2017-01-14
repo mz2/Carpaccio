@@ -1,5 +1,0 @@
-language: objective-c
-xcode_workspace: Carpaccio.xcworkspace
-xcode_scheme: Carpaccio-iOS
-osx_image: xcode8
-script: xcodebuild -sdk iphonesimulator -workspace Carpaccio.xcworkspace -scheme Carpaccio-iOS -destination 'platform=iOS Simulator,name=iPhone 6,OS=10.0' clean test
