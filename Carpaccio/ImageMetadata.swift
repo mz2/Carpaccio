@@ -11,6 +11,19 @@ import Foundation
 import QuartzCore
 import ImageIO
 
+extension CGImagePropertyOrientation
+{
+    var dimensionsSwapped: Bool {
+        switch self
+        {
+        case .left, .right, .leftMirrored, .rightMirrored:
+            return true
+        default:
+            return false
+        }
+    }
+}
+
 public struct ImageMetadata
 {
     public let cameraMaker: String?
@@ -66,35 +79,30 @@ public struct ImageMetadata
     
     public var size: CGSize
     {
-        let shouldSwapWidthAndHeight: Bool
-        
-        switch self.nativeOrientation
-        {
-        case .left, .right, .leftMirrored, .rightMirrored:
-            shouldSwapWidthAndHeight = true
-        default:
-            shouldSwapWidthAndHeight = false
-        }
-        
-        if shouldSwapWidthAndHeight {
+        if self.nativeOrientation.dimensionsSwapped {
             return CGSize(width: self.nativeSize.height, height: self.nativeSize.width)
         }
         
         return self.nativeSize
     }
     
-    public var isLandscape: Bool {
-        return size.width > size.height
+    public enum Shape {
+        case landscape
+        case portrait
+        case square
     }
     
-    public var isPortrait: Bool {
-        return size.width < size.height
+    public var shape: Shape {
+        if size.width > size.height {
+            return .landscape
+        }
+        else if size.width < size.height {
+            return .portrait
+        }
+        
+        return .square
     }
     
-    public var isSquare: Bool {
-        return size.width == size.height
-    }
-
     public var cleanedUpCameraModel: String? {
         get {
             guard let model = self.cameraModel else {

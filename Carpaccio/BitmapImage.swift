@@ -27,10 +27,10 @@ public extension BitmapImage {
         }
     }
     
-    public var widthToHeightRatio: CGFloat
+    public var aspectRatio: CGFloat
         {
         get {
-            return self.size.widthToHeightRatio
+            return self.size.aspectRatio
         }
     }
     

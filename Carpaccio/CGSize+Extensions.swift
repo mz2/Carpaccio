@@ -11,7 +11,7 @@ import QuartzCore
 
 extension CGSize
 {
-    public var widthToHeightRatio: CGFloat
+    public var aspectRatio: CGFloat
         {
         get
         {
@@ -23,18 +23,24 @@ extension CGSize
                 return CGFloat.infinity
             }
             
-            return round(self.width) / round(self.height)
+            return self.width / self.height
         }
     }
     
     public func proportionalWidth(forHeight height: CGFloat) -> CGFloat
     {
-        return height * self.widthToHeightRatio
+        return height * self.aspectRatio
     }
     
     public func proportionalHeight(forWidth width: CGFloat) -> CGFloat
     {
-        return width / self.widthToHeightRatio
+        return width / self.aspectRatio
+    }
+    
+    public func distance(to: CGSize) -> CGFloat {
+        let xDist = to.width - self.width
+        let yDist = to.width - self.width
+        return sqrt((xDist * xDist) + (yDist * yDist))
     }
 }
 

@@ -241,10 +241,22 @@ public class ImageLoader: ImageLoaderProtocol
             return thumbnail;
         }
         
-        var cropRect: CGRect? = nil
+        let thumbnailSize = CGSize(width: CGFloat(thumbnail.width), height:CGFloat(thumbnail.height))
+        let absThumbAspectDiff = fabs(metadata.size.aspectRatio - thumbnailSize.aspectRatio)
         
-        if metadata.isLandscape
+        // small differences can happen and in those cases we should not crop but simply rescale the thumbnail
+        // (to avoid decreasing image quality).
+        let metadataAndThumbAgreeOnAspectRatio = absThumbAspectDiff < 0.01
+        
+        if metadataAndThumbAgreeOnAspectRatio {
+            return thumbnail
+        }
+        
+        let cropRect: CGRect?
+        
+        switch metadata.shape
         {
+        case .landscape:
             let expectedHeight = metadata.size.proportionalHeight(forWidth: CGFloat(thumbnail.width))
             let d = Int(round(abs(expectedHeight - CGFloat(thumbnail.height))))
             if (d >= 1)
@@ -252,9 +264,11 @@ public class ImageLoader: ImageLoaderProtocol
                 let cropAmount: CGFloat = 0.5 * (d % 2 == 0 ? CGFloat(d) : CGFloat(d + 1))
                 cropRect = CGRect(x: 0.0, y: cropAmount, width: CGFloat(thumbnail.width), height: CGFloat(thumbnail.height) - 2.0 * cropAmount)
             }
-        }
-        else if metadata.isPortrait
-        {
+            else
+            {
+                cropRect = nil
+            }
+        case .portrait:
             let expectedWidth = metadata.size.proportionalWidth(forHeight: CGFloat(thumbnail.height))
             let d = Int(round(abs(expectedWidth - CGFloat(thumbnail.width))))
             if (d >= 1)
@@ -262,6 +276,15 @@ public class ImageLoader: ImageLoaderProtocol
                 let cropAmount: CGFloat = 0.5 * (d % 2 == 0 ? CGFloat(d) : CGFloat(d + 1))
                 cropRect = CGRect(x: cropAmount, y: 0.0, width: CGFloat(thumbnail.width) - 2.0 * cropAmount, height: CGFloat(thumbnail.height))
             }
+            else
+            {
+                cropRect = nil
+            }
+        case .square:
+            // highly unlikely to actually occur – 
+            // as I'm not sure what the correct procedure here would be,
+            // I will do nothing.
+            cropRect = nil
         }
         
         if let r = cropRect, let croppedThumbnail = thumbnail.cropping(to: r) {
@@ -407,7 +430,7 @@ public extension CGSize
     {
         let widthIsUnconstrained = self.width > imageSize.width
         let heightIsUnconstrained = self.height > imageSize.height
-        let ratio = imageSize.widthToHeightRatio
+        let ratio = imageSize.aspectRatio
         
         if widthIsUnconstrained && heightIsUnconstrained
         {
