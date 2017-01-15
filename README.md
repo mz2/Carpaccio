@@ -11,6 +11,8 @@ Carpaccio uses multiple CPU cores efficiently in parallel for all of metadata, t
 
 There are no 3rd party dependencies (CoreImage filter is used for RAW decoding).
 
+** NOTE! If you are looking at this on GitHub, please be noted that the primary source for Carpaccio is to be found at [gitlab.com/sashimiapp-public/carpaccio.git](https://gitlab.com/sashimiapp-public/carpaccio.git). **
+
 #### INSTALLATION
 
 ##### Carthage
