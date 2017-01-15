@@ -47,7 +47,7 @@ $ git init
 - Add Carpaccio as a git [submodule](http://git-scm.com/docs/git-submodule) by running the following command:
 
 ```bash
-$ git submodule add https://github.com/mz2/Carpaccio.git
+$ git submodule add https://gitlab.com/sashimiapp-public/Carpaccio.git
 ```
 
 - Open the new `Carpaccio` folder, and drag the `Carpaccio.xcodeproj` into the Project Navigator of your application's Xcode project.
