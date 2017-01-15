@@ -13,7 +13,18 @@ public typealias ImageMetadataHandler = (_ metadata: ImageMetadata) -> Void
 
 public typealias PresentableImageHandler = (_ image: BitmapImage, _ metadata: ImageMetadata) -> Void
 
-public typealias ImageLoadingErrorHandler = (_ error: RAWImageLoaderError) -> Void
+public enum ImageLoadingError: Swift.Error
+{
+    case failedToExtractImageMetadata(URL: URL, message: String)
+    case failedToLoadThumbnailImage(URL: URL, message: String)
+    case failedToLoadFullSizeImage(URL: URL, message: String)
+    case noImageSource(URL: URL, message: String)
+    case failedToInitializeDecoder(URL: URL, message: String)
+    case failedToDecode(URL: URL, message: String)
+    case failedToLoadDecodedImage(URL: URL, message: String)
+}
+
+public typealias ImageLoadingErrorHandler = (_ error: ImageLoadingError) -> Void
 
 public struct FullSizedImageLoadingOptions {
     public var maximumPixelDimensions:CGSize?
@@ -37,7 +48,7 @@ public protocol ImageLoaderProtocol
     /** *If*, in addition to `imageURL`, full image image data happens to have been copied into a disk cache location, a direct URL pointing to that location. */
     var cachedImageURL: URL? { get }
     
-    /** Retrieve metadata about this loader's image, to be called before loading actual image data. */
+    /** Retrieve metadata about this loader's image, to be called before loading actual image data. Expected to act asynchronously. */
     func loadThumbnailImage(maximumPixelDimensions maxPixelSize: CGSize?,
                             handler: @escaping PresentableImageHandler,
                             errorHandler: @escaping ImageLoadingErrorHandler)
@@ -45,17 +56,14 @@ public protocol ImageLoaderProtocol
     func loadThumbnailImage(handler: @escaping PresentableImageHandler,
                             errorHandler: @escaping ImageLoadingErrorHandler)
     
-    /** Load image metadata. */
-    func loadImageMetadata(_ handler: @escaping ImageMetadataHandler,
-                           errorHandler: @escaping ImageLoadingErrorHandler)
+    /** Load image metadata synchronously. */
+    func loadImageMetadata() throws -> ImageMetadata
     
     /** Load full-size image. */
-    func loadFullSizeImage(options: FullSizedImageLoadingOptions,
-                           handler: @escaping PresentableImageHandler,
-                           errorHandler: @escaping ImageLoadingErrorHandler)
+    func loadFullSizeImage(options: FullSizedImageLoadingOptions) throws -> (BitmapImage, ImageMetadata)
     
-    func loadFullSizeImage(handler: @escaping PresentableImageHandler,
-                           errorHandler: @escaping ImageLoadingErrorHandler)
+    /** Load full-size image with default options. */
+    func loadFullSizeImage() throws -> (BitmapImage, ImageMetadata)
 }
 
 public extension ImageLoaderProtocol {
@@ -65,9 +73,7 @@ public extension ImageLoaderProtocol {
                                 handler: handler, errorHandler: errorHandler)
     }
     
-    func loadFullSizeImage(handler: @escaping PresentableImageHandler,
-                           errorHandler: @escaping ImageLoadingErrorHandler) {
-        self.loadFullSizeImage(options:FullSizedImageLoadingOptions(),
-                               handler: handler, errorHandler: errorHandler)
+    func loadFullSizeImage() throws -> (BitmapImage, ImageMetadata) {
+        return try self.loadFullSizeImage(options: FullSizedImageLoadingOptions())
     }
 }

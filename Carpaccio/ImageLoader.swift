@@ -1,5 +1,5 @@
 //
-//  RAWImageLoader.swift
+//  ImageLoader.swift
 //  Carpaccio
 //
 //  Created by Markus Piipari on 31/07/16.
@@ -12,24 +12,24 @@ import CoreGraphics
 import CoreImage
 import ImageIO
 
-public enum RAWImageLoaderError: Swift.Error
+/** Implementation of ImageLoaderProtocol, capable of dealing with RAW file formats, 
+  * as well common compressed image file formats. */
+public class ImageLoader: ImageLoaderProtocol
 {
-    case failedToExtractImageMetadata(message: String)
-    case failedToLoadThumbnailImage(message: String)
-    case failedToLoadFullSizeImage(message: String)
-}
-
-public class RAWImageLoader: ImageLoaderProtocol
-{
+    enum Error: Swift.Error {
+        case filterInitializationFailed(URL: URL)
+    }
+    
     public enum ThumbnailScheme: Int
     {
+        case never
         case decodeFullImage
         case fullImageWhenTooSmallThumbnail
         case fullImageWhenThumbnailMissing
     }
     
     public let imageURL: URL
-    public let cachedImageURL: URL? = nil // For now, we don't implement a disk cache for images loaded by RAWImageLoader
+    public let cachedImageURL: URL? = nil // For now, we don't implement a disk cache for images loaded by ImageLoader
     public let thumbnailScheme: ThumbnailScheme
     
     // See ImageMetadata.timestamp for known caveats about EXIF/TIFF
@@ -163,19 +163,18 @@ public class RAWImageLoader: ImageLoaderProtocol
         print("----")
     }
     
-    public func loadImageMetadata(_ handler: @escaping ImageMetadataHandler,
-                                  errorHandler: @escaping ImageLoadingErrorHandler) {
+    public func loadImageMetadata() throws -> ImageMetadata {
         guard let _ = self.imageSource else {
-            precondition(false)
-            return
+            throw ImageLoadingError.noImageSource(URL: self.imageURL,
+                                                  message: "Image source unexpectedly missing.")
         }
         
-        if let metadata = self.imageMetadata {
-            handler(metadata)
+        guard let metadata = self.imageMetadata else {
+            throw ImageLoadingError.failedToExtractImageMetadata(URL: self.imageURL,
+                                                                 message: "Failed to read image properties for \(self.imageURL.path)")
         }
-        else {
-            errorHandler(RAWImageLoaderError.failedToExtractImageMetadata(message: "Failed to read image properties for \(self.imageURL.path)"))
-        }
+        
+        return metadata
     }
     
     private func loadThumbnailImage(maximumPixelDimensions maximumSize: CGSize? = nil) -> CGImage?
@@ -185,12 +184,12 @@ public class RAWImageLoader: ImageLoaderProtocol
             return nil
         }
         
-        let maxPixelSize = maximumSize?.maximumPixelSize(forImageSize: self.imageMetadata!.size)
-        var createFromFullImage = false
-        
-        if self.thumbnailScheme == .decodeFullImage {
-            createFromFullImage = true
+        guard self.thumbnailScheme != .never else {
+            return nil
         }
+        
+        let maxPixelSize = maximumSize?.maximumPixelSize(forImageSize: self.imageMetadata!.size)
+        let createFromFullImage = self.thumbnailScheme == .decodeFullImage
         
         // If thumbnail dimensions are too small for current configuration, create from full image
         /*if self.thumbnailScheme == .DecodeFullImageIfThumbnailTooSmall && maximumSize != nil
@@ -212,7 +211,8 @@ public class RAWImageLoader: ImageLoaderProtocol
             }
         }*/
         
-        var options: [String: AnyObject] = [String(kCGImageSourceCreateThumbnailWithTransform): kCFBooleanTrue, String(createFromFullImage ? kCGImageSourceCreateThumbnailFromImageAlways : kCGImageSourceCreateThumbnailFromImageIfAbsent): kCFBooleanTrue]
+        var options: [String: AnyObject] = [String(kCGImageSourceCreateThumbnailWithTransform): kCFBooleanTrue,
+                                            String(createFromFullImage ? kCGImageSourceCreateThumbnailFromImageAlways : kCGImageSourceCreateThumbnailFromImageIfAbsent): kCFBooleanTrue]
         
         if let sz = maxPixelSize {
             options[String(kCGImageSourceThumbnailMaxPixelSize)] = NSNumber(value: Int(round(sz)))
@@ -284,7 +284,8 @@ public class RAWImageLoader: ImageLoaderProtocol
             handler(BitmapImageUtility.image(cgImage: thumbnailImage, size: CGSize.zero), self.imageMetadata!)
         }
         else {
-            errorHandler(RAWImageLoaderError.failedToLoadThumbnailImage(message: "Failed to load thumbnail image from \(self.imageURL.path)"))
+            errorHandler(ImageLoadingError.failedToLoadThumbnailImage(URL: self.imageURL,
+                                                                      message: "Failed to load thumbnail image from \(self.imageURL.path)"))
         }
     }
     
@@ -295,7 +296,7 @@ public class RAWImageLoader: ImageLoaderProtocol
     static let imageBakingColorSpace = genericLinearRGBColorSpace //NSScreen.deepest()?.colorSpace?.cgColorSpace ?? genericLinearRGBColorSpace
     
     //@available(OSX 10.12, *)
-    //static let imageBakingContext = CIContext(options: [kCIContextCacheIntermediates: false, kCIContextUseSoftwareRenderer: false, kCIContextWorkingColorSpace: RAWImageLoader.imageBakingColorSpace, kCIContextOutputColorSpace: NSScreen.deepest()?.colorSpace?.cgColorSpace ?? RAWImageLoader.imageBakingColorSpace])
+    //static let imageBakingContext = CIContext(options: [kCIContextCacheIntermediates: false, kCIContextUseSoftwareRenderer: false, kCIContextWorkingColorSpace: ImageLoader.imageBakingColorSpace, kCIContextOutputColorSpace: NSScreen.deepest()?.colorSpace?.cgColorSpace ?? ImageLoader.imageBakingColorSpace])
     //static let imageBakingContext = CIContext(options: [kCIContextCacheIntermediates: false, kCIContextUseSoftwareRenderer: false])
     
     @available(OSX 10.12, *)
@@ -315,19 +316,12 @@ public class RAWImageLoader: ImageLoaderProtocol
         return context
     }
     
-    public func loadFullSizeImage(handler: @escaping PresentableImageHandler,
-                                  errorHandler: @escaping ImageLoadingErrorHandler) {
-        self.loadFullSizeImage(options: FullSizedImageLoadingOptions(),
-                               handler: handler,
-                               errorHandler: errorHandler)
-    }
-    
-    public func loadFullSizeImage(options: FullSizedImageLoadingOptions,
-                                  handler: @escaping PresentableImageHandler,
-                                  errorHandler: @escaping ImageLoadingErrorHandler)
+    public func loadFullSizeImage(options: FullSizedImageLoadingOptions) throws -> (BitmapImage, ImageMetadata)
     {
         guard let metadata = self.imageMetadata else {
-            errorHandler(RAWImageLoaderError.failedToExtractImageMetadata(message: "Failed to read properties of \(self.imageURL.path) to load full-size image")); return
+            throw ImageLoadingError.failedToExtractImageMetadata(
+                URL: self.imageURL,
+                message: "Failed to read properties of \(self.imageURL.path) to load full-size image")
         }
         
         let scaleFactor: Double
@@ -342,13 +336,9 @@ public class RAWImageLoader: ImageLoaderProtocol
             scaleFactor = 1.0
         }
         
-        let fail = {
-            errorHandler(.failedToLoadFullSizeImage(message: "Failed to load full-size RAW image \(self.imageURL.path)"))
-        }
-        
         guard let RAWFilter = CIFilter(imageURL: self.imageURL, options: nil) else {
-            fail()
-            return
+            throw ImageLoadingError.failedToInitializeDecoder(URL: self.imageURL,
+                                                              message: "Failed to load full-size RAW image \(self.imageURL.path)")
         }
         
         // NOTE: Having draft mode on appears to be crucial to performance, 
@@ -365,47 +355,36 @@ public class RAWImageLoader: ImageLoaderProtocol
         RAWFilter.setValue(options.boostShadowAmount, forKey: kCIInputBoostShadowAmountKey)
         RAWFilter.setValue(options.enableVendorLensCorrection, forKey: kCIInputEnableVendorLensCorrectionKey)
         
-        /*var image = RAWFilter?.outputImage
-        
-        if let filters = image?.autoAdjustmentFilters(options: [kCIImageAutoAdjustEnhance: false]) //, kCIImageAutoAdjustFeatures: [CIFaceFeature()]])
+        guard let image = RAWFilter.outputImage else {
+            throw ImageLoadingError.failedToDecode(URL: self.imageURL,
+                                                   message: "Failed to decode full-size RAW image \(self.imageURL.path)")
+        }
+        var bakedImage: BitmapImage? = nil
+        if #available(OSX 10.12, *)
         {
-            for f in filters
+            // Pixel format and color space set as discussed around 21:50 in https://developer.apple.com/videos/play/wwdc2016/505/
+            let context = ImageLoader.bakingContext(forImageURL: self.imageURL)
+            if let cgImage = context.createCGImage(image,
+                from: image.extent,
+                format: kCIFormatRGBA8,
+                colorSpace: ImageLoader.imageBakingColorSpace,
+                deferred: false) // The `deferred: false` argument is important, to ensure significant work will not be performed later on the main thread at drawing time
             {
-                f.setValue(image, forKey: kCIInputImageKey)
-                image = f.outputImage
+                bakedImage = BitmapImageUtility.image(cgImage: cgImage, size: CGSize.zero)
             }
-            
-            if let image = image*/
-            if let image = RAWFilter.outputImage
-            {
-                var bakedImage: BitmapImage? = nil
-                if #available(OSX 10.12, *)
-                {
-                    // Pixel format and color space set as discussed around 21:50 in https://developer.apple.com/videos/play/wwdc2016/505/
-                    let context = RAWImageLoader.bakingContext(forImageURL: self.imageURL)
-                    if let cgImage = context.createCGImage(image,
-                        from: image.extent,
-                        format: kCIFormatRGBA8,
-                        colorSpace: RAWImageLoader.imageBakingColorSpace,
-                        deferred: false) // The `deferred: false` argument is important, to ensure significant work will not be performed later on the main thread at drawing time
-                    {
-                        bakedImage = BitmapImageUtility.image(cgImage: cgImage, size: CGSize.zero)
-                    }
-                }
-                
-                if bakedImage == nil
-                {
-                    bakedImage = BitmapImageUtility.image(ciImage: image)
-                }
-                
-                guard let nonNilNakedImage = bakedImage else {
-                    fail()
-                    return
-                }
+        }
+        
+        if bakedImage == nil
+        {
+            bakedImage = BitmapImageUtility.image(ciImage: image)
+        }
+        
+        guard let nonNilNakedImage = bakedImage else {
+            throw ImageLoadingError.failedToLoadDecodedImage(URL: self.imageURL,
+                                                             message: "Failed to load decoded image \(self.imageURL.path)")
+        }
 
-                handler(nonNilNakedImage, metadata) //ImageMetadata(nativeSize: nonNilNakedImage.size))
-            }
-        //}
+        return (nonNilNakedImage, metadata)
     }
 }
 

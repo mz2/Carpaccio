@@ -180,6 +180,52 @@ public struct ImageMetadata
         }
     }
     
+    public var dictionaryRepresentation: [String: Any] {
+        var dict: [String: Any] = [String: Any]()
+        
+        if let cameraMaker = self.cameraMaker {
+            dict["cameraMaker"] = cameraMaker
+        }
+        
+        if let cameraModel = self.cameraModel {
+            dict["cameraModel"] = cameraModel
+        }
+        
+        if let space = self.colorSpace, let spaceName = space.name {
+            dict["colorSpace"] = spaceName
+        }
+        
+        if let fNumber = self.fNumber {
+            dict["fNumber"] = fNumber
+        }
+
+        if let focalLength = self.focalLength {
+            dict["focalLength"] = focalLength
+        }
+        
+        if let focalLength35mmEquivalent = self.focalLength35mmEquivalent {
+            dict["focalLength35mmEquivalent"] = focalLength35mmEquivalent
+        }
+        
+        if let ISO = self.ISO {
+            dict["ISO"] = ISO
+        }
+        
+        dict["nativeOrientation"] = nativeOrientation.rawValue
+        
+        dict["nativeSize"] = [nativeSize.width, nativeSize.height]
+        
+        if let shutterSpeed = self.shutterSpeed {
+            dict["shutterSpeed"] = shutterSpeed
+        }
+        
+        if let timestamp = self.timestamp {
+            dict["timestamp"] = timestamp.timeIntervalSince1970
+        }
+        
+        return dict
+    }
+    
     static var timestampFormatter: DateFormatter =
     {
         let f = DateFormatter()
