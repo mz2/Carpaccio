@@ -177,39 +177,18 @@ public class ImageLoader: ImageLoaderProtocol
         return metadata
     }
     
-    private func loadThumbnailImage(maximumPixelDimensions maximumSize: CGSize? = nil) -> CGImage?
+    private func loadThumbnailImage(maximumPixelDimensions maximumSize: CGSize? = nil) throws -> CGImage
     {
         guard let source = self.imageSource else {
-            precondition(false)
-            return nil
+            throw ImageLoadingError.noImageSource(URL: self.imageURL, message: "Image source is unexpectedly missing when loading thumbnail image.")
         }
         
         guard self.thumbnailScheme != .never else {
-            return nil
+            throw ImageLoadingError.loadingSetToNever(URL: self.imageURL, message: "Image thumbnail failed to be loaded as the loader responsible for it is set to never load thumbnails.")
         }
         
         let maxPixelSize = maximumSize?.maximumPixelSize(forImageSize: self.imageMetadata!.size)
         let createFromFullImage = self.thumbnailScheme == .decodeFullImage
-        
-        // If thumbnail dimensions are too small for current configuration, create from full image
-        /*if self.thumbnailScheme == .DecodeFullImageIfThumbnailTooSmall && maximumSize != nil
-        {
-            let options: [String: AnyObject] = [String(kCGImageSourceCreateThumbnailFromImageIfAbsent): false]
-            let t = CGImageSourceCreateThumbnailAtIndex(source, 0, options)
-            
-            let w = CGImageGetWidth(t)
-            let h = CGImageGetHeight(t)
-            let m = Int(round(maxPixelSize!))
-            
-            createFromFullImage = w < m && h < m
-                
-            if createFromFullImage {
-                print("Will decode thumbnail from full image for \(self.imageURL.lastPathComponent!), would be too small at \(NSSize(width: w, height: h)) for requested pixel dimensions \(maximumSize!) yeilding max pixel size \(Int(round(maxPixelSize!)))")
-            }
-            else {
-                print("Will use pre-rendered thumbail for \(self.imageURL.lastPathComponent!), is big enough at \(NSSize(width: w, height: h)) for requested pixel dimensions \(maximumSize!) yeilding max pixel size \(Int(round(maxPixelSize!)))")
-            }
-        }*/
         
         var options: [String: AnyObject] = [String(kCGImageSourceCreateThumbnailWithTransform): kCFBooleanTrue,
                                             String(createFromFullImage ? kCGImageSourceCreateThumbnailFromImageAlways : kCGImageSourceCreateThumbnailFromImageIfAbsent): kCFBooleanTrue]
@@ -218,12 +197,12 @@ public class ImageLoader: ImageLoaderProtocol
             options[String(kCGImageSourceThumbnailMaxPixelSize)] = NSNumber(value: Int(round(sz)))
         }
         
-        if let thumbnailImage = CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary?)
-        {
-            let thumbnailImage = cropToNativeProportionsIfNeeded(thumbnailImage: thumbnailImage)
-            return thumbnailImage
+        guard let thumbnailImage = CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary?) else {
+            throw ImageLoadingError.noImageSource(URL: self.imageURL,
+                                                  message: "Failed to load thumbnail image as creating an image source for it failed.")
         }
-        return nil
+        
+        return cropToNativeProportionsIfNeeded(thumbnailImage: thumbnailImage)
     }
     
     /**
@@ -295,21 +274,14 @@ public class ImageLoader: ImageLoaderProtocol
     }
     
     /** Retrieve metadata about this loader's image, to be called before loading actual image data. */
-    public func loadThumbnailImage(maximumPixelDimensions maxPixelSize: CGSize?,
-                                   handler: @escaping PresentableImageHandler,
-                                   errorHandler: @escaping ImageLoadingErrorHandler) {
+    public func loadThumbnailImage(maximumPixelDimensions maxPixelSize: CGSize?) throws -> (BitmapImage, ImageMetadata) {
         guard self.imageSource != nil else {
-            precondition(false)
-            return
+            throw ImageLoadingError.noImageSource(URL: self.imageURL,
+                                                  message: "Image source unexpectedly missing when loading thumbnail.")
         }
         
-        if let thumbnailImage = loadThumbnailImage(maximumPixelDimensions: maxPixelSize) {
-            handler(BitmapImageUtility.image(cgImage: thumbnailImage, size: CGSize.zero), self.imageMetadata!)
-        }
-        else {
-            errorHandler(ImageLoadingError.failedToLoadThumbnailImage(URL: self.imageURL,
-                                                                      message: "Failed to load thumbnail image from \(self.imageURL.path)"))
-        }
+        let thumbnailImage: CGImage = try loadThumbnailImage(maximumPixelDimensions: maxPixelSize)
+        return (BitmapImageUtility.image(cgImage: thumbnailImage, size: CGSize.zero), self.imageMetadata!)
     }
     
     static let genericLinearRGBColorSpace = CGColorSpace(name: CGColorSpace.genericRGBLinear)

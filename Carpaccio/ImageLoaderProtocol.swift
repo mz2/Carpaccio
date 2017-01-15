@@ -22,6 +22,7 @@ public enum ImageLoadingError: Swift.Error
     case failedToInitializeDecoder(URL: URL, message: String)
     case failedToDecode(URL: URL, message: String)
     case failedToLoadDecodedImage(URL: URL, message: String)
+    case loadingSetToNever(URL: URL, message: String)
 }
 
 public typealias ImageLoadingErrorHandler = (_ error: ImageLoadingError) -> Void
@@ -45,16 +46,14 @@ public protocol ImageLoaderProtocol
     var imageURL: URL { get }
     var imageMetadata: ImageMetadata? { get }
     
-    /** *If*, in addition to `imageURL`, full image image data happens to have been copied into a disk cache location, a direct URL pointing to that location. */
+    /** *If*, in addition to `imageURL`, full image image data happens to have been copied into a disk cache location,
+      * a direct URL pointing to that location. */
     var cachedImageURL: URL? { get }
     
-    /** Retrieve metadata about this loader's image, to be called before loading actual image data. Expected to act asynchronously. */
-    func loadThumbnailImage(maximumPixelDimensions maxPixelSize: CGSize?,
-                            handler: @escaping PresentableImageHandler,
-                            errorHandler: @escaping ImageLoadingErrorHandler)
+    /** Retrieve metadata about this loader's image, potentially called before loading actual image data. */
+    func loadThumbnailImage(maximumPixelDimensions maxPixelSize: CGSize?) throws -> (BitmapImage, ImageMetadata)
     
-    func loadThumbnailImage(handler: @escaping PresentableImageHandler,
-                            errorHandler: @escaping ImageLoadingErrorHandler)
+    func loadThumbnailImage() throws -> (BitmapImage, ImageMetadata)
     
     /** Load image metadata synchronously. */
     func loadImageMetadata() throws -> ImageMetadata
@@ -67,10 +66,8 @@ public protocol ImageLoaderProtocol
 }
 
 public extension ImageLoaderProtocol {
-    func loadThumbnailImage(handler: @escaping PresentableImageHandler,
-                            errorHandler: @escaping ImageLoadingErrorHandler) {
-        self.loadThumbnailImage(maximumPixelDimensions: nil,
-                                handler: handler, errorHandler: errorHandler)
+    func loadThumbnailImage() throws -> (BitmapImage, ImageMetadata) {
+        return try self.loadThumbnailImage(maximumPixelDimensions: nil)
     }
     
     func loadFullSizeImage() throws -> (BitmapImage, ImageMetadata) {

@@ -140,77 +140,36 @@ open class Image: Equatable, Hashable {
         return mdata
     }
     
-    public func fetchThumbnailSynchronously(presentedHeight: CGFloat? = nil,
-                                            force: Bool = false,
-                                            store: Bool = true,
-                                            scaleFactor:CGFloat = 2.0) throws -> BitmapImage
-    {
-        precondition(!Thread.isMainThread)
-        
-        let semaphore = DispatchSemaphore(value: 0)
-        
-        var image:BitmapImage? = nil
-        var err: Error?
-        DispatchQueue.global().async {
-            self.fetchThumbnail(presentedHeight: presentedHeight,
-                                force: force,
-                                store: store,
-                                scaleFactor: scaleFactor,
-                                completionHandler:
-                { bitmap in // completion handler
-                    image = bitmap
-                    semaphore.signal()
-                })
-                { error in // error handler
-                    err = error
-                    semaphore.signal()
-                }
-        }
-        
-        semaphore.wait()
-        
-        if let err = err {
-            throw err
-        }
-        
-        return image!
-    }
-                                            
-    
     public func fetchThumbnail(presentedHeight: CGFloat? = nil,
                                force: Bool = false,
                                store: Bool = true,
-                               scaleFactor:CGFloat = 2.0,
-                               completionHandler:@escaping (_ image:BitmapImage)->Void,
-                               errorHandler:@escaping (Error)->Void)
+                               scaleFactor:CGFloat = 2.0) throws -> BitmapImage
     {
-        if !force
-        {
-            if let thumb = self.thumbnailImage
-            {
-                completionHandler(thumb)
-                return
-            }
+        if !force, let thumb = self.thumbnailImage {
+            return thumb
+        }
+        
+        guard let loader = self.imageLoader else {
+            throw Error.noLoader
         }
         
         guard self.URL != nil else {
-            errorHandler(Error.urlMissing)
-            return
+            throw Error.urlMissing
         }
-
-        self.imageLoader?.loadThumbnailImage(maximumPixelDimensions: presentedHeight != nil ? CGSize(constrainHeight: presentedHeight! * scaleFactor) : nil, handler: { (thumbnailImage: BitmapImage, metadata: ImageMetadata) in
-            if self.metadata == nil {
-                self.metadata = metadata
-            }
-            
-            if store {
-                self.thumbnailImage = thumbnailImage
-            }
-            
-            completionHandler(thumbnailImage)
-
-            }, errorHandler: { (error) in errorHandler(.loadingFailed(underlyingError:error)) })
         
+        let maxDim = presentedHeight != nil ? CGSize(constrainHeight: presentedHeight! * scaleFactor) : nil
+
+        let (thumbnailImage, imgMetadata) = try loader.loadThumbnailImage(maximumPixelDimensions: maxDim)
+        
+        if self.metadata == nil {
+            self.metadata = imgMetadata
+        }
+        
+        if store {
+            self.thumbnailImage = thumbnailImage
+        }
+        
+        return thumbnailImage
     }
     
     public func fetchFullSizeImage(presentedHeight: CGFloat? = nil,
