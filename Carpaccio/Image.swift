@@ -12,6 +12,8 @@ import QuartzCore
 open class Image: Equatable, Hashable {
     
     public enum Error: Swift.Error {
+        case noURL
+        case noLoader
         case noFileExtension // FIXME: lift this restriction.
         case urlMissing
         case locationNotEnumerable(URL)
@@ -86,12 +88,12 @@ open class Image: Equatable, Hashable {
         
         if Image.RAWImageFileExtensions.contains(pathExtension)
         {
-            //return RAWImageLoader(imageURL: URL, thumbnailScheme: .AlwaysDecodeFullImage)
-            cachedImageLoader = RAWImageLoader(imageURL: URL, thumbnailScheme: .fullImageWhenTooSmallThumbnail)
+            //return ImageLoader(imageURL: URL, thumbnailScheme: .AlwaysDecodeFullImage)
+            cachedImageLoader = ImageLoader(imageURL: URL, thumbnailScheme: .fullImageWhenTooSmallThumbnail)
         }
         else if Image.bakedImageFileExtensions.contains(pathExtension)
         {
-            cachedImageLoader = RAWImageLoader(imageURL: URL, thumbnailScheme: .fullImageWhenTooSmallThumbnail)
+            cachedImageLoader = ImageLoader(imageURL: URL, thumbnailScheme: .fullImageWhenTooSmallThumbnail)
         }
         
         return cachedImageLoader
@@ -110,16 +112,32 @@ open class Image: Equatable, Hashable {
         return self.metadata != nil
     }
 
-    public func fetchMetadata(_ store: Bool = true,
-                              handler: @escaping MetadataHandler,
-                              errorHandler: @escaping ErrorHandler)
+    public func fetchMetadata(_ store: Bool = true) throws -> ImageMetadata
     {
-        self.imageLoader?.loadImageMetadata({ metadata in
-            if store {
-                self.metadata = metadata
+        // Previously the failure to have an image loader would silently cause a failure.
+        // Here we create a temporary image loader for the purposes of metadata fetching,
+        // if the image loader passed in as a property is not set.
+        // This is necessary for at least the case where fetchMetadata is called with
+        // Image is initialized with its init(URL: Foundation.URL) initializer.
+        let loader = try { () throws -> ImageLoaderProtocol in
+            if let loader = self.imageLoader {
+                return loader
             }
-            handler(metadata)
-        }, errorHandler: { error in errorHandler(Error.loadingFailed(underlyingError:error)) })
+            
+            guard let URL = self.URL else {
+                throw Error.noURL
+            }
+            
+            let loader = ImageLoader(imageURL: URL, thumbnailScheme: .never)
+            return loader
+        }()
+        
+        let mdata = try loader.loadImageMetadata()
+        if store {
+            self.metadata = mdata
+        }
+        
+        return mdata
     }
     
     public func fetchThumbnailSynchronously(presentedHeight: CGFloat? = nil,
@@ -195,11 +213,12 @@ open class Image: Equatable, Hashable {
         
     }
     
-    public func fetchFullSizeImage(presentedHeight: CGFloat? = nil, store: Bool = false, scaleFactor:CGFloat = 2.0, completionHandler: @escaping (_ image: BitmapImage) -> Void, errorHandler: @escaping (Error) -> Void)
+    public func fetchFullSizeImage(presentedHeight: CGFloat? = nil,
+                                   store: Bool = false,
+                                   scaleFactor:CGFloat = 2.0) throws -> BitmapImage
     {
         guard self.URL != nil else {
-            errorHandler(.urlMissing)
-            return
+            throw Error.urlMissing
         }
         
         let maxDimensions:CGSize? = {
@@ -213,20 +232,30 @@ open class Image: Equatable, Hashable {
         var options = FullSizedImageLoadingOptions()
         options.maximumPixelDimensions = maxDimensions
         
-        self.imageLoader?.loadFullSizeImage(options:options, handler: { image, metadata in
-            
-            if self.metadata == nil {
-                self.metadata = metadata
-            }
-            
-            if store {
-                self.fullImage = image
-            }
-            
-            completionHandler(image)
-            
-            }, errorHandler: { error in errorHandler(.loadingFailed(underlyingError:error)) }
-        )
+        guard let loader = self.imageLoader else {
+            throw Error.noLoader
+        }
+        
+        let image: BitmapImage, metadata: ImageMetadata
+        do {
+            // looks ugly but I couldn't find a neater way to destructure into existing local variables.
+            let (img, mdata) = try loader.loadFullSizeImage(options:options)
+            image = img
+            metadata = mdata
+        }
+        catch {
+            throw Error.loadingFailed(underlyingError: error)
+        }
+        
+        if self.metadata == nil {
+            self.metadata = metadata
+        }
+        
+        if store {
+            self.fullImage = image
+        }
+        
+        return image
     }
     
     public class var imageFileExtensions:Set<String> {

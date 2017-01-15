@@ -9,14 +9,14 @@
 /* Begin PBXBuildFile section */
 		289813341D494B1300B1BA5D /* ImageLoaderProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 289813331D494B1300B1BA5D /* ImageLoaderProtocol.swift */; };
 		289813381D4C8C2A00B1BA5D /* CGSize+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 289813371D4C8C2A00B1BA5D /* CGSize+Extensions.swift */; };
-		2898133A1D4DC26600B1BA5D /* RAWImageLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 289813391D4DC26600B1BA5D /* RAWImageLoader.swift */; };
+		2898133A1D4DC26600B1BA5D /* ImageLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 289813391D4DC26600B1BA5D /* ImageLoader.swift */; };
 		28B9AA081D462AFD00C4B03E /* ImageMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28B9AA071D462AFD00C4B03E /* ImageMetadata.swift */; };
 		3DFA1C341D92F6EC00E03503 /* iphone5.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 3DFA1C311D92F6D600E03503 /* iphone5.jpg */; };
 		3DFA1C351D92F6EC00E03503 /* iphone5.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 3DFA1C311D92F6D600E03503 /* iphone5.jpg */; };
 		5F020A051D7B334A004C1DE6 /* ImageLoaderProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 289813331D494B1300B1BA5D /* ImageLoaderProtocol.swift */; };
 		5F020A061D7B334A004C1DE6 /* Collection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FF2F7A81CE1563400C15E3A /* Collection.swift */; };
 		5F020A071D7B334A004C1DE6 /* CGSize+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 289813371D4C8C2A00B1BA5D /* CGSize+Extensions.swift */; };
-		5F020A081D7B334A004C1DE6 /* RAWImageLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 289813391D4DC26600B1BA5D /* RAWImageLoader.swift */; };
+		5F020A081D7B334A004C1DE6 /* ImageLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 289813391D4DC26600B1BA5D /* ImageLoader.swift */; };
 		5F020A091D7B334A004C1DE6 /* ImageMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28B9AA071D462AFD00C4B03E /* ImageMetadata.swift */; };
 		5F020A0A1D7B334A004C1DE6 /* Image.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FF2F7A71CE1563400C15E3A /* Image.swift */; };
 		5F020A0B1D7B334A004C1DE6 /* Collection+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FAD66681D72FD3C006973C9 /* Collection+Extensions.swift */; };
@@ -26,6 +26,14 @@
 		5F020A1E1D7B460C004C1DE6 /* BitmapImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F020A1D1D7B460C004C1DE6 /* BitmapImage.swift */; };
 		5F020A1F1D7B460C004C1DE6 /* BitmapImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F020A1D1D7B460C004C1DE6 /* BitmapImage.swift */; };
 		5F020A211D7B4BFA004C1DE6 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5F020A201D7B4BFA004C1DE6 /* UIKit.framework */; };
+		5F1DA78B1E2BBBA300F1474D /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F1DA78A1E2BBBA300F1474D /* main.swift */; };
+		5F1DA7901E2BBBB600F1474D /* ImageMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28B9AA071D462AFD00C4B03E /* ImageMetadata.swift */; };
+		5F1DA7921E2BBBD300F1474D /* ImageIO.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5F1DA7911E2BBBD300F1474D /* ImageIO.framework */; };
+		5F1DA7931E2BBC4D00F1474D /* ImageLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 289813391D4DC26600B1BA5D /* ImageLoader.swift */; };
+		5F1DA7941E2BBC5600F1474D /* ImageLoaderProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 289813331D494B1300B1BA5D /* ImageLoaderProtocol.swift */; };
+		5F1DA7951E2BBC5C00F1474D /* BitmapImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F020A1D1D7B460C004C1DE6 /* BitmapImage.swift */; };
+		5F1DA7961E2BBC6500F1474D /* CGSize+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 289813371D4C8C2A00B1BA5D /* CGSize+Extensions.swift */; };
+		5F1DA7971E2BBD0900F1474D /* BitmapImage+OSX.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F020A1A1D7B3D16004C1DE6 /* BitmapImage+OSX.swift */; };
 		5F1E22811CDEA9D90083FD6F /* Carpaccio.h in Headers */ = {isa = PBXBuildFile; fileRef = 5F1E22801CDEA9D90083FD6F /* Carpaccio.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		5F1E22881CDEA9D90083FD6F /* Carpaccio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5F1E227D1CDEA9D90083FD6F /* Carpaccio.framework */; };
 		5F1E228D1CDEA9D90083FD6F /* CarpaccioTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F1E228C1CDEA9D90083FD6F /* CarpaccioTests.swift */; };
@@ -39,6 +47,7 @@
 		5FB5930A1D7B4E4A00FB0086 /* DSC00583.ARW in Resources */ = {isa = PBXBuildFile; fileRef = 5F1E229D1CDEAC330083FD6F /* DSC00583.ARW */; };
 		5FB5930B1D7B4E4A00FB0086 /* DSC00588.ARW in Resources */ = {isa = PBXBuildFile; fileRef = 5F1E229E1CDEAC330083FD6F /* DSC00588.ARW */; };
 		5FB5930C1D7B4E4A00FB0086 /* DSC00593.ARW in Resources */ = {isa = PBXBuildFile; fileRef = 5F1E229F1CDEAC330083FD6F /* DSC00593.ARW */; };
+		5FD18E1E1E2BDD54003A2B1B /* Image.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FF2F7A71CE1563400C15E3A /* Image.swift */; };
 		5FF2F7A91CE1563400C15E3A /* Image.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FF2F7A71CE1563400C15E3A /* Image.swift */; };
 		5FF2F7AA1CE1563400C15E3A /* Collection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FF2F7A81CE1563400C15E3A /* Collection.swift */; };
 /* End PBXBuildFile section */
@@ -60,10 +69,22 @@
 		};
 /* End PBXContainerItemProxy section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		5F1DA7861E2BBBA300F1474D /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		289813331D494B1300B1BA5D /* ImageLoaderProtocol.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageLoaderProtocol.swift; sourceTree = "<group>"; };
 		289813371D4C8C2A00B1BA5D /* CGSize+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "CGSize+Extensions.swift"; sourceTree = "<group>"; };
-		289813391D4DC26600B1BA5D /* RAWImageLoader.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RAWImageLoader.swift; sourceTree = "<group>"; };
+		289813391D4DC26600B1BA5D /* ImageLoader.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageLoader.swift; sourceTree = "<group>"; };
 		28B9AA071D462AFD00C4B03E /* ImageMetadata.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageMetadata.swift; sourceTree = "<group>"; };
 		3DFA1C311D92F6D600E03503 /* iphone5.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = iphone5.jpg; sourceTree = "<group>"; };
 		5F020A151D7B334A004C1DE6 /* Carpaccio.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Carpaccio.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -73,6 +94,9 @@
 		5F020A1D1D7B460C004C1DE6 /* BitmapImage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BitmapImage.swift; path = Carpaccio/BitmapImage.swift; sourceTree = "<group>"; };
 		5F020A201D7B4BFA004C1DE6 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS10.0.sdk/System/Library/Frameworks/UIKit.framework; sourceTree = DEVELOPER_DIR; };
 		5F020A311D7B4C09004C1DE6 /* CarpaccioTests-iOS-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "CarpaccioTests-iOS-Info.plist"; path = "/Users/mz2/Projects/Sashimi/Carthage/Checkouts/Carpaccio/CarpaccioTests-iOS-Info.plist"; sourceTree = "<absolute>"; };
+		5F1DA7881E2BBBA300F1474D /* carpaccio-dump */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "carpaccio-dump"; sourceTree = BUILT_PRODUCTS_DIR; };
+		5F1DA78A1E2BBBA300F1474D /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
+		5F1DA7911E2BBBD300F1474D /* ImageIO.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ImageIO.framework; path = System/Library/Frameworks/ImageIO.framework; sourceTree = SDKROOT; };
 		5F1E227D1CDEA9D90083FD6F /* Carpaccio.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Carpaccio.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		5F1E22801CDEA9D90083FD6F /* Carpaccio.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Carpaccio.h; sourceTree = "<group>"; };
 		5F1E22821CDEA9D90083FD6F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -100,10 +124,18 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		5F1DA7851E2BBBA300F1474D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		5F1E22791CDEA9D90083FD6F /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5F1DA7921E2BBBD300F1474D /* ImageIO.framework in Frameworks */,
 				5F1E229C1CDEAABF0083FD6F /* Cocoa.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -137,10 +169,20 @@
 			name = "Crossplatform Bitmap Image";
 			sourceTree = "<group>";
 		};
+		5F1DA7891E2BBBA300F1474D /* carpaccio-dump */ = {
+			isa = PBXGroup;
+			children = (
+				5F1DA78A1E2BBBA300F1474D /* main.swift */,
+			);
+			name = "carpaccio-dump";
+			path = exifdump;
+			sourceTree = "<group>";
+		};
 		5F1E22731CDEA9D90083FD6F = {
 			isa = PBXGroup;
 			children = (
 				5F020A171D7B3CF2004C1DE6 /* Crossplatform Bitmap Image */,
+				5F1DA7891E2BBBA300F1474D /* carpaccio-dump */,
 				5FF2F7AD1CE1568E00C15E3A /* Frameworks */,
 				5F1E227F1CDEA9D90083FD6F /* Carpaccio */,
 				5F1E228B1CDEA9D90083FD6F /* CarpaccioTests */,
@@ -158,6 +200,7 @@
 				5F1E22871CDEA9D90083FD6F /* CarpaccioTests-OSX.xctest */,
 				5F020A151D7B334A004C1DE6 /* Carpaccio.framework */,
 				5FB592FE1D7B4DE300FB0086 /* CarpaccioTests-iOS.xctest */,
+				5F1DA7881E2BBBA300F1474D /* carpaccio-dump */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -200,7 +243,7 @@
 		5FF2F7AB1CE1563C00C15E3A /* RAW Converter */ = {
 			isa = PBXGroup;
 			children = (
-				289813391D4DC26600B1BA5D /* RAWImageLoader.swift */,
+				289813391D4DC26600B1BA5D /* ImageLoader.swift */,
 			);
 			name = "RAW Converter";
 			sourceTree = "<group>";
@@ -218,6 +261,7 @@
 		5FF2F7AD1CE1568E00C15E3A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				5F1DA7911E2BBBD300F1474D /* ImageIO.framework */,
 				5F7016221CE3295900173EB6 /* libjpeg.a */,
 				5F020A201D7B4BFA004C1DE6 /* UIKit.framework */,
 				5F1E229B1CDEAABF0083FD6F /* Cocoa.framework */,
@@ -264,6 +308,23 @@
 			productName = Carpaccio;
 			productReference = 5F020A151D7B334A004C1DE6 /* Carpaccio.framework */;
 			productType = "com.apple.product-type.framework";
+		};
+		5F1DA7871E2BBBA300F1474D /* carpaccio-dump */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 5F1DA78F1E2BBBA300F1474D /* Build configuration list for PBXNativeTarget "carpaccio-dump" */;
+			buildPhases = (
+				5F1DA7841E2BBBA300F1474D /* Sources */,
+				5F1DA7851E2BBBA300F1474D /* Frameworks */,
+				5F1DA7861E2BBBA300F1474D /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "carpaccio-dump";
+			productName = exifdump;
+			productReference = 5F1DA7881E2BBBA300F1474D /* carpaccio-dump */;
+			productType = "com.apple.product-type.tool";
 		};
 		5F1E227C1CDEA9D90083FD6F /* Carpaccio-OSX */ = {
 			isa = PBXNativeTarget;
@@ -325,10 +386,14 @@
 		5F1E22741CDEA9D90083FD6F /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastSwiftUpdateCheck = 0730;
-				LastUpgradeCheck = 0800;
+				LastSwiftUpdateCheck = 0820;
+				LastUpgradeCheck = 0820;
 				ORGANIZATIONNAME = "Matias Piipari & Co";
 				TargetAttributes = {
+					5F1DA7871E2BBBA300F1474D = {
+						CreatedOnToolsVersion = 8.2.1;
+						ProvisioningStyle = Automatic;
+					};
 					5F1E227C1CDEA9D90083FD6F = {
 						CreatedOnToolsVersion = 7.3;
 						LastSwiftMigration = 0800;
@@ -360,6 +425,7 @@
 				5F020A031D7B334A004C1DE6 /* Carpaccio-iOS */,
 				5F1E22861CDEA9D90083FD6F /* CarpaccioTests-OSX */,
 				5FB592FD1D7B4DE300FB0086 /* CarpaccioTests-iOS */,
+				5F1DA7871E2BBBA300F1474D /* carpaccio-dump */,
 			);
 		};
 /* End PBXProject section */
@@ -412,11 +478,26 @@
 				5F020A061D7B334A004C1DE6 /* Collection.swift in Sources */,
 				5F020A071D7B334A004C1DE6 /* CGSize+Extensions.swift in Sources */,
 				5F020A1F1D7B460C004C1DE6 /* BitmapImage.swift in Sources */,
-				5F020A081D7B334A004C1DE6 /* RAWImageLoader.swift in Sources */,
+				5F020A081D7B334A004C1DE6 /* ImageLoader.swift in Sources */,
 				5F020A091D7B334A004C1DE6 /* ImageMetadata.swift in Sources */,
 				5F020A0A1D7B334A004C1DE6 /* Image.swift in Sources */,
 				5F020A1C1D7B3D1D004C1DE6 /* BitmapImage+iOS.swift in Sources */,
 				5F020A0B1D7B334A004C1DE6 /* Collection+Extensions.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5F1DA7841E2BBBA300F1474D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5F1DA7951E2BBC5C00F1474D /* BitmapImage.swift in Sources */,
+				5FD18E1E1E2BDD54003A2B1B /* Image.swift in Sources */,
+				5F1DA7941E2BBC5600F1474D /* ImageLoaderProtocol.swift in Sources */,
+				5F1DA7901E2BBBB600F1474D /* ImageMetadata.swift in Sources */,
+				5F1DA78B1E2BBBA300F1474D /* main.swift in Sources */,
+				5F1DA7961E2BBC6500F1474D /* CGSize+Extensions.swift in Sources */,
+				5F1DA7931E2BBC4D00F1474D /* ImageLoader.swift in Sources */,
+				5F1DA7971E2BBD0900F1474D /* BitmapImage+OSX.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -428,7 +509,7 @@
 				5FF2F7AA1CE1563400C15E3A /* Collection.swift in Sources */,
 				289813381D4C8C2A00B1BA5D /* CGSize+Extensions.swift in Sources */,
 				5F020A1E1D7B460C004C1DE6 /* BitmapImage.swift in Sources */,
-				2898133A1D4DC26600B1BA5D /* RAWImageLoader.swift in Sources */,
+				2898133A1D4DC26600B1BA5D /* ImageLoader.swift in Sources */,
 				28B9AA081D462AFD00C4B03E /* ImageMetadata.swift in Sources */,
 				5FF2F7A91CE1563400C15E3A /* Image.swift in Sources */,
 				5FAD66691D72FD3C006973C9 /* Collection+Extensions.swift in Sources */,
@@ -563,7 +644,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = $SRCROOT/Include;
-				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/Libraries";
+				LIBRARY_SEARCH_PATHS = "";
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -656,6 +737,39 @@
 			};
 			name = Test;
 		};
+		5F1DA78C1E2BBBA300F1474D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				DSTROOT = /;
+				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 3.0;
+			};
+			name = Debug;
+		};
+		5F1DA78D1E2BBBA300F1474D /* Test */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				DSTROOT = /;
+				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 3.0;
+			};
+			name = Test;
+		};
+		5F1DA78E1E2BBBA300F1474D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				DSTROOT = /;
+				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 3.0;
+			};
+			name = Release;
+		};
 		5F1E228F1CDEA9D90083FD6F /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -697,7 +811,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = $SRCROOT/Include;
-				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/Libraries";
+				LIBRARY_SEARCH_PATHS = "";
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -743,10 +857,11 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = $SRCROOT/Include;
-				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/Libraries";
+				LIBRARY_SEARCH_PATHS = "";
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = macosx;
+				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
 			};
@@ -873,6 +988,16 @@
 				5F020A131D7B334A004C1DE6 /* Debug */,
 				5F15C6E51D91612F00D47B59 /* Test */,
 				5F020A141D7B334A004C1DE6 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		5F1DA78F1E2BBBA300F1474D /* Build configuration list for PBXNativeTarget "carpaccio-dump" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5F1DA78C1E2BBBA300F1474D /* Debug */,
+				5F1DA78D1E2BBBA300F1474D /* Test */,
+				5F1DA78E1E2BBBA300F1474D /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
