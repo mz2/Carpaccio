@@ -90,17 +90,20 @@ public struct ImageMetadata
         case landscape
         case portrait
         case square
+        
+        init(size: CGSize) {
+            if size.width > size.height {
+                self = .landscape
+            }
+            else if size.width < size.height {
+                self = .portrait
+            }
+            self = .square
+        }
     }
     
     public var shape: Shape {
-        if size.width > size.height {
-            return .landscape
-        }
-        else if size.width < size.height {
-            return .portrait
-        }
-        
-        return .square
+        return Shape(size: self.size)
     }
     
     public var cleanedUpCameraModel: String? {
