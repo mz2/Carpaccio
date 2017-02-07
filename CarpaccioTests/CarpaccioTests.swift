@@ -21,6 +21,54 @@ class CarpaccioTests: XCTestCase {
         super.tearDown()
     }
     
+    func testFujiRAWConversion1() {
+        let img1URL = Bundle(for: type(of: self)).url(forResource:"_JNF5804", withExtension: "RAF")!
+
+        let tempDir = URL(fileURLWithPath:NSTemporaryDirectory() + "/\(UUID().uuidString)")
+        
+        try! FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true, attributes: [:])
+        
+        let converter = ImageLoader(imageURL: img1URL, thumbnailScheme: .fullImageWhenThumbnailMissing)
+        
+        let (thumb, imageMetadata) = try! converter.loadThumbnailImage()
+
+        XCTAssertEqual(thumb.size.width, 1920)
+        XCTAssertEqual(thumb.size.height, 1280)
+
+        XCTAssertEqual(imageMetadata.cameraMaker, "FUJIFILM")
+        XCTAssertEqual(imageMetadata.cameraModel, "X100T")
+        XCTAssertEqual(imageMetadata.ISO, 4000.0)
+        XCTAssertEqual(imageMetadata.nativeSize.width, 1920) // Seems to be too small
+        XCTAssertEqual(imageMetadata.nativeSize.height, 1280) // Seems to be too small
+
+        try! FileManager.default.removeItem(at: tempDir)
+
+    }
+    
+    func testFujiRAWConversion2() {
+        let img1URL = Bundle(for: type(of: self)).url(forResource:"_JNF5837", withExtension: "RAF")!
+        
+        let tempDir = URL(fileURLWithPath:NSTemporaryDirectory() + "/\(UUID().uuidString)")
+        
+        try! FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true, attributes: [:])
+        
+        let converter = ImageLoader(imageURL: img1URL, thumbnailScheme: .fullImageWhenThumbnailMissing)
+        
+        let (thumb, imageMetadata) = try! converter.loadThumbnailImage()
+        
+        XCTAssertEqual(thumb.size.width, 1280)
+        XCTAssertEqual(thumb.size.height, 1920)
+        
+        XCTAssertEqual(imageMetadata.cameraMaker, "FUJIFILM")
+        XCTAssertEqual(imageMetadata.cameraModel, "X100T")
+        XCTAssertEqual(imageMetadata.ISO, 6400.0)
+        XCTAssertEqual(imageMetadata.nativeSize.width, 1920) // Seems to be too small
+        XCTAssertEqual(imageMetadata.nativeSize.height, 1280) // Seems to be too small
+        
+        try! FileManager.default.removeItem(at: tempDir)
+        
+    }
+    
     func testSonyRAWConversion() {
         let img1URL = Bundle(for: type(of: self)).url(forResource:"DSC00583", withExtension: "ARW")!
 
@@ -29,30 +77,28 @@ class CarpaccioTests: XCTestCase {
         try! FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true, attributes: [:])
         
         let converter = ImageLoader(imageURL: img1URL, thumbnailScheme: .fullImageWhenThumbnailMissing)
+
+        let (thumb, imageMetadata) = try! converter.loadThumbnailImage()
+
+        XCTAssertEqual(thumb.size.width, 1616)
+        XCTAssertEqual(thumb.size.height, 1080)
         
-        converter.loadThumbnailImage(handler: { thumb, imageMetadata in
-            XCTAssertEqual(thumb.size.width, 1616)
-            XCTAssertEqual(thumb.size.height, 1080)
-            
-            XCTAssertEqual(imageMetadata.cameraMaker, "SONY")
-            XCTAssertEqual(imageMetadata.cameraModel, "ILCE-7RM2")
-            XCTAssertEqual(imageMetadata.ISO, 125.0)
-            XCTAssertEqual(imageMetadata.nativeSize.width, 7952.0)
-            XCTAssertEqual(imageMetadata.nativeSize.height, 5304.0)
-            
-            let testedComponents:Set<Calendar.Component> = [.year, .month, .day, .hour, .minute, .second]
-            let date = imageMetadata.timestamp!
-            let components = Calendar(identifier: .gregorian).dateComponents(testedComponents, from: date)
-            
-            XCTAssertEqual(components.year, 2016)
-            XCTAssertEqual(components.day, 16)
-            XCTAssertEqual(components.month, 3)
-            XCTAssertEqual(components.hour, 16)
-            XCTAssertEqual(components.minute, 34)
-            XCTAssertEqual(components.second, 21)
-        }) { err in
-            XCTFail("Error: \(err)")
-        }
+        XCTAssertEqual(imageMetadata.cameraMaker, "SONY")
+        XCTAssertEqual(imageMetadata.cameraModel, "ILCE-7RM2")
+        XCTAssertEqual(imageMetadata.ISO, 125.0)
+        XCTAssertEqual(imageMetadata.nativeSize.width, 7952.0)
+        XCTAssertEqual(imageMetadata.nativeSize.height, 5304.0)
+        
+        let testedComponents:Set<Calendar.Component> = [.year, .month, .day, .hour, .minute, .second]
+        let date = imageMetadata.timestamp!
+        let components = Calendar(identifier: .gregorian).dateComponents(testedComponents, from: date)
+        
+        XCTAssertEqual(components.year, 2016)
+        XCTAssertEqual(components.day, 16)
+        XCTAssertEqual(components.month, 3)
+        XCTAssertEqual(components.hour, 16)
+        XCTAssertEqual(components.minute, 34)
+        XCTAssertEqual(components.second, 21)
         
         try! FileManager.default.removeItem(at: tempDir)
     }

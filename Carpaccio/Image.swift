@@ -224,7 +224,7 @@ open class Image: Equatable, Hashable {
     }
     
     public class var RAWImageFileExtensions:Set<String> {
-        return Set(["arw", "nef", "cr2", "crw"])
+        return Set(["arw", "nef", "cr2", "crw", "raf"])
     }
 
     public class var bakedImageFileExtensions:Set<String> {

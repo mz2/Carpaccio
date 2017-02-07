@@ -50,6 +50,10 @@
 		5FD18E1E1E2BDD54003A2B1B /* Image.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FF2F7A71CE1563400C15E3A /* Image.swift */; };
 		5FF2F7A91CE1563400C15E3A /* Image.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FF2F7A71CE1563400C15E3A /* Image.swift */; };
 		5FF2F7AA1CE1563400C15E3A /* Collection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FF2F7A81CE1563400C15E3A /* Collection.swift */; };
+		C6E396AC1E4A37F800BC0401 /* _JNF5804.RAF in Resources */ = {isa = PBXBuildFile; fileRef = C6E396A81E4A35A600BC0401 /* _JNF5804.RAF */; };
+		C6E396AD1E4A37F900BC0401 /* _JNF5804.RAF in Resources */ = {isa = PBXBuildFile; fileRef = C6E396A81E4A35A600BC0401 /* _JNF5804.RAF */; };
+		C6E396AE1E4A37FD00BC0401 /* _JNF5837.RAF in Resources */ = {isa = PBXBuildFile; fileRef = C6E396A91E4A35A600BC0401 /* _JNF5837.RAF */; };
+		C6E396AF1E4A37FD00BC0401 /* _JNF5837.RAF in Resources */ = {isa = PBXBuildFile; fileRef = C6E396A91E4A35A600BC0401 /* _JNF5837.RAF */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -113,6 +117,8 @@
 		5FB593021D7B4DE300FB0086 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = Info.plist; path = "CarpaccioTests-iOS/Info.plist"; sourceTree = SOURCE_ROOT; };
 		5FF2F7A71CE1563400C15E3A /* Image.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Image.swift; sourceTree = "<group>"; };
 		5FF2F7A81CE1563400C15E3A /* Collection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Collection.swift; sourceTree = "<group>"; };
+		C6E396A81E4A35A600BC0401 /* _JNF5804.RAF */ = {isa = PBXFileReference; lastKnownFileType = file; path = _JNF5804.RAF; sourceTree = "<group>"; };
+		C6E396A91E4A35A600BC0401 /* _JNF5837.RAF */ = {isa = PBXFileReference; lastKnownFileType = file; path = _JNF5837.RAF; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -222,6 +228,8 @@
 		5F1E228B1CDEA9D90083FD6F /* CarpaccioTests */ = {
 			isa = PBXGroup;
 			children = (
+				C6E396A81E4A35A600BC0401 /* _JNF5804.RAF */,
+				C6E396A91E4A35A600BC0401 /* _JNF5837.RAF */,
 				3DFA1C311D92F6D600E03503 /* iphone5.jpg */,
 				5F1E229D1CDEAC330083FD6F /* DSC00583.ARW */,
 				5F1E229E1CDEAC330083FD6F /* DSC00588.ARW */,
@@ -450,9 +458,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				5F1E22A21CDEAC330083FD6F /* DSC00593.ARW in Resources */,
+				C6E396AE1E4A37FD00BC0401 /* _JNF5837.RAF in Resources */,
 				5F1E22A01CDEAC330083FD6F /* DSC00583.ARW in Resources */,
 				3DFA1C341D92F6EC00E03503 /* iphone5.jpg in Resources */,
 				5F1E22A11CDEAC330083FD6F /* DSC00588.ARW in Resources */,
+				C6E396AC1E4A37F800BC0401 /* _JNF5804.RAF in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -461,9 +471,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				5FB5930C1D7B4E4A00FB0086 /* DSC00593.ARW in Resources */,
+				C6E396AF1E4A37FD00BC0401 /* _JNF5837.RAF in Resources */,
 				5FB5930A1D7B4E4A00FB0086 /* DSC00583.ARW in Resources */,
 				3DFA1C351D92F6EC00E03503 /* iphone5.jpg in Resources */,
 				5FB5930B1D7B4E4A00FB0086 /* DSC00588.ARW in Resources */,
+				C6E396AD1E4A37F900BC0401 /* _JNF5804.RAF in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
