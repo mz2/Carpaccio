@@ -132,6 +132,30 @@ public class ImageLoader: ImageLoaderProtocol
             height = CGFloat((image?.height)!)
         }
         
+        if cameraMaker == "FUJIFILM" {
+            if let colorSpaceName = properties["ProfileName"] as? NSString {
+                if colorSpaceName == "" {
+                    colorSpace = CGColorSpace(name: CGColorSpace.adobeRGB1998)
+                } else {
+                    colorSpace = CGColorSpace(name: CGColorSpace.sRGB)
+                }
+            }
+            if let pixelWidth = properties["PixelWidth"] as? CGFloat {
+                if orientation == .up || orientation == .upMirrored || orientation == .down || orientation == .downMirrored {
+                    width = pixelWidth
+                } else {
+                    height = pixelWidth
+                }
+            }
+            if let pixelHeight = properties["PixelHeight"] as? CGFloat {
+                if orientation == .up || orientation == .upMirrored || orientation == .down || orientation == .downMirrored {
+                    height = pixelHeight
+                } else {
+                    width = pixelHeight
+                }
+            }
+        }
+        
         let metadata = ImageMetadata(nativeSize: CGSize(width: width!, height: height!), nativeOrientation: orientation ?? .up, colorSpace: colorSpace, fNumber: fNumber, focalLength: focalLength, focalLength35mmEquivalent: focalLength35mm, ISO: ISO, shutterSpeed: shutterSpeed, cameraMaker: cameraMaker, cameraModel: cameraModel, timestamp: timestamp)
         return metadata
     }()
