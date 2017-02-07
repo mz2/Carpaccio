@@ -38,8 +38,8 @@ class CarpaccioTests: XCTestCase {
         XCTAssertEqual(imageMetadata.cameraMaker, "FUJIFILM")
         XCTAssertEqual(imageMetadata.cameraModel, "X100T")
         XCTAssertEqual(imageMetadata.ISO, 4000.0)
-        XCTAssertEqual(imageMetadata.nativeSize.width, 1920) // Seems to be too small
-        XCTAssertEqual(imageMetadata.nativeSize.height, 1280) // Seems to be too small
+        XCTAssertEqual(imageMetadata.nativeSize.width, 4896)
+        XCTAssertEqual(imageMetadata.nativeSize.height, 3264)
 
         try! FileManager.default.removeItem(at: tempDir)
 
@@ -62,8 +62,8 @@ class CarpaccioTests: XCTestCase {
         XCTAssertEqual(imageMetadata.cameraMaker, "FUJIFILM")
         XCTAssertEqual(imageMetadata.cameraModel, "X100T")
         XCTAssertEqual(imageMetadata.ISO, 6400.0)
-        XCTAssertEqual(imageMetadata.nativeSize.width, 1920) // Seems to be too small
-        XCTAssertEqual(imageMetadata.nativeSize.height, 1280) // Seems to be too small
+        XCTAssertEqual(imageMetadata.nativeSize.width, 3264)
+        XCTAssertEqual(imageMetadata.nativeSize.height, 4896)
         
         try! FileManager.default.removeItem(at: tempDir)
         
