@@ -89,7 +89,7 @@ open class Collection
                 return false
         }
         
-        return urls
+        return Array<URL>(urls)
     }
     
     private var preparing: Bool = false
