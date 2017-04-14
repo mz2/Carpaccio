@@ -14,6 +14,8 @@ open class Image: Equatable, Hashable {
     public enum Error: Swift.Error {
         case noFileExtension // FIXME: lift this restriction.
         case urlMissing
+        case alreadyPreparing
+        case alreadyPrepared
         case locationNotEnumerable(URL)
         case loadingFailed(underlyingError: Swift.Error)
     }
