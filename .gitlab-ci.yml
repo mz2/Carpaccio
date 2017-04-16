@@ -30,7 +30,7 @@ test_macos:
 test_ios:
   stage: test_ios
   script:
-    - xcodebuild -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 6,OS=10.2' -workspace Carpaccio.xcworkspace -scheme Carpaccio-iOS clean test | xcpretty
+    - xcodebuild -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 6,OS=10.3' -workspace Carpaccio.xcworkspace -scheme Carpaccio-iOS clean test | xcpretty
   dependencies:
     - build_ios
   tags:
