@@ -9,8 +9,8 @@ build_macos:
   script:
     - xcodebuild -workspace Carpaccio.xcworkspace -scheme Carpaccio-OSX clean build
   tags:
-    - xcode-8.2
-    - macos-10.11
+    - xcode-8.3
+    - macos-10.12
 
 build_ios:
   stage: build_ios
@@ -24,8 +24,8 @@ test_macos:
   dependencies:
     - build_macos
   tags:
-    - xcode-8.2
-    - macos-10.11
+    - xcode-8.3
+    - macos-10.12
 
 test_ios:
   stage: test_ios
@@ -34,5 +34,5 @@ test_ios:
   dependencies:
     - build_ios
   tags:
-    - xcode-8.2
-    - macos-10.11
+    - xcode-8.3
+    - macos-10.12
