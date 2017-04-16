@@ -148,7 +148,12 @@ open class Collection
                         let image = try Image(URL: URL)
                         image.fetchMetadata()
                         let count = collection.incrementPrepareProgress()
-                        progressHandler(collection, count, totalImageCount)
+                        
+                        if count % 32 == 0 {
+                            DispatchQueue.main.async {
+                                progressHandler(collection, count, totalImageCount)
+                            }
+                        }
                         return image
                     }
                     catch {
