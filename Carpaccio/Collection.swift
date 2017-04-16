@@ -66,7 +66,8 @@ open class Collection
     }
     
     public typealias TotalImageCountCalculator = () -> Int
-    public class func imageURLs(atCollectionURL URL: URL) throws -> (urls:AnySequence<URL>, approximateTotalCount: TotalImageCountCalculator) {
+    
+    public class func imageURLs(at URL: URL) throws -> [URL] {
         let fileManager = FileManager.default
         let path = URL.path
         
@@ -89,13 +90,7 @@ open class Collection
         }
         
         let urls = enumerator.lazy.map(mapBlock).filter(filterBlock)
-        
-        let totalCalculator: TotalImageCountCalculator = {
-            guard let enumerator = fileManager.enumerator(atPath: path) else { return 0 }
-            return enumerator.map(mapBlock).filter(filterBlock).count
-        }
-        
-        return (urls:AnySequence(urls), approximateTotalCount: totalCalculator)
+        return Array(urls)
     }
     
     private var preparing: Bool = false
@@ -140,8 +135,8 @@ open class Collection
             }
             
             do {
-                let (imageURLs, totalCalculator) = try Collection.imageURLs(atCollectionURL: url)
-                let totalImageCount = totalCalculator()
+                let imageURLs = try Collection.imageURLs(at: url)
+                let imageURLCount = imageURLs.count
                 
                 let images = imageURLs.lazy.parallelFlatMap(maxParallelism:maxMetadataLoadParallelism) { URL -> Image? in
                     do {
@@ -149,11 +144,7 @@ open class Collection
                         image.fetchMetadata()
                         let count = collection.incrementPrepareProgress()
                         
-                        if count % 32 == 0 {
-                            DispatchQueue.main.async {
-                                progressHandler(collection, count, totalImageCount)
-                            }
-                        }
+                        progressHandler(collection, count, imageURLCount)
                         return image
                     }
                     catch {
@@ -165,7 +156,7 @@ open class Collection
                 let returnedImages:AnyCollection<Image>
                 
                 switch sortingScheme {
-                    case .none:
+                case .none:
                     returnedImages = AnyCollection<Image>(images)
                     
                 case .byName:
@@ -174,13 +165,12 @@ open class Collection
                     })
                 }
                 
-                let collection = type(of: self).init(name: url.lastPathComponent,
-                                                     URL: url,
-                                                     images: returnedImages)
+                let returnedCollection = type(of: self).init(name: url.lastPathComponent,
+                                                             URL: url,
+                                                             images: returnedImages)
                 self.images = returnedImages
-                self.imageCount = totalImageCount
-                completionHandler(collection)
-                
+                self.imageCount = images.count
+                completionHandler(returnedCollection)
             }
             catch {
                 errorHandler(Image.Error.loadingFailed(underlyingError: error))
@@ -196,7 +186,7 @@ open class Collection
     
     public class func load(contentsOfURL URL: Foundation.URL, loadHandler: ImageLoadHandler? = nil) throws -> AnyCollection<Image>
     {
-        let (imageURLs, _) = try Collection.imageURLs(atCollectionURL: URL)
+        let imageURLs = try Collection.imageURLs(at: URL)
         
         let images = try imageURLs.lazy.enumerated().flatMap { i, imageURL -> Image? in
             let pathExtension = imageURL.pathExtension
