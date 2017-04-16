@@ -8,7 +8,7 @@
 
 import Foundation
 
-// From http://moreindirection.blogspot.co.uk/2015/07/gcd-and-parallel-collections-in-swift.html
+// Inspired by http://moreindirection.blogspot.co.uk/2015/07/gcd-and-parallel-collections-in-swift.html
 extension Swift.Collection where Self.Index == Int {
     public func parallelMap<T>(maxParallelism:Int? = nil,
                             _ transform: @escaping ((Iterator.Element) -> T)) -> [T]
@@ -77,6 +77,7 @@ extension Swift.Collection where Self.Index == Int {
 }
 
 
+// Inspired by http://moreindirection.blogspot.co.uk/2015/07/gcd-and-parallel-collections-in-swift.html
 extension Swift.Sequence {
     public func parallelMap<T>(maxParallelism:Int? = nil, _ transform: @escaping ((Iterator.Element) -> T)) -> [T]
     {
@@ -91,9 +92,7 @@ extension Swift.Sequence {
         }
         
         var result: [(IntMax, T)] = []
-        
         let group = DispatchGroup()
-        
         let lock = DispatchQueue(label: "pflatmap")
         
         let parallelism:Int = {
@@ -101,21 +100,17 @@ extension Swift.Sequence {
                 precondition(maxParallelism > 0)
                 return maxParallelism
             }
-            
             return ProcessInfo.processInfo.activeProcessorCount
         }()
         
         let semaphore = DispatchSemaphore(value: parallelism)
-        
         var iterator = self.makeIterator()
-        
         var index:IntMax = 0
         
         repeat {
             guard let item = iterator.next() else { break }
             semaphore.wait()
-            
-            DispatchQueue.global().async {
+            DispatchQueue.global().async { [index] in
                 if let mappedElement = transform(item) {
                     lock.async {
                         result += [(index, mappedElement)]
@@ -128,6 +123,7 @@ extension Swift.Sequence {
         
         group.wait()
         
-        return result.sorted { $0.0 < $1.0 }.flatMap { $0.1 }
+        return result.sorted { $0.0 < $1.0 }
+                     .flatMap { $0.1 }
     }
 }
