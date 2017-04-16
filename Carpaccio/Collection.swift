@@ -44,7 +44,9 @@ open class Collection
     public let imageCount:Int
     public let URL: Foundation.URL?
     
-    public required init(name: String, images: AnyCollection<Image>, imageCount:Int, URL: Foundation.URL) throws
+    public required init(name: String,
+                         images: AnyCollection<Image>,
+                         imageCount:Int, URL: Foundation.URL) throws
     {
         self.URL = URL
         self.name = name
@@ -56,9 +58,8 @@ open class Collection
         self.URL = URL
         self.name = URL.lastPathComponent
         
-        let (images, count) = try Collection.load(contentsOfURL: URL)
-        self.images = AnyCollection<Image>(images)
-        self.imageCount = count
+        self.images = try Collection.load(contentsOfURL: URL)
+        self.imageCount = Int(self.images.count)
     }
     
     public enum SortingScheme {
@@ -66,7 +67,7 @@ open class Collection
         case byName
     }
     
-    public class func imageURLs(atCollectionURL URL: URL) throws -> [URL]
+    public class func imageURLs(atCollectionURL URL: URL) throws -> AnySequence<URL>
     {
         let fileManager = FileManager.default
         let path = URL.path
@@ -87,7 +88,7 @@ open class Collection
                 return false
         }
         
-        return urls
+        return AnySequence(urls)
     }
     
     /** Asynchronously initialise an image collection rooted at given URL, with all images found in the subtree prepared up to essential metadata having been loaded. */
@@ -127,7 +128,7 @@ open class Collection
                 
                 let collection = try self.init(name: collectionURL.lastPathComponent,
                                                images: returnedImages,
-                                               imageCount: imageURLs.count,
+                                               imageCount: images.count,
                                                URL: collectionURL)
                 completionHandler(collection)
             }
@@ -137,15 +138,14 @@ open class Collection
         }
     }
     
-    public typealias ImageLoadHandler = (_ index:Int, _ total:Int, _ image:Image) -> Void
+    public typealias ImageLoadHandler = (_ index:Int, _ image:Image) -> Void
     public typealias ImageLoadErrorHandler = (Error) -> Void
     
-    public class func load(contentsOfURL URL: Foundation.URL, loadHandler: ImageLoadHandler? = nil) throws -> (AnyCollection<Image>, Int)
+    public class func load(contentsOfURL URL: Foundation.URL, loadHandler: ImageLoadHandler? = nil) throws -> AnyCollection<Image>
     {
         let imageURLs = try Collection.imageURLs(atCollectionURL: URL)
-        let count = imageURLs.count
         
-        let images = try imageURLs.lazy.enumerated().flatMap { (i, imageURL) -> Image? in
+        let images = try imageURLs.lazy.enumerated().flatMap { i, imageURL -> Image? in
             let pathExtension = imageURL.pathExtension
             
             guard pathExtension.utf8.count > 0 else {
@@ -153,16 +153,19 @@ open class Collection
             }
             
             let image = try Image(URL: imageURL)
-            loadHandler?(i, imageURLs.count, image)
+            loadHandler?(i, image)
             
             return image
         }
         
         let imageCollection = AnyCollection<Image>(images)
-        return (imageCollection, count)
+        return imageCollection
     }
     
-    public class func loadAsynchronously(contentsOfURL URL:Foundation.URL, queue:DispatchQueue = DispatchQueue.global(), loadHandler: ImageLoadHandler? = nil, errorHandler:@escaping ImageLoadErrorHandler) {
+    public class func loadAsynchronously(contentsOfURL URL:Foundation.URL,
+                                         queue:DispatchQueue = DispatchQueue.global(),
+                                         loadHandler: ImageLoadHandler? = nil,
+                                         errorHandler:@escaping ImageLoadErrorHandler) {
         queue.async {
             do {
                 _ = try load(contentsOfURL: URL, loadHandler: loadHandler)

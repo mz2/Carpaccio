@@ -61,10 +61,11 @@ open class Image: Equatable, Hashable {
         self.name = image.name() ?? "Untitled"
     }
     
-    public init(URL: Foundation.URL) throws
+    public init(URL: Foundation.URL, imageLoader:ImageLoaderProtocol? = nil) throws
     {
         self.URL = URL
-        self.name = URL.lastPathComponent 
+        self.cachedImageLoader = imageLoader
+        self.name = URL.lastPathComponent
         self.fullImage = nil
     }
     
