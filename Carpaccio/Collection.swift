@@ -34,27 +34,25 @@ extension Carpaccio.Collection: ImageCollection
     }
 }
 
+public typealias ImageCollectionPrepareProgressHandler = (_ collection: Collection, _ count: Int, _ total: Int) -> Void
 public typealias ImageCollectionHandler = (Collection) -> Void
 public typealias ImageCollectionErrorHandler = (Error) -> Void
 
 open class Collection
 {
     public let name:String
-    public var images:AnyCollection<Image>
-    public let imageCount:Int
+    private(set) public var images: AnyCollection<Image>
+    private(set) public var imageCount: Int
     public let URL: Foundation.URL?
     
-    public required init(name: String,
-                         images: AnyCollection<Image>,
-                         imageCount:Int, URL: Foundation.URL) throws
-    {
-        self.URL = URL
+    public required init(name: String, URL: Foundation.URL, images: AnyCollection<Image>) {
         self.name = name
+        self.URL = URL
         self.images = images
-        self.imageCount = imageCount
+        self.imageCount = Int(images.count)
     }
-    
-    public init(contentsOfURL URL: Foundation.URL) throws {
+            
+    public init(contentsOf URL: Foundation.URL) throws {
         self.URL = URL
         self.name = URL.lastPathComponent
         
@@ -67,8 +65,8 @@ open class Collection
         case byName
     }
     
-    public class func imageURLs(atCollectionURL URL: URL) throws -> AnySequence<URL>
-    {
+    public typealias TotalImageCountCalculator = () -> Int
+    public class func imageURLs(atCollectionURL URL: URL) throws -> (urls:AnySequence<URL>, approximateTotalCount: TotalImageCountCalculator) {
         let fileManager = FileManager.default
         let path = URL.path
         
@@ -76,36 +74,81 @@ open class Collection
             throw Image.Error.locationNotEnumerable(URL)
         }
         
-        let urls = enumerator.lazy.map { anyPath -> Foundation.URL in
+        let filterBlock: (URL) -> Bool = { url in
+            if let attributes = enumerator.fileAttributes, attributes[.type] as! FileAttributeType == .typeRegular {
+                let pathExtension = url.pathExtension.lowercased()
+                return Image.imageFileExtensions.contains(pathExtension)
+            }
+            return false
+        }
+        
+        let mapBlock:(Any) -> Foundation.URL = { anyPath -> Foundation.URL in
             let path = anyPath as! String
             let url = URL.appendingPathComponent(path, isDirectory: false).absoluteURL
             return url
-            }.filter { url in
-                if let attributes = enumerator.fileAttributes, attributes[.type] as! FileAttributeType == .typeRegular {
-                    let pathExtension = (url.lastPathComponent as NSString).pathExtension.lowercased()
-                    return Image.imageFileExtensions.contains(pathExtension)
-                }
-                return false
         }
         
-        return AnySequence(urls)
+        let urls = enumerator.lazy.map(mapBlock).filter(filterBlock)
+        
+        let totalCalculator: TotalImageCountCalculator = {
+            guard let enumerator = fileManager.enumerator(atPath: path) else { return 0 }
+            return enumerator.map(mapBlock).filter(filterBlock).count
+        }
+        
+        return (urls:AnySequence(urls), approximateTotalCount: totalCalculator)
+    }
+    
+    private var preparing: Bool = false
+    private var prepared: Bool = false
+    private var prepareProgressIncrementQueue = DispatchQueue(label: "com.sashimiapp.Carpaccio.Collection.prepareProgressCounter")
+    private var _preparedImageCount = 0
+    
+    func incrementPrepareProgress() -> Int {
+        var newCount: Int = 0
+        prepareProgressIncrementQueue.sync {
+            _preparedImageCount += 1
+            newCount = _preparedImageCount
+        }
+        return newCount
     }
     
     /** Asynchronously initialise an image collection rooted at given URL, with all images found in the subtree prepared up to essential metadata having been loaded. */
-    public class func prepare(atURL collectionURL: URL,
-                              queue: DispatchQueue = DispatchQueue.global(),
-                              sortingScheme: SortingScheme = .none,
-                              maxMetadataLoadParallelism: Int? = nil,
-                              completionHandler: @escaping ImageCollectionHandler,
-                              errorHandler: @escaping ImageCollectionErrorHandler) {
+    public func prepare(
+        queue: DispatchQueue = DispatchQueue.global(),
+        sortingScheme: SortingScheme = .none,
+        maxMetadataLoadParallelism: Int? = nil,
+        progressHandler: @escaping ImageCollectionPrepareProgressHandler,
+        completionHandler: @escaping ImageCollectionHandler,
+        errorHandler: @escaping ImageCollectionErrorHandler) throws {
+        
+        guard let url = self.URL else {
+            throw Image.Error.urlMissing
+        }
+        guard !preparing else {
+            throw Image.Error.alreadyPreparing
+        }
+        guard !prepared else {
+            throw Image.Error.alreadyPrepared
+        }
+        
+        preparing = true
+        weak var weakCollection = self
+        
         queue.async {
+            guard let collection = weakCollection else {
+                return
+            }
+            
             do {
-                let imageURLs = try self.imageURLs(atCollectionURL: collectionURL)
+                let (imageURLs, totalCalculator) = try Collection.imageURLs(atCollectionURL: url)
+                let totalImageCount = totalCalculator()
                 
                 let images = imageURLs.lazy.parallelFlatMap(maxParallelism:maxMetadataLoadParallelism) { URL -> Image? in
                     do {
                         let image = try Image(URL: URL)
                         image.fetchMetadata()
+                        let count = collection.incrementPrepareProgress()
+                        progressHandler(collection, count, totalImageCount)
                         return image
                     }
                     catch {
@@ -126,15 +169,20 @@ open class Collection
                     })
                 }
                 
-                let collection = try self.init(name: collectionURL.lastPathComponent,
-                                               images: returnedImages,
-                                               imageCount: images.count,
-                                               URL: collectionURL)
+                let collection = type(of: self).init(name: url.lastPathComponent,
+                                                     URL: url,
+                                                     images: returnedImages)
+                self.images = returnedImages
+                self.imageCount = totalImageCount
                 completionHandler(collection)
+                
             }
             catch {
                 errorHandler(Image.Error.loadingFailed(underlyingError: error))
             }
+            
+            collection.prepared = true
+            collection.preparing = false
         }
     }
     
@@ -143,7 +191,7 @@ open class Collection
     
     public class func load(contentsOfURL URL: Foundation.URL, loadHandler: ImageLoadHandler? = nil) throws -> AnyCollection<Image>
     {
-        let imageURLs = try Collection.imageURLs(atCollectionURL: URL)
+        let (imageURLs, _) = try Collection.imageURLs(atCollectionURL: URL)
         
         let images = try imageURLs.lazy.enumerated().flatMap { i, imageURL -> Image? in
             let pathExtension = imageURL.pathExtension

@@ -96,7 +96,7 @@ class CarpaccioTests: XCTestCase {
 	
     func testDistanceMatrixComputation() {
         let resourcesDir = Bundle(for: type(of: self)).resourceURL!
-        let imgColl = try! Collection(contentsOfURL: resourcesDir)
+        let imgColl = try! Collection(contentsOf: resourcesDir)
 			
         // just checking that the matrix computation succeeds.
         let distances = imgColl.distanceMatrix { a, b in
@@ -121,7 +121,7 @@ class CarpaccioTests: XCTestCase {
     
     func testDistanceTableComputation() {
         let resourcesDir = Bundle(for: type(of: self)).resourceURL!
-        let imgColl = try! Collection(contentsOfURL: resourcesDir)
+        let imgColl = try! Collection(contentsOf: resourcesDir)
         
         let distances = imgColl.distanceTable { a, b in
             return Double.infinity
