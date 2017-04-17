@@ -78,6 +78,12 @@ open class Image: Equatable, Hashable {
 
     private var cachedImageLoader: ImageLoaderProtocol?
     
+    public func clearCachedResources() {
+        self.cachedImageLoader = nil
+        self.fullImage = nil
+        self.thumbnailImage = nil
+    }
+    
     open var imageLoader: ImageLoaderProtocol?
     {
         if let loader = cachedImageLoader {
@@ -90,12 +96,8 @@ open class Image: Equatable, Hashable {
         
         let pathExtension = URL.pathExtension.lowercased()
         
-        if Image.RAWImageFileExtensions.contains(pathExtension)
-        {
-            //return ImageLoader(imageURL: URL, thumbnailScheme: .AlwaysDecodeFullImage)
-            cachedImageLoader = ImageLoader(imageURL: URL, thumbnailScheme: .fullImageWhenTooSmallThumbnail)
-        }
-        else if Image.bakedImageFileExtensions.contains(pathExtension)
+        if Image.RAWImageFileExtensions.contains(pathExtension) ||
+            Image.bakedImageFileExtensions.contains(pathExtension)
         {
             cachedImageLoader = ImageLoader(imageURL: URL, thumbnailScheme: .fullImageWhenTooSmallThumbnail)
         }
