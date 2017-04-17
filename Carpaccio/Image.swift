@@ -111,8 +111,7 @@ open class Image: Equatable, Hashable {
         
         if Image.isRAWImage(at: url) {
             cachedImageLoader = ImageLoader(imageURL: url, thumbnailScheme: .fullImageWhenTooSmallThumbnail)
-        else if Image.isBakedImage(at: url)
-        {
+        } else if Image.isBakedImage(at: url) {
             cachedImageLoader = ImageLoader(imageURL: url, thumbnailScheme: .fullImageWhenTooSmallThumbnail)
         }
         
