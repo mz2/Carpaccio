@@ -20,6 +20,7 @@ open class Image: Equatable, Hashable {
         case alreadyPrepared
         case locationNotEnumerable(URL)
         case loadingFailed(underlyingError: Swift.Error)
+        case noThumbnail(Image)
     }
     
     public let name: String
