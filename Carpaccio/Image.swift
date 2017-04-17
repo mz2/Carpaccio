@@ -77,30 +77,43 @@ open class Image: Equatable, Hashable {
 
     private var cachedImageLoader: ImageLoaderProtocol?
     
+    open class func isBakedImage(at url: URL) -> Bool {
+        let isBakedImage = Image.bakedImageFileExtensions.contains(url.pathExtension.lowercased())
+        return isBakedImage
+    }
+    
+    open class func isRAWImage(at url: URL) -> Bool {
+        let isRAW = Image.RAWImageFileExtensions.contains(url.pathExtension.lowercased())
+        return isRAW
+    }
+    
+    open class func isImage(at url: URL) -> Bool {
+        let isImage = isBakedImage(at: url) || isRAWImage(at: url)
+        return isImage
+    }
+    
     open var imageLoader: ImageLoaderProtocol?
     {
         if let loader = cachedImageLoader {
             return loader
         }
         
-        guard let URL = self.URL else {
+        guard let url = self.URL else {
             return nil
         }
         
-        let pathExtension = URL.pathExtension.lowercased()
-        
-        if Image.RAWImageFileExtensions.contains(pathExtension)
-        {
+        if Image.isRAWImage(at: url) {
             //return ImageLoader(imageURL: URL, thumbnailScheme: .AlwaysDecodeFullImage)
-            cachedImageLoader = ImageLoader(imageURL: URL, thumbnailScheme: .fullImageWhenTooSmallThumbnail)
+            cachedImageLoader = ImageLoader(imageURL: url, thumbnailScheme: .fullImageWhenTooSmallThumbnail)
         }
-        else if Image.bakedImageFileExtensions.contains(pathExtension)
+        else if Image.isBakedImage(at: url)
         {
-            cachedImageLoader = ImageLoader(imageURL: URL, thumbnailScheme: .fullImageWhenTooSmallThumbnail)
+            cachedImageLoader = ImageLoader(imageURL: url, thumbnailScheme: .fullImageWhenTooSmallThumbnail)
         }
         
         return cachedImageLoader
     }
+    
     
     public lazy var metadata: ImageMetadata? = {
         let metadata = self.imageLoader?.imageMetadata
