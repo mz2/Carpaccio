@@ -155,8 +155,7 @@ public class ImageLoader: ImageLoaderProtocol
         
         print("---- All metadata for \(self.imageURL.path): ----")
         
-        for key in results.keys.sorted()
-        {
+        for key in results.keys.sorted() {
             print("    \(key) = \(results[key]!)")
         }
         
@@ -298,9 +297,9 @@ public class ImageLoader: ImageLoaderProtocol
     private static var _imageBakingContexts = [String: CIContext]()
     
     @available(OSX 10.12, *)
-    private static func bakingContext(forImageURL URL: URL) -> CIContext
+    private static func bakingContext(for imageURL: URL) -> CIContext
     {
-        let ext = URL.pathExtension
+        let ext = imageURL.pathExtension
         
         if let context = _imageBakingContexts[ext] {
             return context
@@ -358,7 +357,7 @@ public class ImageLoader: ImageLoaderProtocol
         if #available(OSX 10.12, *)
         {
             // Pixel format and color space set as discussed around 21:50 in https://developer.apple.com/videos/play/wwdc2016/505/
-            let context = ImageLoader.bakingContext(forImageURL: self.imageURL)
+            let context = ImageLoader.bakingContext(for: self.imageURL)
             if let cgImage = context.createCGImage(image,
                 from: image.extent,
                 format: kCIFormatRGBA8,

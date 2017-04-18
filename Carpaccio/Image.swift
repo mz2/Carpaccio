@@ -13,7 +13,7 @@ open class Image: Equatable, Hashable {
     
     public enum Error: Swift.Error {
         case noURL
-        case noLoader
+        case noLoader(Image)
         case noFileExtension // FIXME: lift this restriction.
         case urlMissing
         case alreadyPreparing
@@ -156,7 +156,7 @@ open class Image: Equatable, Hashable {
         }
         
         guard let loader = self.imageLoader else {
-            throw Error.noLoader
+            throw Error.noLoader(self)
         }
         
         guard self.URL != nil else {
@@ -198,7 +198,7 @@ open class Image: Equatable, Hashable {
         options.maximumPixelDimensions = maxDimensions
         
         guard let loader = self.imageLoader else {
-            throw Error.noLoader
+            throw Error.noLoader(self)
         }
         
         let image: BitmapImage, metadata: ImageMetadata
