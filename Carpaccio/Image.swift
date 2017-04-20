@@ -21,6 +21,7 @@ open class Image: Equatable, Hashable {
         case locationNotEnumerable(URL)
         case loadingFailed(underlyingError: Swift.Error)
         case noThumbnail(Image)
+        case noHistogram(Image)
     }
     
     public let name: String
