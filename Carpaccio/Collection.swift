@@ -187,8 +187,12 @@ open class Collection
     public class func load(contentsOfURL URL: Foundation.URL, loadHandler: ImageLoadHandler? = nil) throws -> AnyCollection<Image>
     {
         let imageURLs = try Collection.imageURLs(at: URL)
-        
-        let images = try imageURLs.lazy.enumerated().flatMap { i, imageURL -> Image? in
+        let images = try loadImages(at: imageURLs, loadHandler: loadHandler)
+        return images
+    }
+
+    public class func loadImages(at imageURLs: [URL], loadHandler: ImageLoadHandler? = nil) throws -> AnyCollection<Image> {
+        let lazyImages = try imageURLs.lazy.enumerated().flatMap { i, imageURL -> Image? in
             let pathExtension = imageURL.pathExtension
             
             guard pathExtension.utf8.count > 0 else {
@@ -201,8 +205,8 @@ open class Collection
             return image
         }
         
-        let imageCollection = AnyCollection<Image>(images)
-        return imageCollection
+        let images = AnyCollection<Image>(lazyImages)
+        return images
     }
     
     public class func loadAsynchronously(contentsOfURL URL:Foundation.URL,
@@ -219,7 +223,9 @@ open class Collection
         }
     }
     
-    /** Return any image found in this collection whose URL is included in given input array or URLs. */
+    /**
+     Return images found in this collection whose URL is included in given input array or URLs.
+     */
     public func images(forURLs URLs: [Foundation.URL]) -> [Image]
     {
         var images = [Image]()
