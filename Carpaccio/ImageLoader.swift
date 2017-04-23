@@ -16,12 +16,11 @@ import ImageIO
   * as well common compressed image file formats. */
 public class ImageLoader: ImageLoaderProtocol
 {
-    enum Error: Swift.Error {
+   enum Error: Swift.Error {
         case filterInitializationFailed(URL: URL)
     }
     
-    public enum ThumbnailScheme: Int
-    {
+    public enum ThumbnailScheme: Int {
         case never
         case decodeFullImage
         case fullImageWhenTooSmallThumbnail
@@ -34,30 +33,28 @@ public class ImageLoader: ImageLoaderProtocol
     
     // See ImageMetadata.timestamp for known caveats about EXIF/TIFF
     // date metadata, as interpreted by this date formatter.
-    private static let EXIFDateFormatter: DateFormatter =
-    {
+    private static let EXIFDateFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy:MM:dd HH:mm:ss"
         return formatter
     }()
     
-    public init(imageURL: URL, thumbnailScheme: ThumbnailScheme)
-    {
+    public init(imageURL: URL, thumbnailScheme: ThumbnailScheme) {
         self.imageURL = imageURL
         self.thumbnailScheme = thumbnailScheme
     }
     
-    private var imageSource: CGImageSource?
-    {
+    private func imageSource() -> CGImageSource? {
         // We intentionally don't store the image source, to not gob up resources, but rather open it anew each time
-        let options = [String(kCGImageSourceShouldCache): false, String(kCGImageSourceShouldAllowFloat): true] as NSDictionary as CFDictionary
+        let options = [String(kCGImageSourceShouldCache): false,
+                       String(kCGImageSourceShouldAllowFloat): true] as NSDictionary as CFDictionary
         let imageSource = CGImageSourceCreateWithURL(imageURL as CFURL, options)
         return imageSource
     }
     
     public lazy var imageMetadata: ImageMetadata? = {
 
-        guard let imageSource = self.imageSource else {
+        guard let imageSource = self.imageSource() else {
             return nil
         }
         
@@ -155,8 +152,7 @@ public class ImageLoader: ImageLoaderProtocol
         
         print("---- All metadata for \(self.imageURL.path): ----")
         
-        for key in results.keys.sorted()
-        {
+        for key in results.keys.sorted() {
             print("    \(key) = \(results[key]!)")
         }
         
@@ -164,7 +160,7 @@ public class ImageLoader: ImageLoaderProtocol
     }
     
     public func loadImageMetadata() throws -> ImageMetadata {
-        guard let _ = self.imageSource else {
+        guard let _ = self.imageSource() else {
             throw ImageLoadingError.noImageSource(URL: self.imageURL,
                                                   message: "Image source unexpectedly missing.")
         }
@@ -177,9 +173,10 @@ public class ImageLoader: ImageLoaderProtocol
         return metadata
     }
     
-    private func loadThumbnailImage(maximumPixelDimensions maximumSize: CGSize? = nil) throws -> CGImage
+    public func loadThumbnailCGImage(maximumPixelDimensions maximumSize: CGSize? = nil,
+                                     allowCropping: Bool = true) throws -> (CGImage, ImageMetadata)
     {
-        guard let source = self.imageSource else {
+        guard let source = self.imageSource() else {
             throw ImageLoadingError.noImageSource(URL: self.imageURL, message: "Image source is unexpectedly missing when loading thumbnail image.")
         }
         
@@ -187,7 +184,11 @@ public class ImageLoader: ImageLoaderProtocol
             throw ImageLoadingError.loadingSetToNever(URL: self.imageURL, message: "Image thumbnail failed to be loaded as the loader responsible for it is set to never load thumbnails.")
         }
         
-        let maxPixelSize = maximumSize?.maximumPixelSize(forImageSize: self.imageMetadata!.size)
+        guard let metadata = self.imageMetadata else {
+            throw ImageLoadingError.expectingMetadata(URL: self.imageURL, message: "Expecting image metadata to have been loaded before thumbnail is loaded.")
+        }
+        
+        let maxPixelSize = maximumSize?.maximumPixelSize(forImageSize: metadata.size)
         let createFromFullImage = self.thumbnailScheme == .decodeFullImage
         
         var options: [String: AnyObject] = [String(kCGImageSourceCreateThumbnailWithTransform): kCFBooleanTrue,
@@ -202,7 +203,11 @@ public class ImageLoader: ImageLoaderProtocol
                                                   message: "Failed to load thumbnail image as creating an image source for it failed.")
         }
         
-        return cropToNativeProportionsIfNeeded(thumbnailImage: thumbnailImage)
+        if !allowCropping {
+            return (thumbnailImage, metadata)
+        }
+        
+        return (cropToNativeProportionsIfNeeded(thumbnailImage: thumbnailImage), metadata)
     }
     
     /**
@@ -274,14 +279,9 @@ public class ImageLoader: ImageLoaderProtocol
     }
     
     /** Retrieve metadata about this loader's image, to be called before loading actual image data. */
-    public func loadThumbnailImage(maximumPixelDimensions maxPixelSize: CGSize?) throws -> (BitmapImage, ImageMetadata) {
-        guard self.imageSource != nil else {
-            throw ImageLoadingError.noImageSource(URL: self.imageURL,
-                                                  message: "Image source unexpectedly missing when loading thumbnail.")
-        }
-        
-        let thumbnailImage: CGImage = try loadThumbnailImage(maximumPixelDimensions: maxPixelSize)
-        return (BitmapImageUtility.image(cgImage: thumbnailImage, size: CGSize.zero), self.imageMetadata!)
+    public func loadThumbnailImage(maximumPixelDimensions maxPixelSize: CGSize?, allowCropping: Bool) throws -> (BitmapImage, ImageMetadata) {
+        let (thumbnailImage, metadata) = try loadThumbnailCGImage(maximumPixelDimensions: maxPixelSize, allowCropping: allowCropping)
+        return (BitmapImageUtility.image(cgImage: thumbnailImage, size: CGSize.zero), metadata)
     }
     
     static let genericLinearRGBColorSpace = CGColorSpace(name: CGColorSpace.genericRGBLinear)
@@ -298,9 +298,9 @@ public class ImageLoader: ImageLoaderProtocol
     private static var _imageBakingContexts = [String: CIContext]()
     
     @available(OSX 10.12, *)
-    private static func bakingContext(forImageURL URL: URL) -> CIContext
+    private static func bakingContext(for imageURL: URL) -> CIContext
     {
-        let ext = URL.pathExtension
+        let ext = imageURL.pathExtension
         
         if let context = _imageBakingContexts[ext] {
             return context
@@ -358,7 +358,7 @@ public class ImageLoader: ImageLoaderProtocol
         if #available(OSX 10.12, *)
         {
             // Pixel format and color space set as discussed around 21:50 in https://developer.apple.com/videos/play/wwdc2016/505/
-            let context = ImageLoader.bakingContext(forImageURL: self.imageURL)
+            let context = ImageLoader.bakingContext(for: self.imageURL)
             if let cgImage = context.createCGImage(image,
                 from: image.extent,
                 format: kCIFormatRGBA8,

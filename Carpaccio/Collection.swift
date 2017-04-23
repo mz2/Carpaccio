@@ -138,8 +138,9 @@ open class Collection
                 let imageURLs = try Collection.imageURLs(at: url)
                 let imageURLCount = imageURLs.count
                 
-                let images = imageURLs.lazy.parallelFlatMap(maxParallelism:maxMetadataLoadParallelism) { URL -> Image? in
-                    do {
+                let images: [Image]
+                do {
+                    images = try imageURLs.lazy.parallelFlatMap(maxParallelism:maxMetadataLoadParallelism) { URL -> Image? in
                         let image = try Image(URL: URL)
                         image.fetchMetadata()
                         let count = collection.incrementPrepareProgress()
@@ -147,10 +148,9 @@ open class Collection
                         progressHandler(collection, count, imageURLCount)
                         return image
                     }
-                    catch {
-                        print("ERROR! Failed to load image at '\(URL.path)'")
-                        return nil
-                    }
+                } catch {
+                    errorHandler(error)
+                    return
                 }
                 
                 let returnedImages:AnyCollection<Image>
@@ -169,7 +169,7 @@ open class Collection
                                                              URL: url,
                                                              images: returnedImages)
                 self.images = returnedImages
-                self.imageCount = images.count
+                self.imageCount = Int(returnedImages.count)
                 completionHandler(returnedCollection)
             }
             catch {

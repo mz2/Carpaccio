@@ -23,6 +23,7 @@ public enum ImageLoadingError: Swift.Error
     case failedToDecode(URL: URL, message: String)
     case failedToLoadDecodedImage(URL: URL, message: String)
     case loadingSetToNever(URL: URL, message: String)
+    case expectingMetadata(URL: URL, message: String)
 }
 
 public typealias ImageLoadingErrorHandler = (_ error: ImageLoadingError) -> Void
@@ -50,8 +51,10 @@ public protocol ImageLoaderProtocol
       * a direct URL pointing to that location. */
     var cachedImageURL: URL? { get }
     
+    func loadThumbnailCGImage(maximumPixelDimensions maximumSize: CGSize?, allowCropping: Bool) throws -> (CGImage, ImageMetadata)
+    
     /** Retrieve metadata about this loader's image, potentially called before loading actual image data. */
-    func loadThumbnailImage(maximumPixelDimensions maxPixelSize: CGSize?) throws -> (BitmapImage, ImageMetadata)
+    func loadThumbnailImage(maximumPixelDimensions maxPixelSize: CGSize?, allowCropping: Bool) throws -> (BitmapImage, ImageMetadata)
     
     func loadThumbnailImage() throws -> (BitmapImage, ImageMetadata)
     
@@ -67,7 +70,15 @@ public protocol ImageLoaderProtocol
 
 public extension ImageLoaderProtocol {
     func loadThumbnailImage() throws -> (BitmapImage, ImageMetadata) {
-        return try self.loadThumbnailImage(maximumPixelDimensions: nil)
+        return try self.loadThumbnailImage(maximumPixelDimensions: nil, allowCropping: true)
+    }
+    
+    func loadThumbnailImage(maximumPixelDimensions: CGSize?) throws -> (BitmapImage, ImageMetadata) {
+        return try self.loadThumbnailImage(maximumPixelDimensions: maximumPixelDimensions, allowCropping: true)
+    }
+    
+    func loadThumbnailImage(allowCropping: Bool) throws -> (BitmapImage, ImageMetadata) {
+        return try self.loadThumbnailImage(maximumPixelDimensions: nil, allowCropping: allowCropping)
     }
     
     func loadFullSizeImage() throws -> (BitmapImage, ImageMetadata) {
