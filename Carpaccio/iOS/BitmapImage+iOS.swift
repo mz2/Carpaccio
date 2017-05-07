@@ -27,6 +27,10 @@ struct BitmapImageUtility {
         return UIImage(named: name)
     }
     
+    static func image(named imageName: String, bundle: Bundle) -> BitmapImage? {
+        return UIImage(named: imageName, in: bundle, compatibleWith: nil)
+    }
+    
     static func image(sized size: CGSize) -> BitmapImage {
         UIGraphicsBeginImageContext(size)
         let image = UIGraphicsGetImageFromCurrentImageContext()
