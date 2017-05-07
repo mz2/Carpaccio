@@ -22,12 +22,23 @@ open class Image: Equatable, Hashable {
         case loadingFailed(underlyingError: Swift.Error)
         case noThumbnail(Image)
         case noHistogram(Image)
+        case noMetadata
+        case failedToDecodeImage
+        case invalidImageSize
     }
     
     public let name: String
     public var thumbnailImage: BitmapImage? = nil
     public var fullImage: BitmapImage?
 
+    public static var failedPlaceholderBitmapImage: BitmapImage = {
+        return BitmapImageUtility.image(named: "failed-image", bundle: Bundle(for: Image.self))!
+    }()
+    
+    public static var failedPlaceholderMetadata: ImageMetadata = {
+        return ImageMetadata(nativeSize: Image.failedPlaceholderBitmapImage.size, isFailedPlaceholderImage: true)
+    }()
+    
     public var size: CGSize {
         guard let size = self.metadata?.size else {
             return CGSize.zero
@@ -238,19 +249,47 @@ open class Image: Equatable, Hashable {
         return image
     }
     
-    public class var imageFileExtensions:Set<String> {
-        var extensions = self.RAWImageFileExtensions
-        extensions.formUnion(self.bakedImageFileExtensions)
+    public static var imageFileExtensions: Set<String> = {
+        var extensions = Image.RAWImageFileExtensions
+        extensions.formUnion(Image.bakedImageFileExtensions)
         return extensions
-    }
+    }()
     
-    public class var RAWImageFileExtensions:Set<String> {
-        return Set(["arw", "nef", "cr2", "crw"])
-    }
+    public static var RAWImageFileExtensions: Set<String> = {
+        return Set([
+            "3fr", // Hasselblad 3F RAW Image https://fileinfo.com/extension/3fr
+            "arw", // Sony Digital Camera Image https://fileinfo.com/extension/arw
+            "cr2", // Canon Raw Image File https://fileinfo.com/extension/cr2
+            "crw", // Canon Raw CIFF Image File https://fileinfo.com/extension/crw
+            "dcr", // Kodak https://fileinfo.com/extension/dcr
+            "dng", // Adobe Digital Negative Image https://fileinfo.com/extension/dng
+            "erf", // Epson RAW File https://fileinfo.com/extension/erf
+            "fff", // Hasselblad RAW Image https://fileinfo.com/extension/fff
+            "gpr", // GenePix Results File https://fileinfo.com/extension/gpr
+            "iiq", // Phase One RAW Image https://fileinfo.com/extension/iiq
+            "kdc", // Kodak DC120 digital camera RAW image https://www.file-extensions.org/kdc-file-extension
+            "mdc", // Minolta RD175 image https://www.file-extensions.org/mdc-file-extension
+            "mef", // Mamiya RAW Image https://fileinfo.com/extension/mef
+            "mos", // Leaf Camera RAW File https://fileinfo.com/extension/mos
+            "mrw", // Minolta Raw Image File https://fileinfo.com/extension/mrw
+            "nef", // Nikon Electronic Format RAW Image https://fileinfo.com/extension/nef
+            "nrw", // Nikon Raw Image File https://fileinfo.com/extension/nrw
+            "orf", // Olympus RAW File https://fileinfo.com/extension/orf
+            "pef", // Pentax Electronic File https://fileinfo.com/extension/pef
+            "raf", // Fuji RAW Image File https://fileinfo.com/extension/raf
+            "raw", // Raw Image Data File (Panasonic, Leica, Casio) https://fileinfo.com/extension/raw
+            "rw2", // Panasonic RAW Image https://fileinfo.com/extension/rw2
+            "rwl", // Leica RAW Image https://fileinfo.com/extension/rwl
+            "sr2", // Sony RAW Image https://fileinfo.com/extension/sr2
+            "srf", // Garmin vehicle image (!) https://www.file-extensions.org/srf-file-extension
+            "srw", // Samsung RAW Image https://fileinfo.com/extension/srw
+            "x3f"  // SIGMA X3F Camera RAW File https://fileinfo.com/extension/x3f
+            ])
+    }()
 
-    public class var bakedImageFileExtensions:Set<String> {
+    public static var bakedImageFileExtensions: Set<String> = {
         return Set(["jpg", "jpeg", "png", "tiff", "tif", "gif"])
-    }
+    }()
     
     public var hashValue: Int {
         return UUID.hashValue
@@ -266,7 +305,6 @@ public func == (lhs:Image, rhs:Image) -> Bool {
 }
  */
 
-public func == (lhs:Image, rhs:Image) -> Bool
-{
+public func == (lhs:Image, rhs:Image) -> Bool {
     return lhs.URL == rhs.URL
 }

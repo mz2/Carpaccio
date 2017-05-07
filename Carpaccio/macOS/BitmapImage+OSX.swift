@@ -65,6 +65,10 @@ public struct BitmapImageUtility {
         return NSImage(named: string)
     }
     
+    public static func image(named imageName: String, bundle: Bundle) -> BitmapImage? {
+        return bundle.image(forResource: imageName)
+    }
+    
     public static func image(sized size: CGSize) -> BitmapImage {
         return NSImage(size: size)
     }
