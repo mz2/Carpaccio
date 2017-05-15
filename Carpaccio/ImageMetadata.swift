@@ -26,6 +26,26 @@ extension CGImagePropertyOrientation
 
 public struct ImageMetadata
 {
+    /**
+     Date & time best suitable to be interpreted as the image's original creation timestamp.
+     
+     Some notes:
+     
+     - The value is usually extracted from EXIF or TIFF metadata (in that order), which both appear
+     to save it as a string with one second resolution, without time zone information.
+     
+     - This means the value alone is suitable only for coarse sorting, and typically needs combining
+     with the image filename saved by the camera, which usually contains a numerical sequence. For
+     example, you will encounter images shot in burst mode that will have the same timestamp.
+     
+     - As of this writing (2016-08-25), it is unclear if this limitation is fundamentally about
+     cameras, the EXIF/TIFF metadata specs or (most unlikely) the Core Graphics implementation.
+     However, neither Lightroom, Capture One, FastRawViewer nor RawRightAway display any more
+     detail or timezone-awareness, so it seems like this needs to be accepted as just the way it
+     is.
+    */
+    public let timestamp: Date?
+    
     public let cameraMaker: String?
     public let cameraModel: String?
     public let colorSpace: CGColorSpace?
@@ -39,28 +59,6 @@ public struct ImageMetadata
     public let nativeOrientation: CGImagePropertyOrientation
     public let nativeSize: CGSize
     public let shutterSpeed: TimeInterval?
-    
-    /**
-     
-     Date & time best suitable to be interpreted as the image's original creation timestamp.
- 
-     Some notes:
-     
-     - The value is usually extracted from EXIF or TIFF metadata (in that order), which both appear
-       to save it as a string with one second resolution, without time zone information.
-     
-     - This means the value alone is suitable only for coarse sorting, and typically needs combining
-       with the image filename saved by the camera, which usually contains a numerical sequence. For
-       example, you will encounter images shot in burst mode that will have the same timestamp.
-     
-     - As of this writing (2016-08-25), it is unclear if this limitation is fundamentally about
-       cameras, the EXIF/TIFF metadata specs or (most unlikely) the Core Graphics implementation.
-       However, neither Lightroom, Capture One, FastRawViewer nor RawRightAway display any more
-       detail or timezone-awareness, so it seems like this needs to be accepted as just the way it
-       is.
-     
-    */
-    public let timestamp: Date?
     
     public init(nativeSize: CGSize, nativeOrientation: CGImagePropertyOrientation = .up, colorSpace: CGColorSpace? = nil, fNumber: Double? = nil, focalLength: Double? = nil, focalLength35mmEquivalent: Double? = nil, ISO: Double? = nil, shutterSpeed: TimeInterval? = nil, cameraMaker: String? = nil, cameraModel: String? = nil, timestamp: Date? = nil)
     {
@@ -86,7 +84,7 @@ public struct ImageMetadata
         return self.nativeSize
     }
     
-    public enum Shape {
+    public enum Shape: String {
         case landscape
         case portrait
         case square
@@ -126,11 +124,11 @@ public struct ImageMetadata
             
             // Default to showing one decimal place...
             let oneTenthPrecisionfNumber = round(f * 10.0) / 10.0
-            let integerApterture = Int(oneTenthPrecisionfNumber)
+            let integerAperture = Int(oneTenthPrecisionfNumber)
             
             // ..but avoid displaying .0
-            if oneTenthPrecisionfNumber == Double(integerApterture) {
-                return "f/\(integerApterture)"
+            if oneTenthPrecisionfNumber == Double(integerAperture) {
+                return "f/\(integerAperture)"
             }
             
             return "f/\(oneTenthPrecisionfNumber)"
@@ -225,6 +223,8 @@ public struct ImageMetadata
         dict["nativeOrientation"] = nativeOrientation.rawValue
         
         dict["nativeSize"] = [nativeSize.width, nativeSize.height]
+        
+        dict["shape"] = shape.rawValue
         
         if let shutterSpeed = self.shutterSpeed {
             dict["shutterSpeed"] = shutterSpeed
