@@ -14,7 +14,7 @@ import ImageIO
 
 /** Implementation of ImageLoaderProtocol, capable of dealing with RAW file formats, 
   * as well common compressed image file formats. */
-public class ImageLoader: ImageLoaderProtocol
+public class ImageLoader: ImageLoaderProtocol, URLBackedImageLoaderProtocol
 {
    enum Error: Swift.Error {
         case filterInitializationFailed(URL: URL)
@@ -39,7 +39,7 @@ public class ImageLoader: ImageLoaderProtocol
         return formatter
     }()
     
-    public init(imageURL: URL, thumbnailScheme: ThumbnailScheme) {
+    public required init(imageURL: URL, thumbnailScheme: ThumbnailScheme) {
         self.imageURL = imageURL
         self.thumbnailScheme = thumbnailScheme
     }
