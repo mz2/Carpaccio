@@ -26,6 +26,18 @@ extension CGImagePropertyOrientation
 
 public struct ImageMetadata
 {
+    // MARK: Required metadata
+    
+    /** Width and height of the image. */
+    public let nativeSize: CGSize
+    
+    /** Orientation of the image's pixel data. Default is `.up`. */
+    public let nativeOrientation: CGImagePropertyOrientation
+    
+    /** If loading native image size failed, this metadata represents the built-in placeholder image for failed-to-load images. */
+    public let isFailedPlaceholderImage: Bool
+    
+    // MARK: Optional metadata
     public let cameraMaker: String?
     public let cameraModel: String?
     public let colorSpace: CGColorSpace?
@@ -35,13 +47,8 @@ public struct ImageMetadata
     
     public let focalLength: Double?
     public let focalLength35mmEquivalent: Double?
-    public let ISO: Double?
-    public let nativeOrientation: CGImagePropertyOrientation
-    public let nativeSize: CGSize
+    public let iso: Double?
     public let shutterSpeed: TimeInterval?
-    
-    /** If loading native image size failed, this metadata represents the built-in placeholder image for failed-to-load images. */
-    public let isFailedPlaceholderImage: Bool
     
     /**
      
@@ -65,7 +72,8 @@ public struct ImageMetadata
      */
     public let timestamp: Date?
     
-    public init(nativeSize: CGSize, nativeOrientation: CGImagePropertyOrientation = .up, colorSpace: CGColorSpace? = nil, fNumber: Double? = nil, focalLength: Double? = nil, focalLength35mmEquivalent: Double? = nil, ISO: Double? = nil, shutterSpeed: TimeInterval? = nil, cameraMaker: String? = nil, cameraModel: String? = nil, timestamp: Date? = nil, isFailedPlaceholderImage: Bool, error: Error? = nil)
+    // MARK: Initialisers
+    public init(nativeSize: CGSize, nativeOrientation: CGImagePropertyOrientation = .up, colorSpace: CGColorSpace? = nil, fNumber: Double? = nil, focalLength: Double? = nil, focalLength35mmEquivalent: Double? = nil, iso: Double? = nil, shutterSpeed: TimeInterval? = nil, cameraMaker: String? = nil, cameraModel: String? = nil, timestamp: Date? = nil, isFailedPlaceholderImage: Bool = false)
     {
         self.fNumber = fNumber
         self.cameraMaker = cameraMaker
@@ -73,56 +81,56 @@ public struct ImageMetadata
         self.colorSpace = colorSpace
         self.focalLength = focalLength
         self.focalLength35mmEquivalent = focalLength35mmEquivalent
-        self.ISO = ISO
+        self.iso = iso
         self.nativeOrientation = nativeOrientation
         self.nativeSize = nativeSize
         self.shutterSpeed = shutterSpeed
         self.timestamp = timestamp
         self.isFailedPlaceholderImage = isFailedPlaceholderImage
     }
-    
-    public init(imageSource: CGImageSource) throws {
+
+    public init(imageSource: ImageIO.CGImageSource) throws {
         guard let imageProperties = CGImageSourceCopyPropertiesAtIndex(imageSource, 0, nil) else {
             throw Image.Error.noMetadata
         }
         
         let properties = NSDictionary(dictionary: imageProperties)
         
-        var fNumber: Double? = nil, focalLength: Double? = nil, focalLength35mm: Double? = nil, ISO: Double? = nil, shutterSpeed: Double? = nil
+        var fNumber: Double? = nil, focalLength: Double? = nil, focalLength35mm: Double? = nil, iso: Double? = nil, shutterSpeed: Double? = nil
         var colorSpace: CGColorSpace? = nil
         var width: CGFloat? = nil, height: CGFloat? = nil
         var timestamp: Date? = nil
         
         // Examine EXIF metadata
-        if let EXIF = properties[kCGImagePropertyExifDictionary as String] as? NSDictionary
+        if let exif = properties[kCGImagePropertyExifDictionary as String] as? NSDictionary
         {
-            fNumber = (EXIF[kCGImagePropertyExifFNumber as String] as? NSNumber)?.doubleValue
+            fNumber = (exif[kCGImagePropertyExifFNumber as String] as? NSNumber)?.doubleValue
             
-            if let colorSpaceName = EXIF[kCGImagePropertyExifColorSpace] as? NSString {
+            if let colorSpaceName = exif[kCGImagePropertyExifColorSpace] as? NSString {
                 colorSpace = CGColorSpace(name: colorSpaceName)
             }
             
-            focalLength = (EXIF[kCGImagePropertyExifFocalLength as String] as? NSNumber)?.doubleValue
-            focalLength35mm = (EXIF[kCGImagePropertyExifFocalLenIn35mmFilm as String] as? NSNumber)?.doubleValue
+            focalLength = (exif[kCGImagePropertyExifFocalLength as String] as? NSNumber)?.doubleValue
+            focalLength35mm = (exif[kCGImagePropertyExifFocalLenIn35mmFilm as String] as? NSNumber)?.doubleValue
             
-            if let ISOs = EXIF[kCGImagePropertyExifISOSpeedRatings as String]
+            if let isoValues = exif[kCGImagePropertyExifISOSpeedRatings as String]
             {
-                let ISOArray = NSArray(array: ISOs as! CFArray)
-                if ISOArray.count > 0 {
-                    ISO = (ISOArray[0] as? NSNumber)?.doubleValue
+                let isoArray = NSArray(array: isoValues as! CFArray)
+                if isoArray.count > 0 {
+                    iso = (isoArray[0] as? NSNumber)?.doubleValue
                 }
             }
             
-            shutterSpeed = (EXIF[kCGImagePropertyExifExposureTime as String] as? NSNumber)?.doubleValue
+            shutterSpeed = (exif[kCGImagePropertyExifExposureTime as String] as? NSNumber)?.doubleValue
             
-            if let w = (EXIF[kCGImagePropertyExifPixelXDimension as String] as? NSNumber)?.doubleValue {
+            if let w = (exif[kCGImagePropertyExifPixelXDimension as String] as? NSNumber)?.doubleValue {
                 width = CGFloat(w)
             }
-            if let h = (EXIF[kCGImagePropertyExifPixelYDimension as String] as? NSNumber)?.doubleValue {
+            if let h = (exif[kCGImagePropertyExifPixelYDimension as String] as? NSNumber)?.doubleValue {
                 height = CGFloat(h)
             }
             
-            if let originalDateString = (EXIF[kCGImagePropertyExifDateTimeOriginal as String] as? String) {
+            if let originalDateString = (exif[kCGImagePropertyExifDateTimeOriginal as String] as? String) {
                 timestamp = ImageMetadata.EXIFDateFormatter.date(from: originalDateString)
             }
         }
@@ -130,13 +138,13 @@ public struct ImageMetadata
         // Examine TIFF metadata
         var cameraMaker: String? = nil, cameraModel: String? = nil, orientation: CGImagePropertyOrientation? = nil
         
-        if let TIFF = properties[kCGImagePropertyTIFFDictionary as String] as? NSDictionary
+        if let tiff = properties[kCGImagePropertyTIFFDictionary as String] as? NSDictionary
         {
-            cameraMaker = TIFF[kCGImagePropertyTIFFMake as String] as? String
-            cameraModel = TIFF[kCGImagePropertyTIFFModel as String] as? String
-            orientation = CGImagePropertyOrientation(rawValue: (TIFF[kCGImagePropertyTIFFOrientation as String] as? NSNumber)?.uint32Value ?? CGImagePropertyOrientation.up.rawValue)
+            cameraMaker = tiff[kCGImagePropertyTIFFMake as String] as? String
+            cameraModel = tiff[kCGImagePropertyTIFFModel as String] as? String
+            orientation = CGImagePropertyOrientation(rawValue: (tiff[kCGImagePropertyTIFFOrientation as String] as? NSNumber)?.uint32Value ?? CGImagePropertyOrientation.up.rawValue)
             
-            if timestamp == nil, let dateTimeString = (TIFF[kCGImagePropertyTIFFDateTime as String] as? String) {
+            if timestamp == nil, let dateTimeString = (tiff[kCGImagePropertyTIFFDateTime as String] as? String) {
                 timestamp = ImageMetadata.EXIFDateFormatter.date(from: dateTimeString)
             }
         }
@@ -158,7 +166,7 @@ public struct ImageMetadata
             throw Image.Error.invalidImageSize
         }
         
-        self.init(nativeSize: CGSize(width: validWidth, height: validHeight), nativeOrientation: orientation ?? .up, colorSpace: colorSpace, fNumber: fNumber, focalLength: focalLength, focalLength35mmEquivalent: focalLength35mm, ISO: ISO, shutterSpeed: shutterSpeed, cameraMaker: cameraMaker, cameraModel: cameraModel, timestamp: timestamp, isFailedPlaceholderImage: false)
+        self.init(nativeSize: CGSize(width: validWidth, height: validHeight), nativeOrientation: orientation ?? .up, colorSpace: colorSpace, fNumber: fNumber, focalLength: focalLength, focalLength35mmEquivalent: focalLength35mm, iso: iso, shutterSpeed: shutterSpeed, cameraMaker: cameraMaker, cameraModel: cameraModel, timestamp: timestamp)
     }
     
     // See ImageMetadata.timestamp for known caveats about EXIF/TIFF
@@ -169,6 +177,7 @@ public struct ImageMetadata
         return formatter
     }()
     
+    // MARK: Derived properties
     public var size: CGSize
     {
         if self.nativeOrientation.dimensionsSwapped {
@@ -244,11 +253,11 @@ public struct ImageMetadata
     }
     
     public var humanReadableISO: String? {
-        guard let ISO = self.ISO, ISO > 0.0 else {
+        guard let iso = self.iso, iso > 0.0 else {
             return nil
         }
         
-        let integerISO = Int(round(ISO))
+        let integerISO = Int(round(iso))
         return "ISO \(integerISO)"
     }
     
@@ -294,8 +303,8 @@ public struct ImageMetadata
             dict["focalLength35mmEquivalent"] = focalLength35mmEquivalent
         }
         
-        if let ISO = self.ISO {
-            dict["ISO"] = ISO
+        if let iso = self.iso {
+            dict["ISO"] = iso
         }
         
         dict["nativeOrientation"] = nativeOrientation.rawValue

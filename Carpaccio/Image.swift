@@ -84,10 +84,6 @@ open class Image: Equatable, Hashable {
         self.fullImage = nil
     }
     
-    public var placeholderImage:BitmapImage {
-        return BitmapImageUtility.image(named:"ImagePlaceholder")!
-    }
-
     private var cachedImageLoader: ImageLoaderProtocol?
     
     open class func isBakedImage(at url: URL) -> Bool {
@@ -135,10 +131,6 @@ open class Image: Equatable, Hashable {
         let metadata = self.imageLoader?.imageMetadata
         return metadata
     }()
-    
-    public var presentedImage: BitmapImage {
-        return self.fullImage ?? self.thumbnailImage ?? self.placeholderImage
-    }
     
     @discardableResult public func fetchMetadata() -> Bool {
         return self.metadata != nil
