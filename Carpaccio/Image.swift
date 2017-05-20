@@ -31,12 +31,8 @@ open class Image: Equatable, Hashable {
     public var thumbnailImage: BitmapImage? = nil
     public var fullImage: BitmapImage?
 
-    public static var failedPlaceholderBitmapImage: BitmapImage = {
-        return BitmapImageUtility.image(named: "failed-image", bundle: Bundle(for: Image.self))!
-    }()
-    
     public static var failedPlaceholderMetadata: ImageMetadata = {
-        return ImageMetadata(nativeSize: Image.failedPlaceholderBitmapImage.size, isFailedPlaceholderImage: true)
+        return ImageMetadata(nativeSize: NSSize.zero, isFailedPlaceholderImage: true)
     }()
     
     public var size: CGSize {

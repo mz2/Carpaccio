@@ -96,7 +96,7 @@ public class ImageLoader: ImageLoaderProtocol
         let metadata = imageMetadata
         
         if metadata.isFailedPlaceholderImage {
-            return (Image.failedPlaceholderBitmapImage.cgImage!, metadata)
+            throw Image.Error.failedToDecodeImage
         }
         
         let source = try imageSource()
@@ -230,7 +230,7 @@ public class ImageLoader: ImageLoaderProtocol
     {
         let metadata = imageMetadata
         if metadata.isFailedPlaceholderImage {
-            return (Image.failedPlaceholderBitmapImage, metadata)
+            throw Image.Error.failedToDecodeImage
         }
         
         let scaleFactor: Double
