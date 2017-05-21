@@ -32,7 +32,7 @@ open class Image: Equatable, Hashable {
     public var fullImage: BitmapImage?
 
     public static var failedPlaceholderMetadata: ImageMetadata = {
-        return ImageMetadata(nativeSize: NSSize.zero, isFailedPlaceholderImage: true)
+        return ImageMetadata(nativeSize: CGSize.zero, isFailedPlaceholderImage: true)
     }()
     
     public var size: CGSize {

@@ -37,7 +37,7 @@ class CarpaccioTests: XCTestCase {
         
         XCTAssertEqual(imageMetadata.cameraMaker, "SONY")
         XCTAssertEqual(imageMetadata.cameraModel, "ILCE-7RM2")
-        XCTAssertEqual(imageMetadata.ISO, 125.0)
+        XCTAssertEqual(imageMetadata.iso, 125.0)
         XCTAssertEqual(imageMetadata.nativeSize.width, 7952.0)
         XCTAssertEqual(imageMetadata.nativeSize.height, 5304.0)
         
@@ -72,7 +72,7 @@ class CarpaccioTests: XCTestCase {
         
         XCTAssertEqual(imageMetadata.cameraMaker, "Apple")
         XCTAssertEqual(imageMetadata.cameraModel, "iPhone 5")
-        XCTAssertEqual(imageMetadata.ISO, 50.0)
+        XCTAssertEqual(imageMetadata.iso, 50.0)
         XCTAssertEqual(imageMetadata.nativeSize.width, 3264.0)
         XCTAssertEqual(imageMetadata.nativeSize.height, 2448.0)
         XCTAssertEqualWithAccuracy(imageMetadata.fNumber!, 2.4, accuracy: 0.01)
