@@ -68,9 +68,23 @@ public struct ImageMetadata
      However, neither Lightroom, Capture One, FastRawViewer nor RawRightAway display any more
      detail or timezone-awareness, so it seems like this needs to be accepted as just the way it
      is.
-     
+    */
      */
     public let timestamp: Date?
+    
+    public let cameraMaker: String?
+    public let cameraModel: String?
+    public let colorSpace: CGColorSpace?
+    
+    /** In common tog parlance, this'd be "aperture": f/2.8 etc.*/
+    public let fNumber: Double?
+    
+    public let focalLength: Double?
+    public let focalLength35mmEquivalent: Double?
+    public let ISO: Double?
+    public let nativeOrientation: CGImagePropertyOrientation
+    public let nativeSize: CGSize
+    public let shutterSpeed: TimeInterval?
     
     // MARK: Initialisers
     public init(nativeSize: CGSize, nativeOrientation: CGImagePropertyOrientation = .up, colorSpace: CGColorSpace? = nil, fNumber: Double? = nil, focalLength: Double? = nil, focalLength35mmEquivalent: Double? = nil, iso: Double? = nil, shutterSpeed: TimeInterval? = nil, cameraMaker: String? = nil, cameraModel: String? = nil, timestamp: Date? = nil, isFailedPlaceholderImage: Bool = false)
@@ -186,7 +200,7 @@ public struct ImageMetadata
         return nativeSize
     }
     
-    public enum Shape {
+    public enum Shape: String {
         case landscape
         case portrait
         case square
@@ -220,6 +234,18 @@ public struct ImageMetadata
     public var humanReadableFNumber: String? {
         guard let f = fNumber, f > 0.0 else {
             return nil
+            }
+            
+            // Default to showing one decimal place...
+            let oneTenthPrecisionfNumber = round(f * 10.0) / 10.0
+            let integerAperture = Int(oneTenthPrecisionfNumber)
+            
+            // ..but avoid displaying .0
+            if oneTenthPrecisionfNumber == Double(integerAperture) {
+                return "f/\(integerAperture)"
+            }
+            
+            return "f/\(oneTenthPrecisionfNumber)"
         }
         
         // Default to showing one decimal place...
@@ -311,6 +337,8 @@ public struct ImageMetadata
         
         dict["nativeSize"] = [nativeSize.width, nativeSize.height]
         
+        dict["shape"] = shape.rawValue
+        
         if let shutterSpeed = self.shutterSpeed {
             dict["shutterSpeed"] = shutterSpeed
         }
@@ -322,31 +350,60 @@ public struct ImageMetadata
         return dict
     }
     
-    static var timestampFormatter: DateFormatter =
+    private static var formatters: [DateFormatterStylePair: DateFormatter] = [:]
+    private static func timestampFormatter(dateStyle: DateFormatter.Style, timeStyle: DateFormatter.Style) -> DateFormatter
     {
+        let stylePair = DateFormatterStylePair(dateStyle: dateStyle, timeStyle: timeStyle)
+        
+        if let existingFormatter = formatters[stylePair] {
+            return existingFormatter
+        }
+        
         let f = DateFormatter()
-        f.dateStyle = .medium
-        f.timeStyle = .medium
+        f.dateStyle = dateStyle
+        f.timeStyle = timeStyle
+        
+        formatters[stylePair] = f
+        
         return f
-    }()
+    }
     
-    public var humanReadableTimestamp: String {
+    public func humanReadableTimestamp(dateStyle: DateFormatter.Style, timeStyle: DateFormatter.Style) -> String {
         if let t = timestamp {
-            return ImageMetadata.timestampFormatter.string(from: t)
+            return ImageMetadata.timestampFormatter(dateStyle: dateStyle,
+                                                    timeStyle: timeStyle).string(from: t)
         }
         return ""
     }
     
-    public var humanReadableMetadataSummary: String {
-        get {
-            return "\(padTail(ofString:self.cleanedUpCameraModel))\(padTail(ofString: self.humanReadableFocalLength))\(padTail(ofString: conditional(string: self.humanReadableFocalLength35mmEquivalent, condition: (self.focalLength35mmEquivalent != self.focalLength))))\(padTail(ofString: self.humanReadableFNumber))\(padTail(ofString: self.humanReadableShutterSpeed))\(padTail(ofString: self.humanReadableISO))"
-        }
+    public enum SummaryStyle {
+        case short
+        case medium
+    }
+    
+    public func humanReadableSummary(style: SummaryStyle) -> String {
+        return "\(style == .medium ? padTail(ofString:self.cleanedUpCameraModel) : "")\(padTail(ofString: self.humanReadableFocalLength))\(padTail(ofString: conditional(string: self.humanReadableFocalLength35mmEquivalent, condition: (self.focalLength35mmEquivalent != self.focalLength))))\(padTail(ofString: self.humanReadableFNumber))\(padTail(ofString: self.humanReadableShutterSpeed))\(padTail(ofString: self.humanReadableISO))"
     }
     
     public var humanReadableNativeSize: String {
         return "\(Int(self.nativeSize.width))x\(Int(self.nativeSize.height))"
     }
 }
+
+fileprivate struct DateFormatterStylePair: Equatable, Hashable {
+    let dateStyle: DateFormatter.Style
+    let timeStyle: DateFormatter.Style
+    
+    var hashValue: Int {
+        return dateStyle.hashValue ^ timeStyle.hashValue
+    }
+    
+    static fileprivate func == (lhs: DateFormatterStylePair, rhs: DateFormatterStylePair) -> Bool {
+        return lhs.dateStyle == rhs.dateStyle && lhs.timeStyle == rhs.timeStyle
+    }
+
+}
+
 
 func conditional(string s: String?, condition: Bool) -> String
 {

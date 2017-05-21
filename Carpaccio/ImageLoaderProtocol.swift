@@ -68,6 +68,11 @@ public protocol ImageLoaderProtocol
     func loadFullSizeImage() throws -> (BitmapImage, ImageMetadata)
 }
 
+public protocol URLBackedImageLoaderProtocol: ImageLoaderProtocol
+{
+    init(imageURL: URL, thumbnailScheme: ImageLoader.ThumbnailScheme)
+}
+
 public extension ImageLoaderProtocol {
     func loadThumbnailImage() throws -> (BitmapImage, ImageMetadata) {
         return try self.loadThumbnailImage(maximumPixelDimensions: nil, allowCropping: true)

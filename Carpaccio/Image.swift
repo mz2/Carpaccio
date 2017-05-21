@@ -64,7 +64,11 @@ open class Image: Equatable, Hashable {
     
     public typealias DistanceFunction = (_ a:Image, _ b:Image)-> Double
     
-    public init(image: BitmapImage, imageLoader:ImageLoaderProtocol)
+    /// Set the value for this to alter the type of object used by default for image and metadata loading.
+    public static var defaultImageLoaderType: URLBackedImageLoaderProtocol.Type = ImageLoader.self
+    
+    
+    public init(image: BitmapImage, imageLoader: ImageLoaderProtocol)
     {
         self.fullImage = image
         self.cachedImageLoader = imageLoader
@@ -114,9 +118,9 @@ open class Image: Equatable, Hashable {
         }
         
         if Image.isRAWImage(at: url) {
-            cachedImageLoader = ImageLoader(imageURL: url, thumbnailScheme: .fullImageWhenTooSmallThumbnail)
+            cachedImageLoader = Image.defaultImageLoaderType.init(imageURL: url, thumbnailScheme: .fullImageWhenTooSmallThumbnail)
         } else if Image.isBakedImage(at: url) {
-            cachedImageLoader = ImageLoader(imageURL: url, thumbnailScheme: .fullImageWhenTooSmallThumbnail)
+            cachedImageLoader = Image.defaultImageLoaderType.init(imageURL: url, thumbnailScheme: .fullImageWhenTooSmallThumbnail)
         }
         
         return cachedImageLoader
@@ -148,7 +152,7 @@ open class Image: Equatable, Hashable {
                 throw Error.noURL
             }
             
-            let loader = ImageLoader(imageURL: URL, thumbnailScheme: .never)
+            let loader = Image.defaultImageLoaderType.init(imageURL: URL, thumbnailScheme: .never)
             return loader
         }()
         

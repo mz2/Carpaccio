@@ -51,16 +51,21 @@ extension Swift.Collection where Self.Index == Int {
         var caughtError: Swift.Error? = nil
 
         repeat {
-            let capturedStepIndex = stepIndex
             var stepResult: [T] = []
             
-            if let error = caughtError { throw error }
+            if let error = caughtError {
+                throw error
+            }
             
-            DispatchQueue.global().async(group: group) {
-                if caughtError != nil { return }
+            DispatchQueue.global().async(group: group) { [capturedStepIndex = stepIndex] in
+                if caughtError != nil {
+                    return
+                }
                 
                 for i in (capturedStepIndex * step) ..< ((capturedStepIndex + 1) * step) {
-                    if caughtError != nil { return }
+                    if caughtError != nil {
+                        return
+                    }
                
                     if i < count {
                         do {
@@ -84,7 +89,9 @@ extension Swift.Collection where Self.Index == Int {
         
         group.wait()
         
-        if let error = caughtError { throw error }
+        if let error = caughtError {
+            throw error
+        }
         
         return result.sorted { $0.0 < $1.0 }.flatMap { $0.1 }
     }
@@ -124,7 +131,9 @@ extension Swift.Sequence {
         var caughtError: Swift.Error? = nil
         
         repeat {
-            guard let item = iterator.next() else { break }
+            guard let item = iterator.next() else {
+                break
+            }
             semaphore.wait()
             DispatchQueue.global().async { [index] in
                 do {
@@ -144,7 +153,9 @@ extension Swift.Sequence {
         
         group.wait()
         
-        if let error = caughtError { throw error }
+        if let error = caughtError {
+            throw error
+        }
 
         return result.sorted { $0.0 < $1.0 }
                      .flatMap { $0.1 }
