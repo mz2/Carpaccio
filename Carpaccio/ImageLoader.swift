@@ -16,7 +16,7 @@ import ImageIO
  Implementation of ImageLoaderProtocol, capable of dealing with RAW file formats,
  as well common compressed image file formats.
  */
-public class ImageLoader: ImageLoaderProtocol
+public class ImageLoader: ImageLoaderProtocol, URLBackedImageLoaderProtocol
 {
     enum Error: Swift.Error {
         case filterInitializationFailed(URL: URL)
@@ -34,7 +34,7 @@ public class ImageLoader: ImageLoaderProtocol
     public let cachedImageURL: URL? = nil // For now, we don't implement a disk cache for images loaded by ImageLoader
     public let thumbnailScheme: ThumbnailScheme
     
-    public init(imageURL: URL, thumbnailScheme: ThumbnailScheme) {
+    public required init(imageURL: URL, thumbnailScheme: ThumbnailScheme) {
         self.imageURL = imageURL
         self.thumbnailScheme = thumbnailScheme
     }
