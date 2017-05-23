@@ -67,20 +67,6 @@ open class Collection
     
     public typealias TotalImageCountCalculator = () -> Int
     
-    #if DEBUG
-    private static var nonImageExtensions = Set<String>()
-    
-    private class func noteURL(_ url: URL, isImage: Bool) {
-        if !isImage {
-            let ext = url.pathExtension.lowercased()
-            if !nonImageExtensions.contains(ext) {
-                print("\(ext)")
-                nonImageExtensions.insert(ext)
-            }
-        }
-    }
-    #endif
-    
     public class func imageURLs(at URL: URL) throws -> [URL] {
         let fileManager = FileManager.default
         let path = URL.path
@@ -93,9 +79,6 @@ open class Collection
             if let attributes = enumerator.fileAttributes, attributes[.type] as! FileAttributeType == .typeRegular {
                 let pathExtension = url.pathExtension.lowercased()
                 let isImage = Image.imageFileExtensions.contains(pathExtension)
-                /*#if DEBUG
-                    Collection.noteURL(url, isImage: isImage)
-                #endif*/
                 return isImage
             }
             return false
