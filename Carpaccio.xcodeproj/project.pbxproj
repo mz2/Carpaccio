@@ -107,7 +107,6 @@
 		5F1E229D1CDEAC330083FD6F /* DSC00583.ARW */ = {isa = PBXFileReference; lastKnownFileType = file; path = DSC00583.ARW; sourceTree = "<group>"; };
 		5F1E229E1CDEAC330083FD6F /* DSC00588.ARW */ = {isa = PBXFileReference; lastKnownFileType = file; path = DSC00588.ARW; sourceTree = "<group>"; };
 		5F1E229F1CDEAC330083FD6F /* DSC00593.ARW */ = {isa = PBXFileReference; lastKnownFileType = file; path = DSC00593.ARW; sourceTree = "<group>"; };
-		5F7016221CE3295900173EB6 /* libjpeg.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libjpeg.a; path = Libraries/libjpeg.a; sourceTree = "<group>"; };
 		5FAD66681D72FD3C006973C9 /* Collection+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Collection+Extensions.swift"; sourceTree = "<group>"; };
 		5FB592FE1D7B4DE300FB0086 /* CarpaccioTests-iOS.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "CarpaccioTests-iOS.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		5FB593021D7B4DE300FB0086 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = Info.plist; path = "CarpaccioTests-iOS/Info.plist"; sourceTree = SOURCE_ROOT; };
@@ -262,7 +261,6 @@
 			isa = PBXGroup;
 			children = (
 				5F1DA7911E2BBBD300F1474D /* ImageIO.framework */,
-				5F7016221CE3295900173EB6 /* libjpeg.a */,
 				5F020A201D7B4BFA004C1DE6 /* UIKit.framework */,
 				5F1E229B1CDEAABF0083FD6F /* Cocoa.framework */,
 			);
