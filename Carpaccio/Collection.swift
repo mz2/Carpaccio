@@ -113,6 +113,7 @@ open class Collection
         queue: DispatchQueue = DispatchQueue.global(),
         sortingScheme: SortingScheme = .none,
         maxMetadataLoadParallelism: Int? = nil,
+        allowImagesWithFailedMetadata: Bool = false,
         progressHandler: @escaping ImageCollectionPrepareProgressHandler,
         completionHandler: @escaping ImageCollectionHandler,
         errorHandler: @escaping ImageCollectionErrorHandler) throws {
@@ -143,9 +144,16 @@ open class Collection
                 do {
                     images = try imageURLs.lazy.parallelFlatMap(maxParallelism:maxMetadataLoadParallelism) { URL -> Image? in
                         let image = try Image(URL: URL)
-                        image.fetchMetadata()
-                        let count = collection.incrementPrepareProgress()
                         
+                        do {
+                            try image.fetchMetadata(store: true)
+                        } catch {
+                            if !allowImagesWithFailedMetadata {
+                                throw error
+                            }
+                        }
+                        
+                        let count = collection.incrementPrepareProgress()
                         progressHandler(collection, count, imageURLCount)
                         return image
                     }
@@ -154,7 +162,7 @@ open class Collection
                     return
                 }
                 
-                let returnedImages:AnyCollection<Image>
+                let returnedImages: AnyCollection<Image>
                 
                 switch sortingScheme {
                 case .none:
