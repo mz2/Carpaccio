@@ -42,10 +42,31 @@ public struct FullSizedImageLoadingOptions {
     public init() { }
 }
 
+/**
+ 
+ This enumeration indicates the current stage of loading an image's metadata. The values
+ can be used by a client to determine whether a particular image should be completely
+ omitted, or if an error indication should be communicated to the user.
+ 
+ */
+public enum ImageLoaderMetadataState {
+    /** Metadata has not yet been loaded. */
+    case initialized
+    
+    /** Metadata is currently being loaded. */
+    case loadingMetadata
+    
+    /** Loading image metadata has succesfully completed. */
+    case completed
+    
+    /** Loading image metadata failed with an error. */
+    case failed
+}
+
 public protocol ImageLoaderProtocol
 {
     var imageURL: URL { get }
-    var imageMetadata: ImageMetadata { get }
+    var imageMetadataState: ImageLoaderMetadataState { get }
     
     /** *If*, in addition to `imageURL`, full image image data happens to have been copied into a disk cache location,
       * a direct URL pointing to that location. */

@@ -34,9 +34,6 @@ public struct ImageMetadata
     /** Orientation of the image's pixel data. Default is `.up`. */
     public let nativeOrientation: CGImagePropertyOrientation
     
-    /** If loading native image size failed, this metadata represents the built-in placeholder image for failed-to-load images. */
-    public let isFailedPlaceholderImage: Bool
-    
     // MARK: Optional metadata
     public let cameraMaker: String?
     public let cameraModel: String?
@@ -73,7 +70,7 @@ public struct ImageMetadata
     public let timestamp: Date?
     
     // MARK: Initialisers
-    public init(nativeSize: CGSize, nativeOrientation: CGImagePropertyOrientation = .up, colorSpace: CGColorSpace? = nil, fNumber: Double? = nil, focalLength: Double? = nil, focalLength35mmEquivalent: Double? = nil, iso: Double? = nil, shutterSpeed: TimeInterval? = nil, cameraMaker: String? = nil, cameraModel: String? = nil, timestamp: Date? = nil, isFailedPlaceholderImage: Bool = false)
+    public init(nativeSize: CGSize, nativeOrientation: CGImagePropertyOrientation = .up, colorSpace: CGColorSpace? = nil, fNumber: Double? = nil, focalLength: Double? = nil, focalLength35mmEquivalent: Double? = nil, iso: Double? = nil, shutterSpeed: TimeInterval? = nil, cameraMaker: String? = nil, cameraModel: String? = nil, timestamp: Date? = nil)
     {
         self.fNumber = fNumber
         self.cameraMaker = cameraMaker
@@ -86,7 +83,6 @@ public struct ImageMetadata
         self.nativeSize = nativeSize
         self.shutterSpeed = shutterSpeed
         self.timestamp = timestamp
-        self.isFailedPlaceholderImage = isFailedPlaceholderImage
     }
 
     public init(imageSource: ImageIO.CGImageSource) throws {

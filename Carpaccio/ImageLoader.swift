@@ -51,14 +51,8 @@ public class ImageLoader: ImageLoaderProtocol, URLBackedImageLoaderProtocol
         return imageSource
     }
     
-    public lazy var imageMetadata: ImageMetadata = {
-        do {
-            let imageSource = try self.imageSource()
-            return try ImageMetadata(imageSource: imageSource)
-        } catch {
-            return Image.failedPlaceholderMetadata
-        }
-    }()
+    public private(set) var imageMetadataState: ImageLoaderMetadataState = .initialized
+    internal private(set) var cachedImageMetadata: ImageMetadata?
 
     private func dumpAllImageMetadata(_ imageSource: CGImageSource)
     {
@@ -87,18 +81,39 @@ public class ImageLoader: ImageLoaderProtocol, URLBackedImageLoaderProtocol
     }
     
     public func loadImageMetadata() throws -> ImageMetadata {
-        return imageMetadata
+        let metadata = try loadImageMetadataIfNeeded()
+        return metadata
+    }
+    
+    internal func loadImageMetadataIfNeeded(forceReload: Bool = false) throws -> ImageMetadata {
+        if forceReload {
+            imageMetadataState = .initialized
+            cachedImageMetadata = nil
+        }
+        
+        if imageMetadataState == .initialized {
+            do {
+                imageMetadataState = .loadingMetadata
+                let imageSource = try self.imageSource()
+                let metadata = try ImageMetadata(imageSource: imageSource)
+                imageMetadataState = .completed
+                cachedImageMetadata = metadata
+            } catch {
+                imageMetadataState = .failed
+                throw error
+            }
+        }
+        
+        guard let metadata = cachedImageMetadata, imageMetadataState == .completed else {
+            throw Image.Error.noMetadata
+        }
+        return metadata
     }
     
     public func loadThumbnailCGImage(maximumPixelDimensions maximumSize: CGSize? = nil,
                                      allowCropping: Bool = true) throws -> (CGImage, ImageMetadata)
     {
-        let metadata = imageMetadata
-        
-        if metadata.isFailedPlaceholderImage {
-            throw Image.Error.failedToDecodeImage
-        }
-        
+        let metadata = try loadImageMetadataIfNeeded()
         let source = try imageSource()
         
         guard self.thumbnailScheme != .never else {
@@ -125,7 +140,7 @@ public class ImageLoader: ImageLoaderProtocol, URLBackedImageLoaderProtocol
             return (thumbnailImage, metadata)
         }
         
-        return (cropToNativeProportionsIfNeeded(thumbnailImage: thumbnailImage), metadata)
+        return (ImageLoader.cropToNativeProportionsIfNeeded(thumbnailImage: thumbnailImage, metadata: metadata), metadata)
     }
     
     /**
@@ -137,9 +152,8 @@ public class ImageLoader: ImageLoaderProtocol, URLBackedImageLoaderProtocol
      to extend 3:2 to 4:3 proportions. The solution: crop.
      
      */
-    private func cropToNativeProportionsIfNeeded(thumbnailImage thumbnail: CGImage) -> CGImage
+    private class func cropToNativeProportionsIfNeeded(thumbnailImage thumbnail: CGImage, metadata: ImageMetadata) -> CGImage
     {
-        let metadata = imageMetadata
         let thumbnailSize = CGSize(width: CGFloat(thumbnail.width), height:CGFloat(thumbnail.height))
         let absThumbAspectDiff = fabs(metadata.size.aspectRatio - thumbnailSize.aspectRatio)
         
@@ -228,15 +242,10 @@ public class ImageLoader: ImageLoaderProtocol, URLBackedImageLoaderProtocol
     
     public func loadFullSizeImage(options: FullSizedImageLoadingOptions) throws -> (BitmapImage, ImageMetadata)
     {
-        let metadata = imageMetadata
-        if metadata.isFailedPlaceholderImage {
-            throw Image.Error.failedToDecodeImage
-        }
-        
+        let metadata = try loadImageMetadataIfNeeded()
         let scaleFactor: Double
         
-        if let sz = options.maximumPixelDimensions
-        {
+        if let sz = options.maximumPixelDimensions {
             let imageSize = metadata.size
             let height = sz.scaledHeight(forImageSize: imageSize)
             scaleFactor = Double(height / imageSize.height)

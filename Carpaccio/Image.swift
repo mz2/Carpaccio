@@ -31,10 +31,6 @@ open class Image: Equatable, Hashable {
     public var thumbnailImage: BitmapImage? = nil
     public var fullImage: BitmapImage?
 
-    public static var failedPlaceholderMetadata: ImageMetadata = {
-        return ImageMetadata(nativeSize: CGSize.zero, isFailedPlaceholderImage: true)
-    }()
-    
     public var size: CGSize {
         guard let size = self.metadata?.size else {
             return CGSize.zero
@@ -126,17 +122,17 @@ open class Image: Equatable, Hashable {
         return cachedImageLoader
     }
     
-    
-    public lazy var metadata: ImageMetadata? = {
-        let metadata = self.imageLoader?.imageMetadata
-        return metadata
-    }()
-    
-    @discardableResult public func fetchMetadata() -> Bool {
-        return self.metadata != nil
-    }
+    /**
+     
+     Metadata for this image, which, when succesfully loaded, at minimum will contain valid width, height and orientation values.
+     
+     Note that this property will be `nil` if metadata has not yet been loaded, or if loading image metadata has previously failed.
+     Code depending on the details of that should consult `imageLoader.imageMetadataState` for the current state of affairs.
 
-    public func fetchMetadata(_ store: Bool = true) throws -> ImageMetadata
+     */
+    public private(set) var metadata: ImageMetadata?
+    
+    @discardableResult public func fetchMetadata(store: Bool = true) throws -> ImageMetadata
     {
         // Previously the failure to have an image loader would silently cause a failure.
         // Here we create a temporary image loader for the purposes of metadata fetching,
@@ -156,12 +152,11 @@ open class Image: Equatable, Hashable {
             return loader
         }()
         
-        let mdata = try loader.loadImageMetadata()
+        let metadata = try loader.loadImageMetadata()
         if store {
-            self.metadata = mdata
+            self.metadata = metadata
         }
-        
-        return mdata
+        return metadata
     }
     
     public func fetchThumbnail(presentedHeight: CGFloat? = nil,
