@@ -192,7 +192,7 @@ open class Image: Equatable, Hashable {
         }
         
         do {
-            let metadata = try self.fetchMetadata(true)
+            let metadata = try self.fetchMetadata(store: true)
             return metadata.timestamp ?? self.fileTimestamp
         }
         catch {
