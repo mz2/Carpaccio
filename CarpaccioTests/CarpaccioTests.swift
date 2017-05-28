@@ -139,4 +139,27 @@ class CarpaccioTests: XCTestCase {
         }
     }
     
+    func testFailingMetadataThrowsError() {
+        let bundle = Bundle(for: type(of: self))
+        guard let url = bundle.url(forResource: "Pixls/DP2M1726", withExtension: "X3F") else {
+            XCTAssert(false)
+            return
+        }
+        
+        let loader = ImageLoader(imageURL: url, thumbnailScheme: .fullImageWhenThumbnailMissing)
+        
+        XCTAssertThrowsError(try loader.loadImageMetadataIfNeeded())
+        XCTAssertThrowsError(try loader.loadImageMetadataIfNeeded(forceReload: true))
+    }
+
+    func testFailingThumbnailThrowsError() {
+        let bundle = Bundle(for: type(of: self))
+        guard let url = bundle.url(forResource: "Pixls/hdrmerge-bayer-fp16-w-pred-deflate", withExtension: "dng") else {
+            XCTAssert(false)
+            return
+        }
+        
+        let loader = ImageLoader(imageURL: url, thumbnailScheme: .fullImageWhenThumbnailMissing)
+        XCTAssertThrowsError(try loader.loadThumbnailImage())
+    }
 }
