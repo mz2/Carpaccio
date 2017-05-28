@@ -101,6 +101,7 @@ open class Image: Equatable, Hashable {
         self.cachedImageLoader = nil
         self.fullImage = nil
         self.thumbnailImage = nil
+        self.fileModificationTimestamp = nil
     }
     
     open var imageLoader: ImageLoaderProtocol?
@@ -157,6 +158,48 @@ open class Image: Equatable, Hashable {
             self.metadata = metadata
         }
         return metadata
+    }
+    
+    private var fileModificationTimestamp: Date?
+    public var fileTimestamp: Date? {
+        if let fileModificationTimestamp = fileModificationTimestamp {
+            return fileModificationTimestamp
+        }
+        
+        guard let url = self.URL else {
+            return nil
+        }
+        
+        do {
+            if let fileTimestamp = try FileManager.default.attributesOfFileSystem(forPath: url.path)[.modificationDate] as? Date {
+                fileModificationTimestamp = fileTimestamp
+                return fileModificationTimestamp
+            }
+        }
+        catch {
+            print("ERROR! Failed to read attributes of image file at path \(url.path)")
+        }
+        
+        return nil
+    }
+    
+    /// Return the metadata based file timestamp, and fall backs to file modification date 
+    /// if reading metadata (and therefore the timestamp from the metadata) failed.
+    /// Also falls back to file modification date if metadata doesn't contain the timestamp.
+    public var approximateTimestamp: Date? {
+        if let metadata = metadata {
+            return metadata.timestamp ?? self.fileTimestamp
+        }
+        
+        do {
+            let metadata = try self.fetchMetadata(true)
+            return metadata.timestamp ?? self.fileTimestamp
+        }
+        catch {
+            print("ERROR! Failed to read image metadata for \(self)")
+        }
+        
+        return nil
     }
     
     public func fetchThumbnail(presentedHeight: CGFloat? = nil,
