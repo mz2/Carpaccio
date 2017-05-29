@@ -133,7 +133,7 @@ open class Image: Equatable, Hashable {
      */
     public private(set) var metadata: ImageMetadata?
     
-    @discardableResult public func fetchMetadata(store: Bool = true) throws -> ImageMetadata
+    public func fetchMetadata() throws -> ImageMetadata
     {
         // Previously the failure to have an image loader would silently cause a failure.
         // Here we create a temporary image loader for the purposes of metadata fetching,
@@ -154,9 +154,7 @@ open class Image: Equatable, Hashable {
         }()
         
         let metadata = try loader.loadImageMetadata()
-        if store {
-            self.metadata = metadata
-        }
+        self.metadata = metadata
         return metadata
     }
     
@@ -192,7 +190,7 @@ open class Image: Equatable, Hashable {
         }
         
         do {
-            let metadata = try self.fetchMetadata(store: true)
+            let metadata = try self.fetchMetadata()
             return metadata.timestamp ?? self.fileTimestamp
         }
         catch {

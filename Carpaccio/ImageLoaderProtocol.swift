@@ -72,15 +72,18 @@ public protocol ImageLoaderProtocol
       * a direct URL pointing to that location. */
     var cachedImageURL: URL? { get }
     
+    /**
+     Load image metadata synchronously. After a first succesful load, an implementation may choose to return a cached
+     copy on later calls.
+     */
+    func loadImageMetadata() throws -> ImageMetadata
+    
     func loadThumbnailCGImage(maximumPixelDimensions maximumSize: CGSize?, allowCropping: Bool) throws -> (CGImage, ImageMetadata)
     
     /** Retrieve metadata about this loader's image, potentially called before loading actual image data. */
     func loadThumbnailImage(maximumPixelDimensions maxPixelSize: CGSize?, allowCropping: Bool) throws -> (BitmapImage, ImageMetadata)
     
     func loadThumbnailImage() throws -> (BitmapImage, ImageMetadata)
-    
-    /** Load image metadata synchronously. */
-    func loadImageMetadata() throws -> ImageMetadata
     
     /** Load full-size image. */
     func loadFullSizeImage(options: FullSizedImageLoadingOptions) throws -> (BitmapImage, ImageMetadata)

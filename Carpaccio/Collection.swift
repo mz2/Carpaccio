@@ -146,7 +146,7 @@ open class Collection
                         let image = try Image(URL: URL)
                         
                         do {
-                            try image.fetchMetadata(store: true)
+                            _ = try image.fetchMetadata()
                         } catch {
                             if !allowImagesWithFailedMetadata {
                                 throw error
