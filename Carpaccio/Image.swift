@@ -22,6 +22,9 @@ open class Image: Equatable, Hashable {
         case loadingFailed(underlyingError: Swift.Error)
         case noThumbnail(Image)
         case noHistogram(Image)
+        case noMetadata
+        case failedToDecodeImage
+        case invalidImageSize
     }
     
     public let name: String
@@ -77,10 +80,6 @@ open class Image: Equatable, Hashable {
         self.fullImage = nil
     }
     
-    public var placeholderImage:BitmapImage {
-        return BitmapImageUtility.image(named:"ImagePlaceholder")!
-    }
-
     private var cachedImageLoader: ImageLoaderProtocol?
     
     open class func isBakedImage(at url: URL) -> Bool {
@@ -124,21 +123,17 @@ open class Image: Equatable, Hashable {
         return cachedImageLoader
     }
     
-    
-    public lazy var metadata: ImageMetadata? = {
-        let metadata = self.imageLoader?.imageMetadata
-        return metadata
-    }()
-    
-    public var presentedImage: BitmapImage {
-        return self.fullImage ?? self.thumbnailImage ?? self.placeholderImage
-    }
-    
-    @discardableResult public func fetchMetadata() -> Bool {
-        return self.metadata != nil
-    }
+    /**
+     
+     Metadata for this image, which, when succesfully loaded, at minimum will contain valid width, height and orientation values.
+     
+     Note that this property will be `nil` if metadata has not yet been loaded, or if loading image metadata has previously failed.
+     Code depending on the details of that should consult `imageLoader.imageMetadataState` for the current state of affairs.
 
-    public func fetchMetadata(_ store: Bool = true) throws -> ImageMetadata
+     */
+    public private(set) var metadata: ImageMetadata?
+    
+    public func fetchMetadata() throws -> ImageMetadata
     {
         // Previously the failure to have an image loader would silently cause a failure.
         // Here we create a temporary image loader for the purposes of metadata fetching,
@@ -158,12 +153,9 @@ open class Image: Equatable, Hashable {
             return loader
         }()
         
-        let mdata = try loader.loadImageMetadata()
-        if store {
-            self.metadata = mdata
-        }
-        
-        return mdata
+        let metadata = try loader.loadImageMetadata()
+        self.metadata = metadata
+        return metadata
     }
     
     private var fileModificationTimestamp: Date?
@@ -198,7 +190,7 @@ open class Image: Equatable, Hashable {
         }
         
         do {
-            let metadata = try self.fetchMetadata(true)
+            let metadata = try self.fetchMetadata()
             return metadata.timestamp ?? self.fileTimestamp
         }
         catch {
@@ -285,19 +277,47 @@ open class Image: Equatable, Hashable {
         return image
     }
     
-    public class var imageFileExtensions:Set<String> {
-        var extensions = self.RAWImageFileExtensions
-        extensions.formUnion(self.bakedImageFileExtensions)
+    public static var imageFileExtensions: Set<String> = {
+        var extensions = Image.RAWImageFileExtensions
+        extensions.formUnion(Image.bakedImageFileExtensions)
         return extensions
-    }
+    }()
     
-    public class var RAWImageFileExtensions:Set<String> {
-        return Set(["arw", "nef", "cr2", "crw"])
-    }
+    public static var RAWImageFileExtensions: Set<String> = {
+        return Set([
+            "3fr", // Hasselblad 3F RAW Image https://fileinfo.com/extension/3fr
+            "arw", // Sony Digital Camera Image https://fileinfo.com/extension/arw
+            "cr2", // Canon Raw Image File https://fileinfo.com/extension/cr2
+            "crw", // Canon Raw CIFF Image File https://fileinfo.com/extension/crw
+            "dcr", // Kodak https://fileinfo.com/extension/dcr
+            "dng", // Adobe Digital Negative Image https://fileinfo.com/extension/dng
+            "erf", // Epson RAW File https://fileinfo.com/extension/erf
+            "fff", // Hasselblad RAW Image https://fileinfo.com/extension/fff
+            "gpr", // GenePix Results File https://fileinfo.com/extension/gpr
+            "iiq", // Phase One RAW Image https://fileinfo.com/extension/iiq
+            "kdc", // Kodak DC120 digital camera RAW image https://www.file-extensions.org/kdc-file-extension
+            "mdc", // Minolta RD175 image https://www.file-extensions.org/mdc-file-extension
+            "mef", // Mamiya RAW Image https://fileinfo.com/extension/mef
+            "mos", // Leaf Camera RAW File https://fileinfo.com/extension/mos
+            "mrw", // Minolta Raw Image File https://fileinfo.com/extension/mrw
+            "nef", // Nikon Electronic Format RAW Image https://fileinfo.com/extension/nef
+            "nrw", // Nikon Raw Image File https://fileinfo.com/extension/nrw
+            "orf", // Olympus RAW File https://fileinfo.com/extension/orf
+            "pef", // Pentax Electronic File https://fileinfo.com/extension/pef
+            "raf", // Fuji RAW Image File https://fileinfo.com/extension/raf
+            "raw", // Raw Image Data File (Panasonic, Leica, Casio) https://fileinfo.com/extension/raw
+            "rw2", // Panasonic RAW Image https://fileinfo.com/extension/rw2
+            "rwl", // Leica RAW Image https://fileinfo.com/extension/rwl
+            "sr2", // Sony RAW Image https://fileinfo.com/extension/sr2
+            "srf", // Garmin vehicle image (!) https://www.file-extensions.org/srf-file-extension
+            "srw", // Samsung RAW Image https://fileinfo.com/extension/srw
+            "x3f"  // SIGMA X3F Camera RAW File https://fileinfo.com/extension/x3f
+            ])
+    }()
 
-    public class var bakedImageFileExtensions:Set<String> {
+    public static var bakedImageFileExtensions: Set<String> = {
         return Set(["jpg", "jpeg", "png", "tiff", "tif", "gif"])
-    }
+    }()
     
     public var hashValue: Int {
         return UUID.hashValue
@@ -313,7 +333,6 @@ public func == (lhs:Image, rhs:Image) -> Bool {
 }
  */
 
-public func == (lhs:Image, rhs:Image) -> Bool
-{
+public func == (lhs:Image, rhs:Image) -> Bool {
     return lhs.URL == rhs.URL
 }
