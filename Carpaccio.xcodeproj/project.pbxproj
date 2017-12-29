@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		281CF5201EDAA3530040BBD8 /* Pixls in Resources */ = {isa = PBXBuildFile; fileRef = 281CF51E1EDAA34D0040BBD8 /* Pixls */; };
+		281CF5211EDAA3540040BBD8 /* Pixls in Resources */ = {isa = PBXBuildFile; fileRef = 281CF51E1EDAA34D0040BBD8 /* Pixls */; };
 		289813341D494B1300B1BA5D /* ImageLoaderProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 289813331D494B1300B1BA5D /* ImageLoaderProtocol.swift */; };
 		289813381D4C8C2A00B1BA5D /* CGSize+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 289813371D4C8C2A00B1BA5D /* CGSize+Extensions.swift */; };
 		2898133A1D4DC26600B1BA5D /* ImageLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 289813391D4DC26600B1BA5D /* ImageLoader.swift */; };
@@ -82,6 +84,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		281CF51E1EDAA34D0040BBD8 /* Pixls */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Pixls; sourceTree = "<group>"; };
 		289813331D494B1300B1BA5D /* ImageLoaderProtocol.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageLoaderProtocol.swift; sourceTree = "<group>"; };
 		289813371D4C8C2A00B1BA5D /* CGSize+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "CGSize+Extensions.swift"; sourceTree = "<group>"; };
 		289813391D4DC26600B1BA5D /* ImageLoader.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageLoader.swift; sourceTree = "<group>"; };
@@ -221,11 +224,12 @@
 		5F1E228B1CDEA9D90083FD6F /* CarpaccioTests */ = {
 			isa = PBXGroup;
 			children = (
+				281CF51E1EDAA34D0040BBD8 /* Pixls */,
+				5F1E228C1CDEA9D90083FD6F /* CarpaccioTests.swift */,
 				3DFA1C311D92F6D600E03503 /* iphone5.jpg */,
 				5F1E229D1CDEAC330083FD6F /* DSC00583.ARW */,
 				5F1E229E1CDEAC330083FD6F /* DSC00588.ARW */,
 				5F1E229F1CDEAC330083FD6F /* DSC00593.ARW */,
-				5F1E228C1CDEA9D90083FD6F /* CarpaccioTests.swift */,
 				5F1E228E1CDEA9D90083FD6F /* Info.plist */,
 			);
 			path = CarpaccioTests;
@@ -450,6 +454,7 @@
 				5F1E22A21CDEAC330083FD6F /* DSC00593.ARW in Resources */,
 				5F1E22A01CDEAC330083FD6F /* DSC00583.ARW in Resources */,
 				3DFA1C341D92F6EC00E03503 /* iphone5.jpg in Resources */,
+				281CF5201EDAA3530040BBD8 /* Pixls in Resources */,
 				5F1E22A11CDEAC330083FD6F /* DSC00588.ARW in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -461,6 +466,7 @@
 				5FB5930C1D7B4E4A00FB0086 /* DSC00593.ARW in Resources */,
 				5FB5930A1D7B4E4A00FB0086 /* DSC00583.ARW in Resources */,
 				3DFA1C351D92F6EC00E03503 /* iphone5.jpg in Resources */,
+				281CF5211EDAA3540040BBD8 /* Pixls in Resources */,
 				5FB5930B1D7B4E4A00FB0086 /* DSC00588.ARW in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

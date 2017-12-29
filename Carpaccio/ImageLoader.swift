@@ -12,12 +12,15 @@ import CoreGraphics
 import CoreImage
 import ImageIO
 
-/** Implementation of ImageLoaderProtocol, capable of dealing with RAW file formats, 
-  * as well common compressed image file formats. */
+/**
+ Implementation of ImageLoaderProtocol, capable of dealing with RAW file formats,
+ as well common compressed image file formats.
+ */
 public class ImageLoader: ImageLoaderProtocol, URLBackedImageLoaderProtocol
 {
-   enum Error: Swift.Error {
+    enum Error: Swift.Error {
         case filterInitializationFailed(URL: URL)
+        case failedToOpenImage(message: String)
     }
     
     public enum ThumbnailScheme: Int {
@@ -31,108 +34,26 @@ public class ImageLoader: ImageLoaderProtocol, URLBackedImageLoaderProtocol
     public let cachedImageURL: URL? = nil // For now, we don't implement a disk cache for images loaded by ImageLoader
     public let thumbnailScheme: ThumbnailScheme
     
-    // See ImageMetadata.timestamp for known caveats about EXIF/TIFF
-    // date metadata, as interpreted by this date formatter.
-    private static let EXIFDateFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy:MM:dd HH:mm:ss"
-        return formatter
-    }()
-    
     public required init(imageURL: URL, thumbnailScheme: ThumbnailScheme) {
         self.imageURL = imageURL
         self.thumbnailScheme = thumbnailScheme
     }
     
-    private func imageSource() -> CGImageSource? {
+    private func imageSource() throws -> CGImageSource {
         // We intentionally don't store the image source, to not gob up resources, but rather open it anew each time
         let options = [String(kCGImageSourceShouldCache): false,
                        String(kCGImageSourceShouldAllowFloat): true] as NSDictionary as CFDictionary
-        let imageSource = CGImageSourceCreateWithURL(imageURL as CFURL, options)
+        
+        guard let imageSource = CGImageSourceCreateWithURL(imageURL as CFURL, options) else{
+            throw Error.failedToOpenImage(message: "Failed to open image at \(imageURL)")
+        }
+        
         return imageSource
     }
     
-    public lazy var imageMetadata: ImageMetadata? = {
+    public private(set) var imageMetadataState: ImageLoaderMetadataState = .initialized
+    internal private(set) var cachedImageMetadata: ImageMetadata?
 
-        guard let imageSource = self.imageSource() else {
-            return nil
-        }
-        
-        guard let imageProperties = CGImageSourceCopyPropertiesAtIndex(imageSource, 0, nil) else {
-            return nil
-        }
-        
-        let properties = NSDictionary(dictionary: imageProperties)
-        
-        var fNumber: Double? = nil, focalLength: Double? = nil, focalLength35mm: Double? = nil, ISO: Double? = nil, shutterSpeed: Double? = nil
-        var colorSpace: CGColorSpace? = nil
-        var width: CGFloat? = nil, height: CGFloat? = nil
-        var timestamp: Date? = nil
-        
-        // Examine EXIF metadata
-        if let EXIF = properties[kCGImagePropertyExifDictionary as String] as? NSDictionary
-        {
-            fNumber = (EXIF[kCGImagePropertyExifFNumber as String] as? NSNumber)?.doubleValue
-            
-            if let colorSpaceName = EXIF[kCGImagePropertyExifColorSpace] as? NSString {
-                colorSpace = CGColorSpace(name: colorSpaceName)
-            }
-            
-            focalLength = (EXIF[kCGImagePropertyExifFocalLength as String] as? NSNumber)?.doubleValue
-            focalLength35mm = (EXIF[kCGImagePropertyExifFocalLenIn35mmFilm as String] as? NSNumber)?.doubleValue
-            
-            if let ISOs = EXIF[kCGImagePropertyExifISOSpeedRatings as String]
-            {
-                let ISOArray = NSArray(array: ISOs as! CFArray)
-                if ISOArray.count > 0 {
-                    ISO = (ISOArray[0] as? NSNumber)?.doubleValue
-                }
-            }
-            
-            shutterSpeed = (EXIF[kCGImagePropertyExifExposureTime as String] as? NSNumber)?.doubleValue
-            
-            if let w = (EXIF[kCGImagePropertyExifPixelXDimension as String] as? NSNumber)?.doubleValue {
-                width = CGFloat(w)
-            }
-            if let h = (EXIF[kCGImagePropertyExifPixelYDimension as String] as? NSNumber)?.doubleValue {
-                height = CGFloat(h)
-            }
-            
-            if let originalDateString = (EXIF[kCGImagePropertyExifDateTimeOriginal as String] as? String) {
-                timestamp = EXIFDateFormatter.date(from: originalDateString)
-            }
-        }
-        
-        // Examine TIFF metadata
-        var cameraMaker: String? = nil, cameraModel: String? = nil, orientation: CGImagePropertyOrientation? = nil
-        
-        if let TIFF = properties[kCGImagePropertyTIFFDictionary as String] as? NSDictionary
-        {
-            cameraMaker = TIFF[kCGImagePropertyTIFFMake as String] as? String
-            cameraModel = TIFF[kCGImagePropertyTIFFModel as String] as? String
-            orientation = CGImagePropertyOrientation(rawValue: (TIFF[kCGImagePropertyTIFFOrientation as String] as? NSNumber)?.uint32Value ?? CGImagePropertyOrientation.up.rawValue)
-            
-            if timestamp == nil, let dateTimeString = (TIFF[kCGImagePropertyTIFFDateTime as String] as? String) {
-                timestamp = EXIFDateFormatter.date(from: dateTimeString)
-            }
-        }
-        
-        /*
-         If image dimension didn't appear in metadata (can happen with some RAW files like Nikon NEFs), take one more step:
-         open the actual image. This thankfully doesn't appear to immediately load image data.
-         */
-        if width == nil || height == nil
-        {
-            let options: CFDictionary = [String(kCGImageSourceShouldCache): false] as NSDictionary as CFDictionary
-            let image = CGImageSourceCreateImageAtIndex(imageSource, 0, options)
-            width = CGFloat((image?.width)!)
-            height = CGFloat((image?.height)!)
-        }
-        
-        let metadata = ImageMetadata(nativeSize: CGSize(width: width!, height: height!), nativeOrientation: orientation ?? .up, colorSpace: colorSpace, fNumber: fNumber, focalLength: focalLength, focalLength35mmEquivalent: focalLength35mm, ISO: ISO, shutterSpeed: shutterSpeed, cameraMaker: cameraMaker, cameraModel: cameraModel, timestamp: timestamp)
-        return metadata
-    }()
-    
     private func dumpAllImageMetadata(_ imageSource: CGImageSource)
     {
         let metadata = CGImageSourceCopyMetadataAtIndex(imageSource, 0, nil)
@@ -160,35 +81,47 @@ public class ImageLoader: ImageLoaderProtocol, URLBackedImageLoaderProtocol
     }
     
     public func loadImageMetadata() throws -> ImageMetadata {
-        guard let _ = self.imageSource() else {
-            throw ImageLoadingError.noImageSource(URL: self.imageURL,
-                                                  message: "Image source unexpectedly missing.")
+        let metadata = try loadImageMetadataIfNeeded()
+        return metadata
+    }
+    
+    internal func loadImageMetadataIfNeeded(forceReload: Bool = false) throws -> ImageMetadata {
+        if forceReload {
+            imageMetadataState = .initialized
+            cachedImageMetadata = nil
         }
         
-        guard let metadata = self.imageMetadata else {
-            throw ImageLoadingError.failedToExtractImageMetadata(URL: self.imageURL,
-                                                                 message: "Failed to read image properties for \(self.imageURL.path)")
+        if imageMetadataState == .initialized {
+            do {
+                imageMetadataState = .loadingMetadata
+                let imageSource = try self.imageSource()
+                let metadata = try ImageMetadata(imageSource: imageSource)
+                imageMetadataState = .completed
+                cachedImageMetadata = metadata
+            } catch {
+                imageMetadataState = .failed
+                throw error
+            }
         }
         
+        guard let metadata = cachedImageMetadata, imageMetadataState == .completed else {
+            throw Image.Error.noMetadata
+        }
         return metadata
     }
     
     public func loadThumbnailCGImage(maximumPixelDimensions maximumSize: CGSize? = nil,
                                      allowCropping: Bool = true) throws -> (CGImage, ImageMetadata)
     {
-        guard let source = self.imageSource() else {
-            throw ImageLoadingError.noImageSource(URL: self.imageURL, message: "Image source is unexpectedly missing when loading thumbnail image.")
-        }
+        let metadata = try loadImageMetadataIfNeeded()
+        let source = try imageSource()
         
         guard self.thumbnailScheme != .never else {
             throw ImageLoadingError.loadingSetToNever(URL: self.imageURL, message: "Image thumbnail failed to be loaded as the loader responsible for it is set to never load thumbnails.")
         }
         
-        guard let metadata = self.imageMetadata else {
-            throw ImageLoadingError.expectingMetadata(URL: self.imageURL, message: "Expecting image metadata to have been loaded before thumbnail is loaded.")
-        }
-        
-        let maxPixelSize = maximumSize?.maximumPixelSize(forImageSize: metadata.size)
+        let size = metadata.size
+        let maxPixelSize = maximumSize?.maximumPixelSize(forImageSize: size)
         let createFromFullImage = self.thumbnailScheme == .decodeFullImage
         
         var options: [String: AnyObject] = [String(kCGImageSourceCreateThumbnailWithTransform): kCFBooleanTrue,
@@ -207,7 +140,7 @@ public class ImageLoader: ImageLoaderProtocol, URLBackedImageLoaderProtocol
             return (thumbnailImage, metadata)
         }
         
-        return (cropToNativeProportionsIfNeeded(thumbnailImage: thumbnailImage), metadata)
+        return (ImageLoader.cropToNativeProportionsIfNeeded(thumbnailImage: thumbnailImage, metadata: metadata), metadata)
     }
     
     /**
@@ -219,12 +152,8 @@ public class ImageLoader: ImageLoaderProtocol, URLBackedImageLoaderProtocol
      to extend 3:2 to 4:3 proportions. The solution: crop.
      
      */
-    private func cropToNativeProportionsIfNeeded(thumbnailImage thumbnail: CGImage) -> CGImage
+    private class func cropToNativeProportionsIfNeeded(thumbnailImage thumbnail: CGImage, metadata: ImageMetadata) -> CGImage
     {
-        guard let metadata = imageMetadata else {
-            return thumbnail;
-        }
-        
         let thumbnailSize = CGSize(width: CGFloat(thumbnail.width), height:CGFloat(thumbnail.height))
         let absThumbAspectDiff = fabs(metadata.size.aspectRatio - thumbnailSize.aspectRatio)
         
@@ -313,16 +242,10 @@ public class ImageLoader: ImageLoaderProtocol, URLBackedImageLoaderProtocol
     
     public func loadFullSizeImage(options: FullSizedImageLoadingOptions) throws -> (BitmapImage, ImageMetadata)
     {
-        guard let metadata = self.imageMetadata else {
-            throw ImageLoadingError.failedToExtractImageMetadata(
-                URL: self.imageURL,
-                message: "Failed to read properties of \(self.imageURL.path) to load full-size image")
-        }
-        
+        let metadata = try loadImageMetadataIfNeeded()
         let scaleFactor: Double
         
-        if let sz = options.maximumPixelDimensions
-        {
+        if let sz = options.maximumPixelDimensions {
             let imageSize = metadata.size
             let height = sz.scaledHeight(forImageSize: imageSize)
             scaleFactor = Double(height / imageSize.height)
@@ -369,8 +292,7 @@ public class ImageLoader: ImageLoaderProtocol, URLBackedImageLoaderProtocol
             }
         }
         
-        if bakedImage == nil
-        {
+        if bakedImage == nil {
             bakedImage = BitmapImageUtility.image(ciImage: image)
         }
         

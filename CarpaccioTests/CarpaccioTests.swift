@@ -37,7 +37,7 @@ class CarpaccioTests: XCTestCase {
         
         XCTAssertEqual(imageMetadata.cameraMaker, "SONY")
         XCTAssertEqual(imageMetadata.cameraModel, "ILCE-7RM2")
-        XCTAssertEqual(imageMetadata.ISO, 125.0)
+        XCTAssertEqual(imageMetadata.iso, 125.0)
         XCTAssertEqual(imageMetadata.nativeSize.width, 7952.0)
         XCTAssertEqual(imageMetadata.nativeSize.height, 5304.0)
         
@@ -72,7 +72,7 @@ class CarpaccioTests: XCTestCase {
         
         XCTAssertEqual(imageMetadata.cameraMaker, "Apple")
         XCTAssertEqual(imageMetadata.cameraModel, "iPhone 5")
-        XCTAssertEqual(imageMetadata.ISO, 50.0)
+        XCTAssertEqual(imageMetadata.iso, 50.0)
         XCTAssertEqual(imageMetadata.nativeSize.width, 3264.0)
         XCTAssertEqual(imageMetadata.nativeSize.height, 2448.0)
         XCTAssertEqualWithAccuracy(imageMetadata.fNumber!, 2.4, accuracy: 0.01)
@@ -139,4 +139,27 @@ class CarpaccioTests: XCTestCase {
         }
     }
     
+    func testFailingMetadataThrowsError() {
+        let bundle = Bundle(for: type(of: self))
+        guard let url = bundle.url(forResource: "Pixls/DP2M1726", withExtension: "X3F") else {
+            XCTAssert(false)
+            return
+        }
+        
+        let loader = ImageLoader(imageURL: url, thumbnailScheme: .fullImageWhenThumbnailMissing)
+        
+        XCTAssertThrowsError(try loader.loadImageMetadataIfNeeded())
+        XCTAssertThrowsError(try loader.loadImageMetadataIfNeeded(forceReload: true))
+    }
+
+    func testFailingThumbnailThrowsError() {
+        let bundle = Bundle(for: type(of: self))
+        guard let url = bundle.url(forResource: "Pixls/hdrmerge-bayer-fp16-w-pred-deflate", withExtension: "dng") else {
+            XCTAssert(false)
+            return
+        }
+        
+        let loader = ImageLoader(imageURL: url, thumbnailScheme: .fullImageWhenThumbnailMissing)
+        XCTAssertThrowsError(try loader.loadThumbnailImage())
+    }
 }
