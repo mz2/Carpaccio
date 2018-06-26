@@ -75,10 +75,10 @@ class CarpaccioTests: XCTestCase {
         XCTAssertEqual(imageMetadata.iso, 50.0)
         XCTAssertEqual(imageMetadata.nativeSize.width, 3264.0)
         XCTAssertEqual(imageMetadata.nativeSize.height, 2448.0)
-        XCTAssertEqualWithAccuracy(imageMetadata.fNumber!, 2.4, accuracy: 0.01)
-        XCTAssertEqualWithAccuracy(imageMetadata.focalLength!, 4.12, accuracy: 0.01)
-        XCTAssertEqualWithAccuracy(imageMetadata.focalLength35mmEquivalent!, 33.0, accuracy: 0.000000001)
-        XCTAssertEqualWithAccuracy(imageMetadata.shutterSpeed!, 0.00145772, accuracy: 0.00000001)
+        XCTAssertEqual(imageMetadata.fNumber!, 2.4, accuracy: 0.01)
+        XCTAssertEqual(imageMetadata.focalLength!, 4.12, accuracy: 0.01)
+        XCTAssertEqual(imageMetadata.focalLength35mmEquivalent!, 33.0, accuracy: 0.000000001)
+        XCTAssertEqual(imageMetadata.shutterSpeed!, 0.00145772, accuracy: 0.00000001)
         
         let testedComponents:Set<Calendar.Component> = [.year, .month, .day, .hour, .minute, .second]
         let date = imageMetadata.timestamp!

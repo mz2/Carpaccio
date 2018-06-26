@@ -20,14 +20,14 @@ extension Swift.Collection where Self.Index == Int {
                                 _ transform: @escaping ((Iterator.Element) throws -> T?)) throws -> [T]
     {
         if let maxParallelism = maxParallelism, maxParallelism == 1 {
-            return try self.flatMap(transform)
+            return try self.compactMap(transform)
         }
         
         guard !self.isEmpty else {
             return []
         }
         
-        var result: [(IntMax, [T])] = []
+        var result: [(Int64, [T])] = []
         
         let group = DispatchGroup()
         
@@ -44,10 +44,10 @@ extension Swift.Collection where Self.Index == Int {
         
         // step can never be 0
         
-        let count = self.count.toIntMax()
-        let step = [1, count / IntMax(parallelism)].max()!
+        let count = Int64(self.count)
+        let step = [1, count / Int64(parallelism)].max()!
         
-        var stepIndex:IntMax = 0
+        var stepIndex:Int64 = 0
         var caughtError: Swift.Error? = nil
 
         repeat {
@@ -110,10 +110,10 @@ extension Swift.Sequence {
                                 _ transform: @escaping ((Iterator.Element) throws -> T?)) throws -> [T]
     {
         if let maxParallelism = maxParallelism, maxParallelism == 1 {
-            return try self.flatMap(transform)
+            return try self.compactMap(transform)
         }
         
-        var result: [(IntMax, T)] = []
+        var result: [(Int64, T)] = []
         let group = DispatchGroup()
         let lock = DispatchQueue(label: "pflatmap")
         
@@ -127,7 +127,7 @@ extension Swift.Sequence {
         
         let semaphore = DispatchSemaphore(value: parallelism)
         var iterator = self.makeIterator()
-        var index:IntMax = 0
+        var index:Int64 = 0
         var caughtError: Swift.Error? = nil
         
         repeat {
@@ -158,6 +158,6 @@ extension Swift.Sequence {
         }
 
         return result.sorted { $0.0 < $1.0 }
-                     .flatMap { $0.1 }
+                     .compactMap { $0.1 }
     }
 }

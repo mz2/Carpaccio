@@ -10,7 +10,7 @@ import Foundation
 import UIKit
 
 extension UIImage:BitmapImage {
-    public func name() -> String? {
+    public var nameString: String? {
         return self.accessibilityIdentifier
     }
     

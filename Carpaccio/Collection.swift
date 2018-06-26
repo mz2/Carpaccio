@@ -27,7 +27,7 @@ extension Carpaccio.Collection: ImageCollection
     
     public var imageURLs: AnyCollection<URL> {
         get {
-            return AnyCollection<URL>(self.images.lazy.flatMap { image in
+            return AnyCollection<URL>(self.images.lazy.compactMap { image in
                 return image.URL
             })
         }
@@ -201,7 +201,7 @@ open class Collection
     }
 
     public class func loadImages(at imageURLs: [URL], loadHandler: ImageLoadHandler? = nil) throws -> AnyCollection<Image> {
-        let lazyImages = try imageURLs.lazy.enumerated().flatMap { i, imageURL -> Image? in
+        let lazyImages = try imageURLs.lazy.enumerated().compactMap { i, imageURL -> Image? in
             let pathExtension = imageURL.pathExtension
             
             guard pathExtension.utf8.count > 0 else {
@@ -253,7 +253,7 @@ open class Collection
     
     // TODO: Create a specific type for a sparse distance matrix.
     public func distanceMatrix(_ distance:Image.DistanceFunction) -> [[Double]] {
-        return images.indices.lazy.flatMap { i in
+        return images.indices.lazy.compactMap { i in
             var row = [Double]()
             for e in images.indices {
                 if e == i {
