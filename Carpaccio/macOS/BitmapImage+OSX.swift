@@ -9,6 +9,14 @@
 import AppKit
 
 extension NSImage:BitmapImage {
+    public var nameString: String? {
+        return {
+            if let name = self.name() {
+                return name.rawValue
+            }
+            return nil
+        }()
+    }
     
     public var cgImage:CGImage? {
         return self.cgImage(forProposedRect: nil, context: nil, hints: nil)
@@ -40,7 +48,7 @@ extension NSImage {
         
         scaledImage.lockFocus()
         
-        NSGraphicsContext.current()?.imageInterpolation = .default
+        NSGraphicsContext.current?.imageInterpolation = .default
         
         self.draw(in: CGRect(x: 0.0,
                              y: 0.0,
@@ -62,11 +70,11 @@ extension NSImage {
 public struct BitmapImageUtility {
     
     public static func image(named string:String) -> BitmapImage? {
-        return NSImage(named: string)
+        return NSImage(named: NSImage.Name(rawValue: string))
     }
     
     public static func image(named imageName: String, bundle: Bundle) -> BitmapImage? {
-        return bundle.image(forResource: imageName)
+        return bundle.image(forResource: NSImage.Name(rawValue: imageName))
     }
     
     public static func image(sized size: CGSize) -> BitmapImage {
@@ -88,7 +96,7 @@ public struct BitmapImageUtility {
             bitmapImage.cacheMode = .never
             bitmapImage.lockFocus()
             
-            guard let ciContext = NSGraphicsContext.current()?.ciContext else {
+            guard let ciContext = NSGraphicsContext.current?.ciContext else {
                 bitmapImage.unlockFocus()
                 return nil
             }

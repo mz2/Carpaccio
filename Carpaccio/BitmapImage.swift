@@ -9,8 +9,8 @@
 import Foundation
 import QuartzCore
 
-public protocol BitmapImage:NSObjectProtocol {
-    func name() -> String?
+public protocol BitmapImage: NSObjectProtocol {
+    var nameString: String? { get }
     
     var size: CGSize { get }
     

@@ -309,14 +309,12 @@ public extension CGSize
 {
     init(constrainWidth w: CGFloat)
     {
-        self.width = w
-        self.height = CGFloat.greatestFiniteMagnitude
+        self.init(width: w, height: CGFloat.greatestFiniteMagnitude)
     }
     
     init(constrainHeight h: CGFloat)
     {
-        self.width = CGFloat.greatestFiniteMagnitude
-        self.height = h
+        self.init(width: CGFloat.greatestFiniteMagnitude, height: h)
     }
     
     /** Assuming this NSSize value describes desired maximum width and/or height of a scaled output image, return appropriate value for the `kCGImageSourceThumbnailMaxPixelSize` option. */

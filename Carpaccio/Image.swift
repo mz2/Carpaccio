@@ -69,7 +69,7 @@ open class Image: Equatable, Hashable {
         self.fullImage = image
         self.cachedImageLoader = imageLoader
         self.URL = imageLoader.imageURL
-        self.name = image.name() ?? "Untitled"
+        self.name = image.nameString ?? "Untitled"
     }
     
     public init(URL: Foundation.URL, imageLoader:ImageLoaderProtocol? = nil) throws
