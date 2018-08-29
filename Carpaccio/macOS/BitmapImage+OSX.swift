@@ -12,7 +12,7 @@ extension NSImage:BitmapImage {
     public var nameString: String? {
         return {
             if let name = self.name() {
-                return name.rawValue
+                return name
             }
             return nil
         }()
@@ -70,11 +70,11 @@ extension NSImage {
 public struct BitmapImageUtility {
     
     public static func image(named string:String) -> BitmapImage? {
-        return NSImage(named: NSImage.Name(rawValue: string))
+        return NSImage(named: string)
     }
     
     public static func image(named imageName: String, bundle: Bundle) -> BitmapImage? {
-        return bundle.image(forResource: NSImage.Name(rawValue: imageName))
+        return bundle.image(forResource: imageName)
     }
     
     public static func image(sized size: CGSize) -> BitmapImage {

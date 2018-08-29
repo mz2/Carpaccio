@@ -155,7 +155,7 @@ public class ImageLoader: ImageLoaderProtocol, URLBackedImageLoaderProtocol
     private class func cropToNativeProportionsIfNeeded(thumbnailImage thumbnail: CGImage, metadata: ImageMetadata) -> CGImage
     {
         let thumbnailSize = CGSize(width: CGFloat(thumbnail.width), height:CGFloat(thumbnail.height))
-        let absThumbAspectDiff = fabs(metadata.size.aspectRatio - thumbnailSize.aspectRatio)
+        let absThumbAspectDiff = abs(metadata.size.aspectRatio - thumbnailSize.aspectRatio)
         
         // small differences can happen and in those cases we should not crop but simply rescale the thumbnail
         // (to avoid decreasing image quality).
@@ -235,7 +235,7 @@ public class ImageLoader: ImageLoaderProtocol, URLBackedImageLoaderProtocol
             return context
         }
         
-        let context = CIContext(options: [kCIContextCacheIntermediates: false, kCIContextUseSoftwareRenderer: false])
+        let context = CIContext(options: convertToOptionalCIContextOptionDictionary([convertFromCIContextOption(CIContextOption.cacheIntermediates): false, convertFromCIContextOption(CIContextOption.useSoftwareRenderer): false]))
         _imageBakingContexts[ext] = context
         return context
     }
@@ -263,15 +263,15 @@ public class ImageLoader: ImageLoaderProtocol, URLBackedImageLoaderProtocol
         // with a difference of 0.3s vs. 2.5s per image on this iMac 5K, for instance.
         // The quality is still quite excellent for displaying scaled-down presentations in a collection view, 
         // subjectively better than what you get from LibRAW with the half-size option.
-        RAWFilter.setValue(true, forKey: kCIInputAllowDraftModeKey)
-        RAWFilter.setValue(scaleFactor, forKey: kCIInputScaleFactorKey)
+        RAWFilter.setValue(true, forKey: convertFromCIRAWFilterOption(CIRAWFilterOption.allowDraftMode))
+        RAWFilter.setValue(scaleFactor, forKey: convertFromCIRAWFilterOption(CIRAWFilterOption.scaleFactor))
         
-        RAWFilter.setValue(options.noiseReductionAmount, forKey: kCIInputNoiseReductionAmountKey)
-        RAWFilter.setValue(options.colorNoiseReductionAmount, forKey: kCIInputColorNoiseReductionAmountKey)
-        RAWFilter.setValue(options.noiseReductionSharpnessAmount, forKey: kCIInputNoiseReductionSharpnessAmountKey)
-        RAWFilter.setValue(options.noiseReductionContrastAmount, forKey: kCIInputNoiseReductionContrastAmountKey)
-        RAWFilter.setValue(options.boostShadowAmount, forKey: kCIInputBoostShadowAmountKey)
-        RAWFilter.setValue(options.enableVendorLensCorrection, forKey: kCIInputEnableVendorLensCorrectionKey)
+        RAWFilter.setValue(options.noiseReductionAmount, forKey: convertFromCIRAWFilterOption(CIRAWFilterOption.noiseReductionAmount))
+        RAWFilter.setValue(options.colorNoiseReductionAmount, forKey: convertFromCIRAWFilterOption(CIRAWFilterOption.colorNoiseReductionAmount))
+        RAWFilter.setValue(options.noiseReductionSharpnessAmount, forKey: convertFromCIRAWFilterOption(CIRAWFilterOption.noiseReductionSharpnessAmount))
+        RAWFilter.setValue(options.noiseReductionContrastAmount, forKey: convertFromCIRAWFilterOption(CIRAWFilterOption.noiseReductionContrastAmount))
+        RAWFilter.setValue(options.boostShadowAmount, forKey: convertFromCIRAWFilterOption(CIRAWFilterOption.boostShadowAmount))
+        RAWFilter.setValue(options.enableVendorLensCorrection, forKey: convertFromCIRAWFilterOption(CIRAWFilterOption.enableVendorLensCorrection))
         
         guard let image = RAWFilter.outputImage else {
             throw ImageLoadingError.failedToDecode(URL: self.imageURL,
@@ -284,7 +284,7 @@ public class ImageLoader: ImageLoaderProtocol, URLBackedImageLoaderProtocol
             let context = ImageLoader.bakingContext(for: self.imageURL)
             if let cgImage = context.createCGImage(image,
                 from: image.extent,
-                format: kCIFormatRGBA8,
+                format: CIFormat.RGBA8,
                 colorSpace: ImageLoader.imageBakingColorSpace,
                 deferred: false) // The `deferred: false` argument is important, to ensure significant work will not be performed later on the main thread at drawing time
             {
@@ -351,4 +351,20 @@ public extension CGSize
     {
         return min(imageSize.height, self.height)
     }
+}
+
+// Helper function inserted by Swift 4.2 migrator.
+fileprivate func convertToOptionalCIContextOptionDictionary(_ input: [String: Any]?) -> [CIContextOption: Any]? {
+	guard let input = input else { return nil }
+	return Dictionary(uniqueKeysWithValues: input.map { key, value in (CIContextOption(rawValue: key), value)})
+}
+
+// Helper function inserted by Swift 4.2 migrator.
+fileprivate func convertFromCIContextOption(_ input: CIContextOption) -> String {
+	return input.rawValue
+}
+
+// Helper function inserted by Swift 4.2 migrator.
+fileprivate func convertFromCIRAWFilterOption(_ input: CIRAWFilterOption) -> String {
+	return input.rawValue
 }
