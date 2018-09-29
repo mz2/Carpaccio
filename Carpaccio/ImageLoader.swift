@@ -31,12 +31,25 @@ public class ImageLoader: ImageLoaderProtocol, URLBackedImageLoaderProtocol
     }
     
     public let imageURL: URL
+    public let colorSpace: CGColorSpace?
+    
     public let cachedImageURL: URL? = nil // For now, we don't implement a disk cache for images loaded by ImageLoader
     public let thumbnailScheme: ThumbnailScheme
     
-    public required init(imageURL: URL, thumbnailScheme: ThumbnailScheme) {
+    public required init(imageURL: URL, thumbnailScheme: ThumbnailScheme, colorSpace: CGColorSpace?) {
         self.imageURL = imageURL
         self.thumbnailScheme = thumbnailScheme
+        self.colorSpace = colorSpace
+    }
+    
+    public required init(imageLoader otherLoader: ImageLoaderProtocol, thumbnailScheme: ThumbnailScheme, colorSpace: CGColorSpace?) {
+        self.imageURL = otherLoader.imageURL
+        self.thumbnailScheme = thumbnailScheme
+        self.colorSpace = colorSpace
+        if otherLoader.imageMetadataState == .completed, let metadata = try? otherLoader.loadImageMetadata() {
+            self.cachedImageMetadata = metadata
+            self.imageMetadataState = .completed
+        }
     }
     
     private func imageSource() throws -> CGImageSource {
@@ -52,7 +65,7 @@ public class ImageLoader: ImageLoaderProtocol, URLBackedImageLoaderProtocol
     }
     
     public private(set) var imageMetadataState: ImageLoaderMetadataState = .initialized
-    internal private(set) var cachedImageMetadata: ImageMetadata?
+    internal fileprivate(set) var cachedImageMetadata: ImageMetadata?
 
     private func dumpAllImageMetadata(_ imageSource: CGImageSource)
     {
@@ -85,7 +98,11 @@ public class ImageLoader: ImageLoaderProtocol, URLBackedImageLoaderProtocol
         return metadata
     }
     
+    var count = 0
+    
     internal func loadImageMetadataIfNeeded(forceReload: Bool = false) throws -> ImageMetadata {
+        count += 1
+        
         if forceReload {
             imageMetadataState = .initialized
             cachedImageMetadata = nil
@@ -96,8 +113,8 @@ public class ImageLoader: ImageLoaderProtocol, URLBackedImageLoaderProtocol
                 imageMetadataState = .loadingMetadata
                 let imageSource = try self.imageSource()
                 let metadata = try ImageMetadata(imageSource: imageSource)
-                imageMetadataState = .completed
                 cachedImageMetadata = metadata
+                imageMetadataState = .completed
             } catch {
                 imageMetadataState = .failed
                 throw error
@@ -107,11 +124,19 @@ public class ImageLoader: ImageLoaderProtocol, URLBackedImageLoaderProtocol
         guard let metadata = cachedImageMetadata, imageMetadataState == .completed else {
             throw Image.Error.noMetadata
         }
+        
         return metadata
     }
     
+    func bailIfCancelled(_ checker: CancellationChecker?, _ message: String) throws {
+        if let checker = checker, checker() {
+            throw ImageLoadingError.cancelled(url: self.imageURL, message: message)
+        }
+    }
+    
     public func loadThumbnailCGImage(maximumPixelDimensions maximumSize: CGSize? = nil,
-                                     allowCropping: Bool = true) throws -> (CGImage, ImageMetadata)
+                                     allowCropping: Bool = true,
+                                     cancelled cancelChecker: CancellationChecker?) throws -> (CGImage, ImageMetadata)
     {
         let metadata = try loadImageMetadataIfNeeded()
         let source = try imageSource()
@@ -120,6 +145,7 @@ public class ImageLoader: ImageLoaderProtocol, URLBackedImageLoaderProtocol
             throw ImageLoadingError.loadingSetToNever(URL: self.imageURL, message: "Image thumbnail failed to be loaded as the loader responsible for it is set to never load thumbnails.")
         }
         
+        try bailIfCancelled(cancelChecker, "Before loading thumbnail image")
         let size = metadata.size
         let maxPixelSize = maximumSize?.maximumPixelSize(forImageSize: size)
         let createFromFullImage = self.thumbnailScheme == .decodeFullImage
@@ -131,16 +157,29 @@ public class ImageLoader: ImageLoaderProtocol, URLBackedImageLoaderProtocol
             options[String(kCGImageSourceThumbnailMaxPixelSize)] = NSNumber(value: Int(round(sz)))
         }
         
-        guard let thumbnailImage = CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary?) else {
-            throw ImageLoadingError.noImageSource(URL: self.imageURL,
-                                                  message: "Failed to load thumbnail image as creating an image source for it failed.")
-        }
+        let thumbnailImage: CGImage = try {
+            guard let thumbnail = CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary?) else {
+                throw ImageLoadingError.noImageSource(URL: self.imageURL, message: "Failed to load thumbnail image: creating image source failed")
+            }
+            
+            if let colorSpace = self.colorSpace {
+                try bailIfCancelled(cancelChecker, "Before converting thumbnail image color space")
+                
+                guard let image = thumbnail.copy(colorSpace: colorSpace) else {
+                    throw ImageLoadingError.failedToConvertColorSpace(url: self.imageURL, message: "Failed to convert color space of image to \(colorSpace.name as String? ?? "untitled color space")")
+                }
+                return image
+            } else {
+                return thumbnail
+            }
+        }()
         
         if !allowCropping {
             return (thumbnailImage, metadata)
+        } else {
+            try bailIfCancelled(cancelChecker, "Before cropping to native proportions")
+            return (ImageLoader.cropToNativeProportionsIfNeeded(thumbnailImage: thumbnailImage, metadata: metadata), metadata)
         }
-        
-        return (ImageLoader.cropToNativeProportionsIfNeeded(thumbnailImage: thumbnailImage, metadata: metadata), metadata)
     }
     
     /**
@@ -207,36 +246,33 @@ public class ImageLoader: ImageLoaderProtocol, URLBackedImageLoaderProtocol
         return thumbnail
     }
     
-    /** Retrieve metadata about this loader's image, to be called before loading actual image data. */
-    public func loadThumbnailImage(maximumPixelDimensions maxPixelSize: CGSize?, allowCropping: Bool) throws -> (BitmapImage, ImageMetadata) {
-        let (thumbnailImage, metadata) = try loadThumbnailCGImage(maximumPixelDimensions: maxPixelSize, allowCropping: allowCropping)
+    /** Retrieve a thumbnail image for this loader's image. */
+    public func loadThumbnailImage(maximumPixelDimensions maxPixelSize: CGSize?, allowCropping: Bool, cancelled: CancellationChecker?) throws -> (BitmapImage, ImageMetadata) {
+        let (thumbnailImage, metadata) = try loadThumbnailCGImage(maximumPixelDimensions: maxPixelSize, allowCropping: allowCropping, cancelled: cancelled)
         return (BitmapImageUtility.image(cgImage: thumbnailImage, size: CGSize.zero), metadata)
     }
     
-    static let genericLinearRGBColorSpace = CGColorSpace(name: CGColorSpace.genericRGBLinear)
-    static let sRGBColorSpace = CGColorSpace(name: CGColorSpace.sRGB)
+    struct BakingContextKey: Hashable {
+        let pathExtension: String
+        let colorSpace: CGColorSpace
+    }
     
-    @available(OSX 10.12, *)
-    static let imageBakingColorSpace = genericLinearRGBColorSpace //NSScreen.deepest()?.colorSpace?.cgColorSpace ?? genericLinearRGBColorSpace
+    private static var _imageBakingContexts = [BakingContextKey: CIContext]()
     
-    //@available(OSX 10.12, *)
-    //static let imageBakingContext = CIContext(options: [kCIContextCacheIntermediates: false, kCIContextUseSoftwareRenderer: false, kCIContextWorkingColorSpace: ImageLoader.imageBakingColorSpace, kCIContextOutputColorSpace: NSScreen.deepest()?.colorSpace?.cgColorSpace ?? ImageLoader.imageBakingColorSpace])
-    //static let imageBakingContext = CIContext(options: [kCIContextCacheIntermediates: false, kCIContextUseSoftwareRenderer: false])
-    
-    @available(OSX 10.12, *)
-    private static var _imageBakingContexts = [String: CIContext]()
-    
-    @available(OSX 10.12, *)
-    private static func bakingContext(for imageURL: URL) -> CIContext
-    {
-        let ext = imageURL.pathExtension
+    private static func bakingContextForImageAt(_ imageURL: URL, usingColorSpace colorSpace: CGColorSpace) -> CIContext {
+        let key = BakingContextKey(pathExtension: imageURL.pathExtension, colorSpace: colorSpace)
         
-        if let context = _imageBakingContexts[ext] {
+        if let context = _imageBakingContexts[key] {
             return context
         }
         
-        let context = CIContext(options: convertToOptionalCIContextOptionDictionary([convertFromCIContextOption(CIContextOption.cacheIntermediates): false, convertFromCIContextOption(CIContextOption.useSoftwareRenderer): false]))
-        _imageBakingContexts[ext] = context
+        let context = CIContext(options: convertToOptionalCIContextOptionDictionary([
+            convertFromCIContextOption(CIContextOption.cacheIntermediates): false,
+            convertFromCIContextOption(CIContextOption.useSoftwareRenderer): false,
+            convertFromCIContextOption(CIContextOption.outputColorSpace): colorSpace
+            ]))
+        _imageBakingContexts[key] = context
+        
         return context
     }
     
@@ -278,18 +314,16 @@ public class ImageLoader: ImageLoaderProtocol, URLBackedImageLoaderProtocol
                                                    message: "Failed to decode full-size RAW image \(self.imageURL.path)")
         }
         var bakedImage: BitmapImage? = nil
-        if #available(OSX 10.12, *)
+        // Pixel format and color space set as discussed around 21:50 in https://developer.apple.com/videos/play/wwdc2016/505/
+        let colorSpace = self.colorSpace ?? CGColorSpace(name: CGColorSpace.sRGB)!
+        let context = ImageLoader.bakingContextForImageAt(self.imageURL, usingColorSpace: colorSpace)
+        if let cgImage = context.createCGImage(image,
+                                               from: image.extent,
+                                               format: CIFormat.RGBA8,
+                                               colorSpace: colorSpace,
+                                               deferred: false) // The `deferred: false` argument is important, to ensure significant work will not be performed later on the main thread at drawing time
         {
-            // Pixel format and color space set as discussed around 21:50 in https://developer.apple.com/videos/play/wwdc2016/505/
-            let context = ImageLoader.bakingContext(for: self.imageURL)
-            if let cgImage = context.createCGImage(image,
-                from: image.extent,
-                format: CIFormat.RGBA8,
-                colorSpace: ImageLoader.imageBakingColorSpace,
-                deferred: false) // The `deferred: false` argument is important, to ensure significant work will not be performed later on the main thread at drawing time
-            {
-                bakedImage = BitmapImageUtility.image(cgImage: cgImage, size: CGSize.zero)
-            }
+            bakedImage = BitmapImageUtility.image(cgImage: cgImage, size: CGSize.zero)
         }
         
         if bakedImage == nil {
@@ -367,4 +401,8 @@ fileprivate func convertFromCIContextOption(_ input: CIContextOption) -> String 
 // Helper function inserted by Swift 4.2 migrator.
 fileprivate func convertFromCIRAWFilterOption(_ input: CIRAWFilterOption) -> String {
 	return input.rawValue
+}
+
+extension CGColorSpace: Hashable {
+    
 }

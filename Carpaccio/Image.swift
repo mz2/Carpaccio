@@ -104,10 +104,25 @@ open class Image: Equatable, Hashable {
         self.fileModificationTimestamp = nil
     }
     
-    open var imageLoader: ImageLoaderProtocol?
-    {
-        if let loader = cachedImageLoader {
-            return loader
+    //
+    // Return an image loader for this image. If one has previously been created, that matches the
+    // requested color space, a cached instance is returned.
+    //
+    // @param `colorSpace` color space to convert thumbnail and full-sized image data into. If `nil`,
+    //         color space is assumed to not matter, and no conversion will not be performed. Has no
+    //         effect for fetching image metadata.
+    //
+    open func imageLoader(withColorSpace colorSpace: CGColorSpace?) -> ImageLoaderProtocol? {
+        if let cachedLoader = cachedImageLoader {
+            if colorSpace == nil {
+                return cachedLoader
+            } else if cachedLoader.colorSpace == colorSpace {
+                return cachedLoader
+            } else {
+                let newLoader = Image.defaultImageLoaderType.init(imageLoader: cachedLoader, thumbnailScheme: .fullImageWhenTooSmallThumbnail, colorSpace: colorSpace)
+                cachedImageLoader = newLoader
+                return newLoader
+            }
         }
         
         guard let url = self.URL else {
@@ -115,9 +130,9 @@ open class Image: Equatable, Hashable {
         }
         
         if Image.isRAWImage(at: url) {
-            cachedImageLoader = Image.defaultImageLoaderType.init(imageURL: url, thumbnailScheme: .fullImageWhenTooSmallThumbnail)
+            cachedImageLoader = Image.defaultImageLoaderType.init(imageURL: url, thumbnailScheme: .fullImageWhenTooSmallThumbnail, colorSpace: colorSpace)
         } else if Image.isBakedImage(at: url) {
-            cachedImageLoader = Image.defaultImageLoaderType.init(imageURL: url, thumbnailScheme: .fullImageWhenTooSmallThumbnail)
+            cachedImageLoader = Image.defaultImageLoaderType.init(imageURL: url, thumbnailScheme: .fullImageWhenTooSmallThumbnail, colorSpace: colorSpace)
         }
         
         return cachedImageLoader
@@ -135,13 +150,11 @@ open class Image: Equatable, Hashable {
     
     public func fetchMetadata() throws -> ImageMetadata
     {
-        // Previously the failure to have an image loader would silently cause a failure.
-        // Here we create a temporary image loader for the purposes of metadata fetching,
-        // if the image loader passed in as a property is not set.
-        // This is necessary for at least the case where fetchMetadata is called with
-        // Image is initialized with its init(URL: Foundation.URL) initializer.
+        // In case an image loader hasn't yet been set, we create a temporary image loader
+        // for the purpose of metadata fetching. The color space argument is assumed to not
+        // matter for metadata fetching, so we try to use whatever cached loader may be set.
         let loader = try { () throws -> ImageLoaderProtocol in
-            if let loader = self.imageLoader {
+            if let loader = self.imageLoader(withColorSpace: nil) {
                 return loader
             }
             
@@ -149,7 +162,7 @@ open class Image: Equatable, Hashable {
                 throw Error.noURL
             }
             
-            let loader = Image.defaultImageLoaderType.init(imageURL: URL, thumbnailScheme: .never)
+            let loader = Image.defaultImageLoaderType.init(imageURL: URL, thumbnailScheme: .never, colorSpace: nil)
             return loader
         }()
         
@@ -203,13 +216,15 @@ open class Image: Equatable, Hashable {
     public func fetchThumbnail(presentedHeight: CGFloat? = nil,
                                force: Bool = false,
                                store: Bool = true,
-                               scaleFactor:CGFloat = 2.0) throws -> BitmapImage
+                               scaleFactor: CGFloat = 2.0,
+                               colorSpace: CGColorSpace?,
+                               cancelled: CancellationChecker?) throws -> BitmapImage
     {
         if !force, let thumb = self.thumbnailImage {
             return thumb
         }
         
-        guard let loader = self.imageLoader else {
+        guard let loader = imageLoader(withColorSpace: colorSpace) else {
             throw Error.noLoader(self)
         }
         
@@ -219,7 +234,7 @@ open class Image: Equatable, Hashable {
         
         let maxDim = presentedHeight != nil ? CGSize(constrainHeight: presentedHeight! * scaleFactor) : nil
 
-        let (thumbnailImage, imgMetadata) = try loader.loadThumbnailImage(maximumPixelDimensions: maxDim)
+        let (thumbnailImage, imgMetadata) = try loader.loadThumbnailImage(maximumPixelDimensions: maxDim, cancelled: cancelled)
         
         if self.metadata == nil {
             self.metadata = imgMetadata
@@ -234,7 +249,8 @@ open class Image: Equatable, Hashable {
     
     public func fetchFullSizeImage(presentedHeight: CGFloat? = nil,
                                    store: Bool = false,
-                                   scaleFactor:CGFloat = 2.0) throws -> BitmapImage
+                                   scaleFactor:CGFloat = 2.0,
+                                   colorSpace: CGColorSpace?) throws -> BitmapImage
     {
         guard self.URL != nil else {
             throw Error.urlMissing
@@ -251,7 +267,7 @@ open class Image: Equatable, Hashable {
         var options = FullSizedImageLoadingOptions()
         options.maximumPixelDimensions = maxDimensions
         
-        guard let loader = self.imageLoader else {
+        guard let loader = imageLoader(withColorSpace: colorSpace) else {
             throw Error.noLoader(self)
         }
         

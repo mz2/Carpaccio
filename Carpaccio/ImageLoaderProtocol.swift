@@ -24,6 +24,8 @@ public enum ImageLoadingError: Swift.Error
     case failedToLoadDecodedImage(URL: URL, message: String)
     case loadingSetToNever(URL: URL, message: String)
     case expectingMetadata(URL: URL, message: String)
+    case failedToConvertColorSpace(url: URL, message: String)
+    case cancelled(url: URL, message: String)
 }
 
 public typealias ImageLoadingErrorHandler = (_ error: ImageLoadingError) -> Void
@@ -63,12 +65,19 @@ public enum ImageLoaderMetadataState {
     case failed
 }
 
+/**
+ Closure type for determining if a potentially lengthy thumbnail image loading step should
+ not be performed after all, due to the image not being needed anymore.
+ */
+public typealias CancellationChecker = () -> Bool
+
 public protocol ImageLoaderProtocol
 {
     var imageURL: URL { get }
     var imageMetadataState: ImageLoaderMetadataState { get }
+    var colorSpace: CGColorSpace? { get }
     
-    /** *If*, in addition to `imageURL`, full image image data happens to have been copied into a disk cache location,
+    /** _If_, in addition to `imageURL`, full image image data happens to have been copied into a disk cache location,
       * a direct URL pointing to that location. */
     var cachedImageURL: URL? { get }
     
@@ -78,12 +87,16 @@ public protocol ImageLoaderProtocol
      */
     func loadImageMetadata() throws -> ImageMetadata
     
-    func loadThumbnailCGImage(maximumPixelDimensions maximumSize: CGSize?, allowCropping: Bool) throws -> (CGImage, ImageMetadata)
+    /**
+     Load a thumbnail representation of this loader's associated image, optionally:
+     - Scaled down to a maximum pixel size
+     - Cropped to the proportions of the image's metadata (to remove letterboxing by some cameras' thumbnails)
+     */
+    func loadThumbnailImage(maximumPixelDimensions maxPixelSize: CGSize?, allowCropping: Bool, cancelled: CancellationChecker?) throws -> (BitmapImage, ImageMetadata)
     
-    /** Retrieve metadata about this loader's image, potentially called before loading actual image data. */
-    func loadThumbnailImage(maximumPixelDimensions maxPixelSize: CGSize?, allowCropping: Bool) throws -> (BitmapImage, ImageMetadata)
+    func loadThumbnailCGImage(maximumPixelDimensions maximumSize: CGSize?, allowCropping: Bool, cancelled: CancellationChecker?) throws -> (CGImage, ImageMetadata)
     
-    func loadThumbnailImage() throws -> (BitmapImage, ImageMetadata)
+    func loadThumbnailImage(cancelled: CancellationChecker?) throws -> (BitmapImage, ImageMetadata)
     
     /** Load full-size image. */
     func loadFullSizeImage(options: FullSizedImageLoadingOptions) throws -> (BitmapImage, ImageMetadata)
@@ -92,22 +105,22 @@ public protocol ImageLoaderProtocol
     func loadFullSizeImage() throws -> (BitmapImage, ImageMetadata)
 }
 
-public protocol URLBackedImageLoaderProtocol: ImageLoaderProtocol
-{
-    init(imageURL: URL, thumbnailScheme: ImageLoader.ThumbnailScheme)
+public protocol URLBackedImageLoaderProtocol: ImageLoaderProtocol {
+    init(imageURL: URL, thumbnailScheme: ImageLoader.ThumbnailScheme, colorSpace: CGColorSpace?)
+    init(imageLoader: ImageLoaderProtocol, thumbnailScheme: ImageLoader.ThumbnailScheme, colorSpace: CGColorSpace?)
 }
 
 public extension ImageLoaderProtocol {
-    func loadThumbnailImage() throws -> (BitmapImage, ImageMetadata) {
-        return try self.loadThumbnailImage(maximumPixelDimensions: nil, allowCropping: true)
+    func loadThumbnailImage(cancelled: CancellationChecker?) throws -> (BitmapImage, ImageMetadata) {
+        return try self.loadThumbnailImage(maximumPixelDimensions: nil, allowCropping: true, cancelled: cancelled)
     }
     
-    func loadThumbnailImage(maximumPixelDimensions: CGSize?) throws -> (BitmapImage, ImageMetadata) {
-        return try self.loadThumbnailImage(maximumPixelDimensions: maximumPixelDimensions, allowCropping: true)
+    func loadThumbnailImage(maximumPixelDimensions: CGSize?, cancelled: CancellationChecker?) throws -> (BitmapImage, ImageMetadata) {
+        return try self.loadThumbnailImage(maximumPixelDimensions: maximumPixelDimensions, allowCropping: true, cancelled: cancelled)
     }
     
-    func loadThumbnailImage(allowCropping: Bool) throws -> (BitmapImage, ImageMetadata) {
-        return try self.loadThumbnailImage(maximumPixelDimensions: nil, allowCropping: allowCropping)
+    func loadThumbnailImage(allowCropping: Bool, cancelled: CancellationChecker?) throws -> (BitmapImage, ImageMetadata) {
+        return try self.loadThumbnailImage(maximumPixelDimensions: nil, allowCropping: allowCropping, cancelled: cancelled)
     }
     
     func loadFullSizeImage() throws -> (BitmapImage, ImageMetadata) {
