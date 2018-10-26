@@ -23,14 +23,14 @@ class CarpaccioTests: XCTestCase {
     
     func testSonyRAWConversion() {
         let img1URL = Bundle(for: type(of: self)).url(forResource:"DSC00583", withExtension: "ARW")!
-
+        
         let tempDir = URL(fileURLWithPath:NSTemporaryDirectory() + "/\(UUID().uuidString)")
         
         try! FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true, attributes: [:])
         
-        let converter = ImageLoader(imageURL: img1URL, thumbnailScheme: .fullImageWhenThumbnailMissing)
+        let converter = ImageLoader(imageURL: img1URL, thumbnailScheme: .fullImageWhenThumbnailMissing, colorSpace: nil)
         
-        let (thumb, imageMetadata) = try! converter.loadThumbnailImage()
+        let (thumb, imageMetadata) = try! converter.loadThumbnailImage(maximumPixelDimensions: nil, allowCropping: true, cancelled: nil)
         
         XCTAssertEqual(thumb.size.width, 1616)
         XCTAssertEqual(thumb.size.height, 1080)
@@ -51,21 +51,21 @@ class CarpaccioTests: XCTestCase {
         XCTAssertEqual(components.hour, 16)
         XCTAssertEqual(components.minute, 34)
         XCTAssertEqual(components.second, 21)
-
+        
         try! FileManager.default.removeItem(at: tempDir)
     }
-	
-	func testiPhone5Image()
-	{
-		let img1URL = Bundle(for: type(of: self)).url(forResource:"iphone5", withExtension: "jpg")!
-		
-		let tempDir = URL(fileURLWithPath:NSTemporaryDirectory() + "/\(UUID().uuidString)")
-		
-		try! FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true, attributes: [:])
-		
-		let converter = ImageLoader(imageURL: img1URL, thumbnailScheme: .fullImageWhenThumbnailMissing)
-		
-		let (image, imageMetadata) = try! converter.loadFullSizeImage()
+    
+    func testiPhone5Image()
+    {
+        let img1URL = Bundle(for: type(of: self)).url(forResource:"iphone5", withExtension: "jpg")!
+        
+        let tempDir = URL(fileURLWithPath:NSTemporaryDirectory() + "/\(UUID().uuidString)")
+        
+        try! FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true, attributes: [:])
+        
+        let converter = ImageLoader(imageURL: img1URL, thumbnailScheme: .fullImageWhenThumbnailMissing, colorSpace: nil)
+        
+        let (image, imageMetadata) = try! converter.loadFullSizeImage()
         
         XCTAssertEqual(image.size.width, 2448.0)
         XCTAssertEqual(image.size.height, 3264.0)
@@ -83,7 +83,7 @@ class CarpaccioTests: XCTestCase {
         let testedComponents:Set<Calendar.Component> = [.year, .month, .day, .hour, .minute, .second]
         let date = imageMetadata.timestamp!
         let components = Calendar(identifier: .gregorian).dateComponents(testedComponents, from: date)
-
+        
         XCTAssertEqual(components.year, 2016)
         XCTAssertEqual(components.day, 8)
         XCTAssertEqual(components.month, 9)
@@ -91,13 +91,13 @@ class CarpaccioTests: XCTestCase {
         XCTAssertEqual(components.minute, 56)
         XCTAssertEqual(components.second, 3)
         
-		try! FileManager.default.removeItem(at: tempDir)
-	}
-	
+        try! FileManager.default.removeItem(at: tempDir)
+    }
+    
     func testDistanceMatrixComputation() {
         let resourcesDir = Bundle(for: type(of: self)).resourceURL!
         let imgColl = try! Collection(contentsOf: resourcesDir)
-			
+        
         // just checking that the matrix computation succeeds.
         let distances = imgColl.distanceMatrix { a, b in
             return Double.infinity
@@ -117,7 +117,7 @@ class CarpaccioTests: XCTestCase {
             }
         }
     }
-	
+    
     
     func testDistanceTableComputation() {
         let resourcesDir = Bundle(for: type(of: self)).resourceURL!
@@ -146,12 +146,12 @@ class CarpaccioTests: XCTestCase {
             return
         }
         
-        let loader = ImageLoader(imageURL: url, thumbnailScheme: .fullImageWhenThumbnailMissing)
+        let loader = ImageLoader(imageURL: url, thumbnailScheme: .fullImageWhenThumbnailMissing, colorSpace: nil)
         
         XCTAssertThrowsError(try loader.loadImageMetadataIfNeeded())
         XCTAssertThrowsError(try loader.loadImageMetadataIfNeeded(forceReload: true))
     }
-
+    
     func testFailingThumbnailThrowsError() {
         let bundle = Bundle(for: type(of: self))
         guard let url = bundle.url(forResource: "Pixls/hdrmerge-bayer-fp16-w-pred-deflate", withExtension: "dng") else {
@@ -159,7 +159,7 @@ class CarpaccioTests: XCTestCase {
             return
         }
         
-        let loader = ImageLoader(imageURL: url, thumbnailScheme: .fullImageWhenThumbnailMissing)
-        XCTAssertThrowsError(try loader.loadThumbnailImage())
+        let loader = ImageLoader(imageURL: url, thumbnailScheme: .fullImageWhenThumbnailMissing, colorSpace: nil)
+        XCTAssertThrowsError(try loader.loadThumbnailImage(maximumPixelDimensions: nil, allowCropping: true, cancelled: nil))
     }
 }
