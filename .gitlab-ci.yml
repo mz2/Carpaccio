@@ -1,0 +1,42 @@
+stages:
+  - build_macos
+  - build_ios
+  - test_ios
+  - test_macos
+
+build_macos:
+  stage: build_macos
+  script:
+    - xcodebuild -scheme Carpaccio clean build
+  tags:
+    - xcode
+    - macos
+
+build_ios:
+  stage: build_ios
+  script:
+   - xcodebuild -scheme Carpaccio -destination 'platform=iOS Simulator,name=iPhone XS,OS=12.0' clean build
+  tags:
+    - xcode
+    - macos
+
+test_macos:
+  stage: test_macos
+  script:
+   - xcodebuild -scheme Carpaccio-Package clean test
+  dependencies:
+    - build_macos
+  tags:
+    - xcode
+    - macos
+
+.test_ios: # disabled for now, we shall return to this (?)
+  stage: test_ios
+  script:
+    - swift package generate-xcodeproj
+    - xcodebuild -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 6,OS=12.0' -scheme Carpaccio clean test
+  dependencies:
+    - build_ios
+  tags:
+    - xcode
+    - macos
