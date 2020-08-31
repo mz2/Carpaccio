@@ -206,8 +206,6 @@ public extension CGSize {
             return true
         }()
 
-        print("\(self) vs. \(targetSize): width \(widthIsSufficient ? "ok" : "👎🏻"), height \(heightIsSufficient ? "ok" : "👎🏻")")
-
         return widthIsSufficient && heightIsSufficient
     }
 }

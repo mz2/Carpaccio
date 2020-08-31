@@ -357,7 +357,11 @@ open class Image: Equatable, Hashable, CustomStringConvertible {
     public static var bakedImageFileExtensions: Set<String> = {
         return Set(["jpg", "jpeg", "png", "tiff", "tif", "gif", "heic", "heif"])
     }()
-    
+
+    public static func == (lhs:Image, rhs:Image) -> Bool {
+        return lhs.URL == rhs.URL
+    }
+
     public func hash(into hasher: inout Hasher) {
         hasher.combine(UUID)
     }
@@ -365,8 +369,4 @@ open class Image: Equatable, Hashable, CustomStringConvertible {
     public var description: String {
         return "(name: \(self.name), URL: \(self.URL?.absoluteString ?? "(unknown)"), bitmap image loaded: \(self.thumbnailImage != nil), CIImage loaded: \(self.editableImage != nil))"
     }
-}
-
-public func == (lhs:Image, rhs:Image) -> Bool {
-    return lhs.URL == rhs.URL
 }
