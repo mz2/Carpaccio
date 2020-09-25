@@ -109,8 +109,6 @@ open class Image: Equatable, Hashable, CustomStringConvertible {
         return nil
     }
     
-    public lazy var UUID: String = Foundation.UUID().uuidString
-    
     public typealias MetadataHandler = (_ metadata: ImageMetadata) -> Void
     public typealias ErrorHandler = (_ error: Image.Error) -> Void
     public typealias DistanceFunction = (_ a:Image, _ b:Image)-> Double
@@ -351,7 +349,7 @@ open class Image: Equatable, Hashable, CustomStringConvertible {
             "srf", // Garmin vehicle image (!) https://www.file-extensions.org/srf-file-extension
             "srw", // Samsung RAW Image https://fileinfo.com/extension/srw
             "x3f"  // SIGMA X3F Camera RAW File https://fileinfo.com/extension/x3f
-            ])
+        ])
     }()
 
     public static var bakedImageFileExtensions: Set<String> = {
@@ -359,11 +357,17 @@ open class Image: Equatable, Hashable, CustomStringConvertible {
     }()
 
     public static func == (lhs:Image, rhs:Image) -> Bool {
+        if lhs.URL == nil || rhs.URL == nil {
+            return lhs === rhs
+        }
         return lhs.URL == rhs.URL
     }
 
     public func hash(into hasher: inout Hasher) {
-        hasher.combine(UUID)
+        guard let url = URL else {
+            return hasher.combine("")
+        }
+        hasher.combine(url)
     }
 
     public var description: String {
