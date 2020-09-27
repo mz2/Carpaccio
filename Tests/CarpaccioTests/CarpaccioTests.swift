@@ -201,4 +201,32 @@ class CarpaccioTests: XCTestCase {
         XCTAssertEqual(imageMetadata.nativeOrientation, decodedImageMetadata.nativeOrientation)
         XCTAssertEqual(imageMetadata.timestamp, decodedImageMetadata.timestamp)
     }
+
+    func testImageHashing() throws {
+        // Mock up an Images and Words dictionary
+        let originalURL1 = URL(fileURLWithPath: "/Users/erkki/Pictures/1.jpg")
+        let image1 = try Image(URL: originalURL1)
+        let originalURL2 = URL(fileURLWithPath: "/Users/erkki/Pictures/2.jpg")
+        let image2 = try Image(URL: originalURL2)
+        let originalURL3 = URL(fileURLWithPath: "/Users/erkki/Pictures/3.jpg")
+        let image3 = try Image(URL: originalURL3)
+
+        let map = [image1: "cat", image2: "dog", image3: "walrus"]
+
+        XCTAssertEqual(map[image1], "cat")
+        XCTAssertEqual(map[image2], "dog")
+        XCTAssertEqual(map[image3], "walrus")
+
+        // Simulate moving images to a Keepers subdirectory
+        let newURL1 = originalURL1.deletingLastPathComponent().appendingPathComponent("Keepers").appendingPathComponent(originalURL1.lastPathComponent)
+        image1.updateURL(newURL1)
+        let newURL2 = originalURL1.deletingLastPathComponent().appendingPathComponent("Keepers").appendingPathComponent(originalURL2.lastPathComponent)
+        image2.updateURL(newURL2)
+        let newURL3 = originalURL1.deletingLastPathComponent().appendingPathComponent("Keepers").appendingPathComponent(originalURL3.lastPathComponent)
+        image3.updateURL(newURL3)
+
+        XCTAssertEqual(map[image1], "cat")
+        XCTAssertEqual(map[image2], "dog")
+        XCTAssertEqual(map[image3], "walrus")
+    }
 }

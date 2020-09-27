@@ -109,8 +109,6 @@ open class Image: Equatable, Hashable, CustomStringConvertible {
         return nil
     }
     
-    public lazy var UUID: String = Foundation.UUID().uuidString
-    
     public typealias MetadataHandler = (_ metadata: ImageMetadata) -> Void
     public typealias ErrorHandler = (_ error: Image.Error) -> Void
     public typealias DistanceFunction = (_ a:Image, _ b:Image)-> Double
@@ -351,22 +349,30 @@ open class Image: Equatable, Hashable, CustomStringConvertible {
             "srf", // Garmin vehicle image (!) https://www.file-extensions.org/srf-file-extension
             "srw", // Samsung RAW Image https://fileinfo.com/extension/srw
             "x3f"  // SIGMA X3F Camera RAW File https://fileinfo.com/extension/x3f
-            ])
+        ])
     }()
 
     public static var bakedImageFileExtensions: Set<String> = {
         return Set(["jpg", "jpeg", "png", "tiff", "tif", "gif", "heic", "heif"])
     }()
 
+    public var description: String {
+        return "(name: \(self.name), URL: \(self.URL?.absoluteString ?? "(unknown)"), bitmap image loaded: \(self.thumbnailImage != nil), CIImage loaded: \(self.editableImage != nil))"
+    }
+
+    // MARK: - Equatable & Hashable
+
+    // Note: as long as we have a mutable, optional URL property, we will be using a private, transient
+    // UUID for equality and hashing. This will be refactored in:
+    //   https://gitlab.com/sashimiapp-public/Carpaccio/-/issues/12
+
+    private lazy var identity = UUID()
+
     public static func == (lhs:Image, rhs:Image) -> Bool {
-        return lhs.URL == rhs.URL
+        return lhs.identity == rhs.identity
     }
 
     public func hash(into hasher: inout Hasher) {
-        hasher.combine(UUID)
-    }
-
-    public var description: String {
-        return "(name: \(self.name), URL: \(self.URL?.absoluteString ?? "(unknown)"), bitmap image loaded: \(self.thumbnailImage != nil), CIImage loaded: \(self.editableImage != nil))"
+        hasher.combine(identity)
     }
 }
