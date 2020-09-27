@@ -356,21 +356,23 @@ open class Image: Equatable, Hashable, CustomStringConvertible {
         return Set(["jpg", "jpeg", "png", "tiff", "tif", "gif", "heic", "heif"])
     }()
 
+    public var description: String {
+        return "(name: \(self.name), URL: \(self.URL?.absoluteString ?? "(unknown)"), bitmap image loaded: \(self.thumbnailImage != nil), CIImage loaded: \(self.editableImage != nil))"
+    }
+
+    // MARK: - Equatable & Hashable
+
+    // Note: as long as we have a mutable, optional URL property, we will be using a private, transient
+    // UUID for equality and hashing. This will be refactored in:
+    //   https://gitlab.com/sashimiapp-public/Carpaccio/-/issues/12
+
+    private lazy var identity = UUID()
+
     public static func == (lhs:Image, rhs:Image) -> Bool {
-        if lhs.URL == nil || rhs.URL == nil {
-            return lhs === rhs
-        }
-        return lhs.URL == rhs.URL
+        return lhs.identity == rhs.identity
     }
 
     public func hash(into hasher: inout Hasher) {
-        guard let url = URL else {
-            return hasher.combine("")
-        }
-        hasher.combine(url)
-    }
-
-    public var description: String {
-        return "(name: \(self.name), URL: \(self.URL?.absoluteString ?? "(unknown)"), bitmap image loaded: \(self.thumbnailImage != nil), CIImage loaded: \(self.editableImage != nil))"
+        hasher.combine(identity)
     }
 }
