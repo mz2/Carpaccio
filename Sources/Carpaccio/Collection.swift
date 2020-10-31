@@ -70,7 +70,8 @@ open class Collection: ImageCollection {
     // MARK: - Loading images from the local filesystem
     public class func imageURLs(
         at directoryURL: URL,
-        filteringSubdirectoriesWith subdirectoryFilter: URLFilter? = nil) throws -> [URL] {
+        filteringSubdirectoriesWith subdirectoryFilter: URLFilter? = nil
+    ) throws -> [URL] {
 
         guard let enumerator = FileManager.default.enumerator(atPath: directoryURL.path) else {
             throw Image.Error.locationNotEnumerable(directoryURL)

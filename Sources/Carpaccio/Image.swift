@@ -122,7 +122,7 @@ open class Image: Equatable, Hashable, CustomStringConvertible {
         self.name = image.nameString ?? "Untitled"
     }
     
-    public init(URL: Foundation.URL, imageLoader: ImageLoaderProtocol? = nil) throws {
+    public init(URL: Foundation.URL, imageLoader: ImageLoaderProtocol? = nil) {
         self.URL = URL
         self.cachedImageLoader = imageLoader
         self.name = URL.lastPathComponent
