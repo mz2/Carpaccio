@@ -81,8 +81,8 @@ open class Image: Equatable, Hashable, CustomStringConvertible {
     
     public let name: String
 
-    public var thumbnailImage: BitmapImage?
-    public var editableImage: CIImage?
+    //public var thumbnailImage: BitmapImage?
+    //public var editableImage: CIImage?
 
     public var size: CGSize {
         guard let size = self.metadata?.size else {
@@ -147,8 +147,6 @@ open class Image: Equatable, Hashable, CustomStringConvertible {
 
     public func clearCachedResources() {
         self.cachedImageLoader = nil
-        self.thumbnailImage = nil
-        self.editableImage = nil
         self.fileModificationTimestamp = nil
     }
     
@@ -242,15 +240,9 @@ open class Image: Equatable, Hashable, CustomStringConvertible {
     }
     
     public func fetchThumbnail(presentedHeight: CGFloat? = nil,
-                               force: Bool = false,
-                               store: Bool = true,
                                colorSpace: CGColorSpace?,
                                cancelled: CancellationChecker?) throws -> BitmapImage
     {
-        if !force, let thumb = self.thumbnailImage {
-            return thumb
-        }
-        
         guard let loader = imageLoader() else {
             throw Error.noLoader(self)
         }
@@ -265,17 +257,12 @@ open class Image: Equatable, Hashable, CustomStringConvertible {
         if self.metadata == nil {
             self.metadata = metadata
         }
-        
-        if store {
-            self.thumbnailImage = thumbnailImage
-        }
-        
+
         return thumbnailImage
     }
 
     public func fetchEditableImage(
         presentedHeight: CGFloat? = nil,
-        store: Bool = false,
         scaleFactor: CGFloat = 2.0,
         colorSpace: CGColorSpace?,
         cancelled: CancellationChecker?) throws -> CIImage
@@ -306,9 +293,6 @@ open class Image: Equatable, Hashable, CustomStringConvertible {
 
         if self.metadata == nil {
             self.metadata = metadata
-        }
-        if store {
-            self.editableImage = ciImage
         }
 
         return ciImage
@@ -371,6 +355,6 @@ open class Image: Equatable, Hashable, CustomStringConvertible {
     }
 
     public var description: String {
-        return "(name: \(self.name), URL: \(self.URL?.absoluteString ?? "(unknown)"), bitmap image loaded: \(self.thumbnailImage != nil), CIImage loaded: \(self.editableImage != nil))"
+        return "(name: \(self.name), URL: \(self.URL?.absoluteString ?? "(unknown)"))"
     }
 }
