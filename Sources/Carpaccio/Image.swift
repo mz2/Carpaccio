@@ -338,7 +338,7 @@ open class Image: Equatable, Hashable, CustomStringConvertible {
     }()
 
     public var description: String {
-        return "(name: \(self.name), URL: \(self.URL?.absoluteString ?? "(unknown)"), bitmap image loaded: \(self.thumbnailImage != nil), CIImage loaded: \(self.editableImage != nil))"
+        return "(name: \(self.name), URL: \(self.URL?.absoluteString ?? "(unknown)"))"
     }
 
     // MARK: - Equatable & Hashable
