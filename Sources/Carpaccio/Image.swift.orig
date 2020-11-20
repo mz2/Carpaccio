@@ -81,6 +81,9 @@ open class Image: Equatable, Hashable, CustomStringConvertible {
     
     public let name: String
 
+    //public var thumbnailImage: BitmapImage?
+    //public var editableImage: CIImage?
+
     public var size: CGSize {
         guard let size = self.metadata?.size else {
             return CGSize.zero
@@ -337,6 +340,24 @@ open class Image: Equatable, Hashable, CustomStringConvertible {
         return Set(["jpg", "jpeg", "png", "tiff", "tif", "gif", "heic", "heif"])
     }()
 
+<<<<<<< HEAD
+    public static func == (lhs:Image, rhs:Image) -> Bool {
+        if lhs.URL == nil || rhs.URL == nil {
+            return lhs === rhs
+        }
+        return lhs.URL == rhs.URL
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        guard let url = URL else {
+            return hasher.combine("")
+        }
+        hasher.combine(url)
+    }
+
+    public var description: String {
+        return "(name: \(self.name), URL: \(self.URL?.absoluteString ?? "(unknown)"))"
+=======
     public var description: String {
         return "(name: \(self.name), URL: \(self.URL?.absoluteString ?? "(unknown)"), bitmap image loaded: \(self.thumbnailImage != nil), CIImage loaded: \(self.editableImage != nil))"
     }
@@ -355,5 +376,6 @@ open class Image: Equatable, Hashable, CustomStringConvertible {
 
     public func hash(into hasher: inout Hasher) {
         hasher.combine(identity)
+>>>>>>> 313f0f7de5df674a30c2ea96a9b348012a3c05f1
     }
 }
