@@ -228,9 +228,8 @@ open class Image: Equatable, Hashable, CustomStringConvertible {
         do {
             let metadata = try self.fetchMetadata()
             return metadata.timestamp ?? self.fileTimestamp
-        }
-        catch {
-            print("ERROR! Failed to read image metadata for \(self)")
+        } catch {
+          print("ERROR! Failed to read image metadata for \(self.URL?.path ?? self.name): \(error.localizedDescription)")
         }
         
         return nil
