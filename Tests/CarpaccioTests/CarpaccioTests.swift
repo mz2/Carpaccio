@@ -205,11 +205,11 @@ class CarpaccioTests: XCTestCase {
     func testImageHashing() throws {
         // Mock up an Images and Words dictionary
         let originalURL1 = URL(fileURLWithPath: "/Users/erkki/Pictures/1.jpg")
-        let image1 = try Image(URL: originalURL1)
+        let image1 = Image(URL: originalURL1)
         let originalURL2 = URL(fileURLWithPath: "/Users/erkki/Pictures/2.jpg")
-        let image2 = try Image(URL: originalURL2)
+        let image2 = Image(URL: originalURL2)
         let originalURL3 = URL(fileURLWithPath: "/Users/erkki/Pictures/3.jpg")
-        let image3 = try Image(URL: originalURL3)
+        let image3 = Image(URL: originalURL3)
 
         let map = [image1: "cat", image2: "dog", image3: "walrus"]
 

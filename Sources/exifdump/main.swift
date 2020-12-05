@@ -16,7 +16,7 @@ if CommandLine.arguments.count < 2 {
 
 let metadata:[[String: Any]] = try CommandLine.arguments.dropFirst().map {
     let url = URL(fileURLWithPath: $0)
-    let image = try Image(URL: url)
+    let image = Image(URL: url)
     
     return try image.fetchMetadata().dictionaryRepresentation
 }

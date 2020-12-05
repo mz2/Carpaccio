@@ -12,26 +12,26 @@ public protocol ImageCollection: class {
     var images: AnyCollection<Image> { get }
     var imageCount: Int { get }
     var imageURLs: AnyCollection<URL> { get }
-    var name: String { get }
+    var displayTitle: String { get }
     var URL: Foundation.URL? { get }
     
     func contains(image: Image) -> Bool
 }
 
 open class Collection: ImageCollection {
-    private(set) open var name: String
+    private(set) open var displayTitle: String
     private(set) open var images: AnyCollection<Image>
     private(set) open var URL: Foundation.URL?
 
-    public init(name: String, URL: Foundation.URL, images: AnyCollection<Image>) {
-        self.name = name
+    public init(displayTitle: String, URL: Foundation.URL, images: AnyCollection<Image>) {
+        self.displayTitle = displayTitle
         self.URL = URL
         self.images = images
     }
 
     public init(contentsOf url: Foundation.URL) throws {
         self.URL = url
-        self.name = url.lastPathComponent
+        self.displayTitle = url.lastPathComponent
         self.images = try Collection.load(contentsOfURL: url)
     }
 
@@ -115,14 +115,14 @@ open class Collection: ImageCollection {
     }
 
     public class func loadImages(at imageURLs: [URL], loadHandler: ImageLoadHandler? = nil) throws -> AnyCollection<Image> {
-        let lazyImages = try imageURLs.lazy.enumerated().compactMap { i, imageURL -> Image? in
+        let lazyImages = imageURLs.lazy.enumerated().compactMap { i, imageURL -> Image? in
             let pathExtension = imageURL.pathExtension
             
             guard pathExtension.utf8.count > 0 else {
                 return nil
             }
             
-            let image = try Image(URL: imageURL)
+            let image = Image(URL: imageURL)
             loadHandler?(i, image)
             
             return image
