@@ -10,28 +10,44 @@ import Foundation
 import QuartzCore
 
 public enum PrecisionScheme {
-    /** Return precise value as-is. */
+    /// Return precise value as-is.
     case precise
 
-    /** Return precise value floored. */
+    /// Return precise value rounded down, using `FloatingPointRoundingRule.down`. Equivalent to `floor(preciseValue)`.
     case floored
 
-    /** Return precise value rounded. */
+    /// Return precise value rounded, as per "schoolbook rounding" rule of `FloatingPointRoundingRule.toNearestOrAwayFromZero`.
     case rounded
+
+    /// Return precise value rounded up, using `FloatingPointRoundingRule.up`. Equivalent to `ceil(preciseValue)`.
+    case roundedUp
 
     func applied<T: FloatingPoint>(to preciseValue: T) -> T {
         switch self {
         case .precise:
             return preciseValue
         case .floored:
-            return floor(preciseValue)
+            return preciseValue.rounded(.down)
         case .rounded:
-            return round(preciseValue)
+            return preciseValue.rounded(.toNearestOrAwayFromZero)
+        case .roundedUp:
+            return preciseValue.rounded(.up)
         }
     }
 
+    ///
+    /// Rounding scheme that should match Image I/O's behavior when loading images using `CGImageSourceCreateThumbnailAtIndex()`,
+    /// providing a scaled target size via the `kCGImageSourceThumbnailMaxPixelSize` option.
+    ///
+    /// Unfortunately this is not explicitly documented, but has been observed to match `.roundedUp`, which is returned here.
+    ///
+    public static var imageIOMaxPixelSizePrecisionScheme: PrecisionScheme {
+        return .roundedUp
+    }
+
+    /// Default precision scheme to use. Returns `.imageIOMaximumPixelDimensionPrecisionScheme`.
     public static var defaultPrecisionScheme: PrecisionScheme {
-        return .rounded
+        return .imageIOMaxPixelSizePrecisionScheme
     }
 }
 
