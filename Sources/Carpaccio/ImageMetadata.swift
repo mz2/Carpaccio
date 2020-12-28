@@ -160,7 +160,13 @@ public struct ImageMetadata: Codable {
         var colorSpaceName: String? = nil
         var width: CGFloat? = nil, height: CGFloat? = nil
         var timestamp: Date? = nil
-        
+
+        // Get image dimensions
+        if let pixelWidth = properties[kCGImagePropertyPixelWidth] as? CGFloat, let pixelHeight = properties[kCGImagePropertyPixelHeight] as? CGFloat {
+            width = pixelWidth
+            height = pixelHeight
+        }
+
         // Examine EXIF metadata
         if let exif = properties[kCGImagePropertyExifDictionary as String] as? [String: Any] {
             fNumber = (exif[kCGImagePropertyExifFNumber as String] as? NSNumber)?.doubleValue
