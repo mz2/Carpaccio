@@ -178,7 +178,23 @@ public extension CGSize {
     }
 
     func proportionalWidth(forHeight height: CGFloat, precision: PrecisionScheme) -> CGFloat {
-        precision.applied(to: height * self.aspectRatio)
+        let ratio = aspectRatio
+        let candidateWidth = precision.applied(to: height * ratio)
+
+        if ratio.isLandscape {
+            let reverseHeight = precision.applied(to: candidateWidth / ratio)
+            if reverseHeight > height {
+                let tweakedWidth = candidateWidth - 1.0
+                assert(precision.applied(to: tweakedWidth / ratio) == height)
+                return tweakedWidth
+            } else if reverseHeight < height {
+                let tweakedWidth = candidateWidth + 1.0
+                assert(precision.applied(to: tweakedWidth / ratio) == height)
+                return tweakedWidth
+            }
+        }
+
+        return candidateWidth
     }
     
     func proportionalHeight(forWidth width: CGFloat, precision: PrecisionScheme) -> CGFloat {
