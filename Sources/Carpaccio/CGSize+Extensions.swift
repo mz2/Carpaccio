@@ -14,7 +14,7 @@ public enum PrecisionScheme {
     case precise
 
     /// Return precise value rounded down, using `FloatingPointRoundingRule.down`. Equivalent to `floor(preciseValue)`.
-    case floored
+    case roundedDown
 
     /// Return precise value rounded, as per "schoolbook rounding" rule of `FloatingPointRoundingRule.toNearestOrAwayFromZero`.
     case rounded
@@ -26,7 +26,7 @@ public enum PrecisionScheme {
         switch self {
         case .precise:
             return preciseValue
-        case .floored:
+        case .roundedDown:
             return preciseValue.rounded(.down)
         case .rounded:
             return preciseValue.rounded(.toNearestOrAwayFromZero)
@@ -39,10 +39,10 @@ public enum PrecisionScheme {
     /// Rounding scheme that should match Image I/O's behavior when loading images using `CGImageSourceCreateThumbnailAtIndex()`,
     /// providing a scaled target size via the `kCGImageSourceThumbnailMaxPixelSize` option.
     ///
-    /// Unfortunately this is not explicitly documented, but has been observed to match `.roundedUp`, which is returned here.
+    /// Unfortunately this is not explicitly documented, but has been observed to match `.roundedDown`, which is returned here.
     ///
     public static var imageIOMaxPixelSizePrecisionScheme: PrecisionScheme {
-        return .roundedUp
+        return .roundedDown
     }
 
     /// Default precision scheme to use. Returns `.imageIOMaximumPixelDimensionPrecisionScheme`.
