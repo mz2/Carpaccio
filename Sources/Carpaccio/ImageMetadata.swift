@@ -162,7 +162,8 @@ public struct ImageMetadata: Codable {
         var timestamp: Date? = nil
 
         // Get image dimensions
-        if let pixelWidth = properties[kCGImagePropertyPixelWidth] as? CGFloat, let pixelHeight = properties[kCGImagePropertyPixelHeight] as? CGFloat {
+        if let pixelWidth = properties[kCGImagePropertyPixelWidth] as? CGFloat,
+           let pixelHeight = properties[kCGImagePropertyPixelHeight] as? CGFloat {
             width = pixelWidth
             height = pixelHeight
         }
@@ -184,11 +185,11 @@ public struct ImageMetadata: Codable {
             
             shutterSpeed = (exif[kCGImagePropertyExifExposureTime as String] as? NSNumber)?.doubleValue
             
-            if let w = (exif[kCGImagePropertyExifPixelXDimension as String] as? NSNumber)?.doubleValue {
-                width = CGFloat(w)
-            }
-            if let h = (exif[kCGImagePropertyExifPixelYDimension as String] as? NSNumber)?.doubleValue {
-                height = CGFloat(h)
+            if width == nil,
+               let pixelXDimension = (exif[kCGImagePropertyExifPixelXDimension as String] as? NSNumber)?.doubleValue,
+               let pixelYDimension = (exif[kCGImagePropertyExifPixelYDimension as String] as? NSNumber)?.doubleValue {
+                width = CGFloat(pixelXDimension)
+                height = CGFloat(pixelYDimension)
             }
             
             if let originalDateString = (exif[kCGImagePropertyExifDateTimeOriginal as String] as? String) {
