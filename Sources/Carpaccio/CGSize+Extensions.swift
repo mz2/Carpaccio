@@ -39,10 +39,10 @@ public enum PrecisionScheme {
     /// Rounding scheme that should match Image I/O's behavior when loading images using `CGImageSourceCreateThumbnailAtIndex()`,
     /// providing a scaled target size via the `kCGImageSourceThumbnailMaxPixelSize` option.
     ///
-    /// Unfortunately this is not explicitly documented, but has been observed to match `.roundedDown`, which is returned here.
+    /// Unfortunately this is not explicitly documented, but has been observed to match `.rounded`, which is returned here.
     ///
     public static var imageIOMaxPixelSizePrecisionScheme: PrecisionScheme {
-        return .roundedDown
+        return .rounded
     }
 
     /// Default precision scheme to use. Returns `.imageIOMaximumPixelDimensionPrecisionScheme`.
@@ -54,6 +54,18 @@ public enum PrecisionScheme {
 public extension CGFloat {
     static var unconstrained: CGFloat {
         infinity
+    }
+
+    var isLandscape: Bool {
+        self > 1.0 && self < .infinity
+    }
+
+    var isPortrait: Bool {
+        self > 0.0 && self < 1.0
+    }
+
+    var isSquare: Bool {
+        self == 1.0
     }
 }
 
@@ -116,10 +128,10 @@ public extension CGSize {
         return self.width / self.height
     }
 
-    func proportionalSize(for imageSize: CGSize, precision: PrecisionScheme) -> CGSize {
+    func proportionalSize(for imageSize: CGSize, precision: PrecisionScheme = .defaultPrecisionScheme) -> CGSize {
         let maximumDimension = CGFloat(maximumPixelSize(forImageSize: imageSize))
         let ratio = imageSize.aspectRatio
-        if ratio > 1.0 {
+        if ratio.isLandscape {
             return CGSize(width: precision.applied(to: maximumDimension), height: precision.applied(to: maximumDimension / ratio))
         } else {
             return CGSize(width: precision.applied(to: ratio * maximumDimension), height: precision.applied(to: maximumDimension))
@@ -137,22 +149,24 @@ public extension CGSize {
         let ratio = imageSize.aspectRatio
 
         if widthIsUnconstrained && heightIsUnconstrained {
-            if ratio > 1.0 {
-                return Int(round(imageSize.width))
+            if ratio.isLandscape {
+                return Int(PrecisionScheme.imageIOMaxPixelSizePrecisionScheme.applied(to: imageSize.width))
             }
-            return Int(round(imageSize.height))
+            return Int(PrecisionScheme.imageIOMaxPixelSizePrecisionScheme.applied(to: imageSize.height))
 
         } else if widthIsUnconstrained {
-            if ratio > 1.0 {
-                return Int(imageSize.proportionalWidth(forHeight: self.height, precision: .rounded))
+            if ratio.isLandscape {
+                return Int(imageSize.proportionalWidth(
+                    forHeight: self.height, precision: .imageIOMaxPixelSizePrecisionScheme
+                ))
             }
-            return Int(round(self.height))
+            return Int(PrecisionScheme.imageIOMaxPixelSizePrecisionScheme.applied(to: self.height))
 
         } else if heightIsUnconstrained {
-            if ratio > 1.0 {
-                return Int(round(self.width))
+            if ratio.isLandscape {
+                return Int(PrecisionScheme.imageIOMaxPixelSizePrecisionScheme.applied(to: self.width))
             }
-            return Int(imageSize.proportionalHeight(forWidth: self.width, precision: .rounded))
+            return Int(imageSize.proportionalHeight(forWidth: self.width, precision: .imageIOMaxPixelSizePrecisionScheme))
         }
 
         return Int(round(min(self.width, self.height)))
