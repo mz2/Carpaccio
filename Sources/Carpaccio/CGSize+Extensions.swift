@@ -22,6 +22,11 @@ public enum PrecisionScheme {
     /// Return precise value rounded up, using `FloatingPointRoundingRule.up`. Equivalent to `ceil(preciseValue)`.
     case roundedUp
 
+    /// Default precision scheme to use when not explicitly provided; returns `.rounded`.
+    public static var defaultPrecisionScheme: PrecisionScheme {
+        return .rounded
+    }
+
     func applied<T: FloatingPoint>(to preciseValue: T) -> T {
         switch self {
         case .precise:
@@ -33,21 +38,6 @@ public enum PrecisionScheme {
         case .roundedUp:
             return preciseValue.rounded(.up)
         }
-    }
-
-    ///
-    /// Rounding scheme that should match Image I/O's behavior when loading images using `CGImageSourceCreateThumbnailAtIndex()`,
-    /// providing a scaled target size via the `kCGImageSourceThumbnailMaxPixelSize` option.
-    ///
-    /// Unfortunately this is not explicitly documented, but has been observed to match `.rounded`, which is returned here.
-    ///
-    public static var imageIOMaxPixelSizePrecisionScheme: PrecisionScheme {
-        return .rounded
-    }
-
-    /// Default precision scheme to use. Returns `.imageIOMaximumPixelDimensionPrecisionScheme`.
-    public static var defaultPrecisionScheme: PrecisionScheme {
-        return .imageIOMaxPixelSizePrecisionScheme
     }
 }
 
@@ -132,87 +122,52 @@ public extension CGSize {
         let maximumDimension = CGFloat(maximumPixelSize(forImageSize: imageSize))
         let ratio = imageSize.aspectRatio
         if ratio.isLandscape {
-            return CGSize(width: precision.applied(to: maximumDimension), height: precision.applied(to: maximumDimension / ratio))
+            return CGSize(width: maximumDimension, height: precision.applied(to: maximumDimension / ratio))
         } else {
-            return CGSize(width: precision.applied(to: ratio * maximumDimension), height: precision.applied(to: maximumDimension))
+            return CGSize(width: precision.applied(to: ratio * maximumDimension), height: maximumDimension)
         }
     }
 
-    /**
-     Assuming this CGSize value describes desired maximum width and/or height of a scaled output image,
-     return an the value for the `kCGImageSourceThumbnailMaxPixelSize` option so that an image gets scaled
-     down proportionally, if appropriate.
-     */
+    /// Assuming this `CGSize` describes desired maximum width and/or height of a scaled output image, return the value for
+    /// the `kCGImageSourceThumbnailMaxPixelSize` option, so that an image gets scaled down proportionally when loaded.
     func maximumPixelSize(forImageSize imageSize: CGSize) -> Int {
         let widthIsUnconstrained = self.width >= imageSize.width
         let heightIsUnconstrained = self.height >= imageSize.height
         let ratio = imageSize.aspectRatio
+        let precision = PrecisionScheme.defaultPrecisionScheme
 
         if widthIsUnconstrained && heightIsUnconstrained {
             if ratio.isLandscape {
-                return Int(PrecisionScheme.imageIOMaxPixelSizePrecisionScheme.applied(to: imageSize.width))
+                return Int(precision.applied(to: imageSize.width))
             }
-            return Int(PrecisionScheme.imageIOMaxPixelSizePrecisionScheme.applied(to: imageSize.height))
+            return Int(precision.applied(to: imageSize.height))
 
         } else if widthIsUnconstrained {
             if ratio.isLandscape {
-                return Int(imageSize.proportionalWidth(
-                    forHeight: self.height, precision: .imageIOMaxPixelSizePrecisionScheme
-                ))
+                return Int(imageSize.proportionalWidth(forHeight: self.height, precision: precision))
             }
-            return Int(PrecisionScheme.imageIOMaxPixelSizePrecisionScheme.applied(to: self.height))
+            return Int(precision.applied(to: self.height))
 
         } else if heightIsUnconstrained {
             if ratio.isLandscape {
-                return Int(PrecisionScheme.imageIOMaxPixelSizePrecisionScheme.applied(to: self.width))
+                return Int(precision.applied(to: self.width))
             }
-            return Int(imageSize.proportionalHeight(forWidth: self.width, precision: .imageIOMaxPixelSizePrecisionScheme))
+            return Int(imageSize.proportionalHeight(forWidth: self.width, precision: precision))
         }
 
-        return Int(round(min(self.width, self.height)))
+        return Int(precision.applied(to: min(self.width, self.height)))
     }
 
-    var maximumPixelSizeConstraint: CGFloat {
-        let constrainWidth = width >= 1.0 && width != CGFloat.unconstrained
-        let constrainHeight = height >= 1.0 && height != CGFloat.unconstrained
-        if constrainWidth && constrainHeight {
-            return max(width, height)
-        }
-        if constrainWidth {
-            return width
-        }
-        if constrainHeight {
-            return height
-        }
-        return 1.0
+    // Calculate a target width based on a desired target height, such that the target width and height will have the same aspect
+    // ratio as this `CGSize`.
+    func proportionalWidth(forHeight height: CGFloat, precision: PrecisionScheme = .defaultPrecisionScheme) -> CGFloat {
+        precision.applied(to: height * aspectRatio)
     }
 
-    func scaledHeight(forImageSize imageSize: CGSize) -> CGFloat {
-        return min(imageSize.height, self.height)
-    }
-
-    func proportionalWidth(forHeight height: CGFloat, precision: PrecisionScheme) -> CGFloat {
-        let ratio = aspectRatio
-        let candidateWidth = precision.applied(to: height * ratio)
-
-        if ratio.isLandscape {
-            let reverseHeight = precision.applied(to: candidateWidth / ratio)
-            if reverseHeight > height {
-                let tweakedWidth = candidateWidth - 1.0
-                assert(precision.applied(to: tweakedWidth / ratio) == height)
-                return tweakedWidth
-            } else if reverseHeight < height {
-                let tweakedWidth = candidateWidth + 1.0
-                assert(precision.applied(to: tweakedWidth / ratio) == height)
-                return tweakedWidth
-            }
-        }
-
-        return candidateWidth
-    }
-    
-    func proportionalHeight(forWidth width: CGFloat, precision: PrecisionScheme) -> CGFloat {
-        precision.applied(to: width / self.aspectRatio)
+    // Calculate a target height based on a desired target width, such that the target width and height will have the same aspect
+    // ratio as this `CGSize`.
+    func proportionalHeight(forWidth width: CGFloat, precision: PrecisionScheme = .defaultPrecisionScheme) -> CGFloat {
+        precision.applied(to: width / aspectRatio)
     }
     
     func distance(to: CGSize) -> CGFloat {

@@ -15,22 +15,38 @@ public extension CIImage {
             throw ImageLoadingError.failedToInitializeDecoder(URL: url, message: "Failed to load full-size RAW image at \(url.path)")
         }
 
+        // Determine scale to load image at
+        let scale: Double
+
+        if let maximumSize = options.maximumPixelDimensions,
+           let imageSize = imageMetadata?.size,
+           imageSize.width >= 1.0,
+           imageSize.height >= 1.0
+        {
+            let widthScale = Double(maximumSize.width) / Double(imageSize.width)
+            let heightScale = Double(maximumSize.height) / Double(imageSize.height)
+            let candidate = min(widthScale, heightScale)
+            if candidate < 1.0 {
+                scale = candidate
+            } else {
+                // We won't scale up
+                scale = 1.0
+            }
+        } else {
+            // Load image as-is
+            scale = 1.0
+        }
+
+        // Configure RAW filter
         rawFilter.setDefaults()
 
-        let scale: Double = {
-            guard let targetSize = options.maximumPixelDimensions, let metadata = imageMetadata else {
-                return 1.0
-            }
-            let height = targetSize.scaledHeight(forImageSize: metadata.size)
-            return Double(height / metadata.size.height)
-        }()
+        rawFilter.setValue(scale, forKey: CIRAWFilterOption.scaleFactor.rawValue)
 
         // Note: having draft mode on appears to be crucial to performance, with a difference
         // of 0.3s vs. 2.5s per image on a late 2015 iMac 5K, for instance. The quality is still
         // quite excellent for displaying scaled-down presentations in a collection view,
         // subjectively better than what you get from LibRAW with the half-size option.
         rawFilter.setValue(options.allowDraftMode, forKey: CIRAWFilterOption.allowDraftMode.rawValue)
-        rawFilter.setValue(scale, forKey: CIRAWFilterOption.scaleFactor.rawValue)
 
         if let value = options.baselineExposure {
             rawFilter.setValue(value, forKey: CIRAWFilterOption.baselineExposure.rawValue)

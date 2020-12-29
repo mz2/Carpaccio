@@ -161,7 +161,18 @@ public struct ImageMetadata: Codable {
         var width: CGFloat? = nil, height: CGFloat? = nil
         var timestamp: Date? = nil
 
-        // Get image dimensions
+        //
+        // Get image dimensions. Priority order of finding this out is:
+        //
+        // 1. Top-level kCGImagePropertyPixelWidth and kCGImagePropertyPixelHeight metadata keys.
+        //
+        // 2. EXIF dictionary's kCGImagePropertyExifPixelXDimension and kCGImagePropertyExifPixelYDimension metadata keys. Note
+        //    that we have observed real-life images where the EXIF dimensions mismatch the actual image size, but this has been
+        //    very rare; have so far _not_ observed images with EXIF metadata but not the top-level size metadata. Point is:
+        //    we might do well to drop this EXIF size business altogether. 🤔
+        //
+        // 3. Actually loading the image. This will obviously be considerably slower than having the size appear in metadata.
+        //
         if let pixelWidth = properties[kCGImagePropertyPixelWidth] as? CGFloat,
            let pixelHeight = properties[kCGImagePropertyPixelHeight] as? CGFloat {
             width = pixelWidth
@@ -213,13 +224,6 @@ public struct ImageMetadata: Codable {
             }
         }
 
-        // We may be dealing with a metadata dictionary from ImageCaptureCore (have not found system-defined constants
-        // for these keys, yet)
-        if width == nil {
-            width = properties["PixelWidth"] as? CGFloat
-            height = properties["PixelHeight"] as? CGFloat
-        }
-
         if colorSpaceName == nil {
             if let pictureStyleDictionary = properties["{PictureStyle}"] as? [String: Any],
                 let names = pictureStyleDictionary["PictStyleColorSpace"] as? [Any],
@@ -262,8 +266,8 @@ public struct ImageMetadata: Codable {
     }()
 
     // MARK: Derived properties
-    public var size: CGSize
-    {
+  
+    public var size: CGSize {
         if self.nativeOrientation.dimensionsSwapped {
             return CGSize(width: nativeSize.height, height: nativeSize.width)
         }

@@ -132,9 +132,25 @@ open class Image: Equatable, Hashable, CustomStringConvertible {
         return isBakedImage
     }
     
+    /// Determine if this `Image` represents an image file stored in a baked, non-RAW format.
+    open var isBaked: Bool {
+        guard let pathExtension = URL?.pathExtension else {
+            return false
+        }
+        return Image.bakedImageFileExtensions.contains(pathExtension.lowercased())
+    }
+
     open class func isRAWImage(at url: URL) -> Bool {
         let isRAW = Image.RAWImageFileExtensions.contains(url.pathExtension.lowercased())
         return isRAW
+    }
+
+    /// Determine if this `Image` represents an image file stored in a RAW format.
+    open var isRAW: Bool {
+        guard let pathExtension = URL?.pathExtension else {
+            return false
+        }
+        return Image.RAWImageFileExtensions.contains(pathExtension.lowercased())
     }
     
     open class func isImage(at url: URL) -> Bool {
