@@ -144,9 +144,10 @@ public struct ImageMetadata: Codable {
     }
 
     public init(imageSource: ImageIO.CGImageSource) throws {
-        if (CGImageSourceGetCount(imageSource) == 0) {
+        guard (CGImageSourceGetCount(imageSource) >= 1) else {
             throw Image.Error.sourceHasNoImages
         }
+
         guard let imageProperties = CGImageSourceCopyPropertiesAtIndex(imageSource, 0, nil) else {
             throw Image.Error.noMetadata
         }
@@ -158,7 +159,7 @@ public struct ImageMetadata: Codable {
     public init(cgImagePropertiesDictionary properties: [AnyHashable: Any], imageSource: ImageIO.CGImageSource? = nil) throws {
         var fNumber: Double? = nil, focalLength: Double? = nil, focalLength35mm: Double? = nil, iso: Double? = nil, shutterSpeed: Double? = nil
         var colorSpaceName: String? = nil
-        var width: CGFloat? = nil, height: CGFloat? = nil
+        var width, height, exifWidth, exifHeight: CGFloat?
         var timestamp: Date? = nil
 
         //
@@ -166,12 +167,13 @@ public struct ImageMetadata: Codable {
         //
         // 1. Top-level kCGImagePropertyPixelWidth and kCGImagePropertyPixelHeight metadata keys.
         //
-        // 2. EXIF dictionary's kCGImagePropertyExifPixelXDimension and kCGImagePropertyExifPixelYDimension metadata keys. Note
-        //    that we have observed real-life images where the EXIF dimensions mismatch the actual image size, but this has been
-        //    very rare; have so far _not_ observed images with EXIF metadata but not the top-level size metadata. Point is:
-        //    we might do well to drop this EXIF size business altogether. 🤔
+        // 2. EXIF dictionary's kCGImagePropertyExifPixelXDimension and kCGImagePropertyExifPixelYDimension metadata keys.
         //
-        // 3. Actually loading the image. This will obviously be considerably slower than having the size appear in metadata.
+        // 3. If neither is available, or both are, but their values are in conflict, actually opening and examining the image.
+        //    (We don't do this always, for every image, because it is measurably slower than examining the metadata.)
+        //
+        // To be clear, we _have_ observed real-life images where the EXIF dimensions mismatch the top-level metadata, and/or the
+        // actual image size. Most annoyingly, this can also vary between macOS and iOS.
         //
         if let pixelWidth = properties[kCGImagePropertyPixelWidth] as? CGFloat,
            let pixelHeight = properties[kCGImagePropertyPixelHeight] as? CGFloat {
@@ -186,8 +188,7 @@ public struct ImageMetadata: Codable {
             focalLength = (exif[kCGImagePropertyExifFocalLength as String] as? NSNumber)?.doubleValue
             focalLength35mm = (exif[kCGImagePropertyExifFocalLenIn35mmFilm as String] as? NSNumber)?.doubleValue
             
-            if let isoValues = exif[kCGImagePropertyExifISOSpeedRatings as String]
-            {
+            if let isoValues = exif[kCGImagePropertyExifISOSpeedRatings as String] {
                 let isoArray = NSArray(array: isoValues as! CFArray)
                 if isoArray.count > 0 {
                     iso = (isoArray[0] as? NSNumber)?.doubleValue
@@ -195,12 +196,13 @@ public struct ImageMetadata: Codable {
             }
             
             shutterSpeed = (exif[kCGImagePropertyExifExposureTime as String] as? NSNumber)?.doubleValue
-            
-            if width == nil,
-               let pixelXDimension = (exif[kCGImagePropertyExifPixelXDimension as String] as? NSNumber)?.doubleValue,
-               let pixelYDimension = (exif[kCGImagePropertyExifPixelYDimension as String] as? NSNumber)?.doubleValue {
-                width = CGFloat(pixelXDimension)
-                height = CGFloat(pixelYDimension)
+
+            // Take note of width and height, for later deciding whether to use them or the top-level values
+            if let pixelXDimension = (exif[kCGImagePropertyExifPixelXDimension as String] as? NSNumber)?.doubleValue,
+               let pixelYDimension = (exif[kCGImagePropertyExifPixelYDimension as String] as? NSNumber)?.doubleValue
+            {
+                exifWidth = CGFloat(pixelXDimension)
+                exifHeight = CGFloat(pixelYDimension)
             }
             
             if let originalDateString = (exif[kCGImagePropertyExifDateTimeOriginal as String] as? String) {
@@ -232,22 +234,59 @@ public struct ImageMetadata: Codable {
             }
         }
 
-        // If image dimension didn't appear in metadata (as can happen with some RAW files like Nikon NEFs),
-        // take one more step: open the actual image. This thankfully doesn't appear to immediately load image data.
-        if width == nil || height == nil, let imageSource = imageSource {
-            let options: CFDictionary = [String(kCGImageSourceShouldCache): false] as NSDictionary as CFDictionary
-            guard let image = CGImageSourceCreateImageAtIndex(imageSource, 0, options) else {
-                throw Image.Error.failedToDecodeImage
+        // If image dimensions didn't appear in metadata (as can happen with some RAW files like Nikon NEFs), or top-level and
+        // EXIF dimensions are in conflict (observed with some Sony ARW files on iOS), take one more step: open the image, and use
+        // its actual dimensions. This thankfully doesn't appear to immediately load image data (and, as a consequence, totally
+        // kill performance.)
+        let exifDimensionsAvailable = exifWidth != nil && exifHeight != nil
+
+        if let imageSource = imageSource {
+            let topLevelDimensionsAvailable = width != nil && height != nil
+            let examineImage: Bool
+
+            if !topLevelDimensionsAvailable && !exifDimensionsAvailable {
+                // No dimensions available in metadata
+                examineImage = true
+            } else if topLevelDimensionsAvailable && exifDimensionsAvailable && (width != exifWidth || height != exifHeight) {
+                // Top-level and EXIF dimensions are in conflict
+                examineImage = true
+            } else {
+                examineImage = false
             }
-            width = CGFloat(image.width)
-            height = CGFloat(image.height)
+
+            if examineImage {
+                let options: CFDictionary = [String(kCGImageSourceShouldCache): false] as NSDictionary as CFDictionary
+                guard let image = CGImageSourceCreateImageAtIndex(imageSource, 0, options) else {
+                    throw Image.Error.failedToDecodeImage
+                }
+                width = CGFloat(image.width)
+                height = CGFloat(image.height)
+            }
+        }
+
+        if width == nil && exifDimensionsAvailable {
+            // Only EXIF dimensions are available; use them
+            width = exifWidth
+            height = exifHeight
         }
 
         guard let validWidth = width, let validHeight = height else {
             throw Image.Error.invalidImageSize
         }
 
-        self.init(nativeSize: CGSize(width: validWidth, height: validHeight), nativeOrientation: orientation ?? .up, colorSpaceName: colorSpaceName, fNumber: fNumber, focalLength: focalLength, focalLength35mmEquivalent: focalLength35mm, iso: iso, shutterSpeed: shutterSpeed, cameraMaker: cameraMaker, cameraModel: cameraModel, timestamp: timestamp)
+        self.init(
+            nativeSize: CGSize(width: validWidth, height: validHeight),
+            nativeOrientation: orientation ?? .up,
+            colorSpaceName: colorSpaceName,
+            fNumber: fNumber,
+            focalLength: focalLength,
+            focalLength35mmEquivalent: focalLength35mm,
+            iso: iso,
+            shutterSpeed: shutterSpeed,
+            cameraMaker: cameraMaker,
+            cameraModel: cameraModel,
+            timestamp: timestamp
+        )
     }
 
     public static func loadImageMetadataIfNeeded(from source: CGImageSource, having inputMetadata: ImageMetadata?) throws -> ImageMetadata {
