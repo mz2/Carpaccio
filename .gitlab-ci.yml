@@ -15,7 +15,7 @@ build_macos:
 build_ios:
   stage: build_ios
   script:
-   - xcodebuild -scheme Carpaccio -destination 'platform=iOS Simulator,name=iPhone 11,OS=14.0' clean build
+   - xcodebuild -scheme Carpaccio -destination 'platform=iOS Simulator,name=iPhone 11,OS=14.3' clean build
   tags:
     - xcode
     - macos
@@ -34,7 +34,7 @@ test_macos:
   stage: test_ios
   script:
     - swift package generate-xcodeproj
-    - xcodebuild -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 11,OS=14.0' -scheme Carpaccio clean test
+    - xcodebuild -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 11,OS=14.3' -scheme Carpaccio clean test
   dependencies:
     - build_ios
   tags:
