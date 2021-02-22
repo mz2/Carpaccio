@@ -209,34 +209,34 @@ open class Image: Equatable, Hashable, CustomStringConvertible {
         self.metadata = metadata
         self.imageLoader()?.updateCachedMetadata(metadata)
     }
-    
+
     private var fileModificationTimestamp: Date?
-    public var fileTimestamp: Date? {
+
+    open var fileTimestamp: Date? {
         if let fileModificationTimestamp = fileModificationTimestamp {
             return fileModificationTimestamp
         }
-        
-        guard let url = self.URL else {
+
+        guard let url = self.URL, url.isFileURL else {
             return nil
         }
-        
+
         do {
             if let fileTimestamp = try FileManager.default.attributesOfFileSystem(forPath: url.path)[.modificationDate] as? Date {
                 fileModificationTimestamp = fileTimestamp
                 return fileModificationTimestamp
             }
-        }
-        catch {
+        } catch {
             print("ERROR! Failed to read attributes of image file at path \(url.path)")
         }
-        
+
         return nil
     }
     
     /// Return the metadata based file timestamp, and fall backs to file modification date 
     /// if reading metadata (and therefore the timestamp from the metadata) failed.
     /// Also falls back to file modification date if metadata doesn't contain the timestamp.
-    public var approximateTimestamp: Date? {
+    open var approximateTimestamp: Date? {
         if let metadata = metadata {
             return metadata.timestamp ?? self.fileTimestamp
         }
