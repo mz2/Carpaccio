@@ -217,10 +217,10 @@ public struct ImageMetadata: Codable {
         {
             cameraMaker = tiff[kCGImagePropertyTIFFMake as String] as? String
             cameraModel = tiff[kCGImagePropertyTIFFModel as String] as? String
-            if let cgOrientation = CGImagePropertyOrientation(rawValue: (tiff[kCGImagePropertyTIFFOrientation as String] as? NSNumber)?.uint32Value ?? CGImagePropertyOrientation.up.rawValue) {
-                orientation = ImageOrientation(cgImageOrientation: cgOrientation)
+            if let tiffOrientation = (tiff[kCGImagePropertyTIFFOrientation as String] as? NSNumber)?.uint32Value {
+                orientation = try? ImageOrientation(tiffOrientation: tiffOrientation)
             }
-            
+
             if timestamp == nil, let dateTimeString = (tiff[kCGImagePropertyTIFFDateTime as String] as? String) {
                 timestamp = ImageMetadata.EXIFDateFormatter.date(from: dateTimeString)
             }
@@ -509,7 +509,7 @@ public enum ImageOrientation: String, Codable {
     case rightMirrored = "right-mirrored"
     case left = "left"
     
-    init(cgImageOrientation: CGImagePropertyOrientation) {
+    public init(cgImageOrientation: CGImagePropertyOrientation) {
         switch cgImageOrientation {
         case .up:
             self = .up
@@ -527,6 +527,36 @@ public enum ImageOrientation: String, Codable {
             self = .rightMirrored
         case .left:
             self = .left
+        }
+    }
+
+    ///
+    /// Initialize image orientation from a raw value contained in a TIFF metadata dictionary, under the
+    /// `kCGImagePropertyTIFFOrientation` key.
+    ///
+    /// The values _should_ map 1:1 to the supported values of the `CGImagePropertyOrientation` enum, but we have seen real-life
+    /// images where this is not the case. Hence, this method throws an error if an unsupported raw value is encountered.
+    ///
+    public init(tiffOrientation: UInt32) throws {
+        switch tiffOrientation {
+        case CGImagePropertyOrientation.up.rawValue:
+            self = .up
+        case CGImagePropertyOrientation.upMirrored.rawValue:
+            self = .upMirrored
+        case CGImagePropertyOrientation.down.rawValue:
+            self = .down
+        case CGImagePropertyOrientation.downMirrored.rawValue:
+            self = .downMirrored
+        case CGImagePropertyOrientation.leftMirrored.rawValue:
+            self = .leftMirrored
+        case CGImagePropertyOrientation.right.rawValue:
+            self = .right
+        case CGImagePropertyOrientation.rightMirrored.rawValue:
+            self = .rightMirrored
+        case CGImagePropertyOrientation.left.rawValue:
+            self = .left
+        default:
+            throw Image.Error.invalidNativeOrientation
         }
     }
     
