@@ -104,10 +104,6 @@ public extension CGSize {
         size * scale
     }
 
-    static func > (lhs: CGSize, rhs: CGSize) -> Bool {
-        lhs.width * lhs.height > rhs.width * rhs.height
-    }
-
     var aspectRatio: CGFloat {
         if self.width == 0.0 {
             return 0.0
@@ -211,3 +207,24 @@ public extension CGSize {
     }
 }
 
+// MARK: - Comparable
+
+/// Implement `Comparable` based on the logic that the pixel area (so, `width * height`) determines the inherent order of two
+/// `CGSize` values.
+extension CGSize: Comparable {
+  public static func > (lhs: CGSize, rhs: CGSize) -> Bool {
+    lhs.width * lhs.height > rhs.width * rhs.height
+  }
+
+  public static func >= (lhs: CGSize, rhs: CGSize) -> Bool {
+    lhs.width * lhs.height >= rhs.width * rhs.height
+  }
+
+  public static func < (lhs: CGSize, rhs: CGSize) -> Bool {
+    lhs.width * lhs.height < rhs.width * rhs.height
+  }
+
+  public static func <= (lhs: CGSize, rhs: CGSize) -> Bool {
+    lhs.width * lhs.height <= rhs.width * rhs.height
+  }
+}
