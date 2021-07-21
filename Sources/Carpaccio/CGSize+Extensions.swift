@@ -162,12 +162,18 @@ public extension CGSize {
         }
 
         // This CGSize constrains both width and height:
-        if ratio >= self.aspectRatio {
-            // The image is wider (or equal) in shape than this CGSize. Width will be the maximim pixel dimension.
-            return Int(precision.applied(to: min(self.width, imageSize.width)))
+        let widthIsMaximumDimension: Bool
+
+        if ratio.isLandscape {	
+            widthIsMaximumDimension = ratio <= self.aspectRatio
         } else {
-            // This CGSize is wider in shape than the image. Height will be the maximim pixel dimension.
-            return Int(precision.applied(to: min(self.height, imageSize.height)))
+            widthIsMaximumDimension = ratio >= self.aspectRatio
+        }
+
+        if widthIsMaximumDimension {
+            return Int(precision.applied(to: self.width))
+        } else {
+            return Int(precision.applied(to: self.height))
         }
     }
 
