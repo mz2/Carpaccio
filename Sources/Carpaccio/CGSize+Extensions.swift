@@ -131,20 +131,20 @@ public extension CGSize {
     func maximumPixelSize(forImageSize imageSize: CGSize) -> Int {
         let widthIsUnconstrained = self.width >= imageSize.width
         let heightIsUnconstrained = self.height >= imageSize.height
-        let ratio = imageSize.aspectRatio
+        let imageRatio = imageSize.aspectRatio
         let precision = PrecisionScheme.defaultPrecisionScheme
 
         if widthIsUnconstrained && heightIsUnconstrained {
             // Neither width not height is requested to be constrained to a specific number of pixels. This means that this CGSize
             // does not affect the calculation at all, so we return the appropriate (larger) image dimension.
-            if ratio.isLandscape {
+            if imageRatio.isLandscape {
                 return Int(precision.applied(to: imageSize.width))
             }
             return Int(precision.applied(to: imageSize.height))
 
         } else if widthIsUnconstrained {
             // A specific height is requested:
-            if ratio.isLandscape {
+            if imageRatio.isLandscape {
                 // The image is larger (or equal) in width than height. Proportional width will be the maximum pixel size.
                 return Int(imageSize.proportionalWidth(forHeight: self.height, precision: precision))
             }
@@ -153,7 +153,7 @@ public extension CGSize {
 
         } else if heightIsUnconstrained {
             // A specific width is requested:
-            if ratio.isLandscape {
+            if imageRatio.isLandscape {
                 // The image is larger (or equal) in width than height. This CGSize's width will be the maximum pixel size.
                 return Int(precision.applied(to: self.width))
             }
@@ -161,9 +161,9 @@ public extension CGSize {
             return Int(imageSize.proportionalHeight(forWidth: self.width, precision: precision))
         }
 
-        // This CGSize constrains both width and height, so is effectively a bounding box:
-        let useWidth = imageSize.aspectRatio >= self.aspectRatio
-        let value = useWidth ? self.width : self.height
+        // This CGSize constrains both width and height, making it a bounding box:
+        let useWidth = imageRatio >= self.aspectRatio
+        let value = useWidth ? min(self.width, imageSize.width) : min(self.height, imageSize.height)
         let result = Int(precision.applied(to: value))
         print("🥸 Using \(useWidth ? "width" : "height"), 📦 \(self) bounds 🌁 \(imageSize) to \(result)")
         return result
