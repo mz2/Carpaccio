@@ -161,26 +161,24 @@ public extension CGSize {
             return Int(imageSize.proportionalHeight(forWidth: self.width, precision: precision))
         }
 
-        // This CGSize constrains both width and height, making it a bounding box:
+        // This CGSize constrains both width and height, effectively making it a bounding box. We need to:
+        // - Calculate one dimension proportionally from the other
+        // - Pick which one based on whether the image aspect ratio or this bounding aspect ratio is the wider one
+        // - Return the larger result as the maximum pixel size
         let calculateHeightFromWidth = imageRatio >= self.aspectRatio
         let value: CGFloat
-        let useWidth: Bool
 
         if calculateHeightFromWidth {
             let width = min(self.width, imageSize.width)
             let height = imageSize.proportionalHeight(forWidth: width)
-            useWidth = width > height
             value = max(width, height)
         } else {
             let height = min(self.height, imageSize.height)
             let width = imageSize.proportionalWidth(forHeight: height)
-            useWidth = width > height
             value = max(width, height)
         }
 
-        let result = Int(precision.applied(to: value))
-        print("Using \(useWidth ? "width" : "height") 📦 \(self) bounds 🌁 \(imageSize) to \(result)")
-        return result
+        return Int(precision.applied(to: value))
     }
 
     // Calculate a target width based on a desired target height, such that the target width and height will have the same aspect
