@@ -162,10 +162,24 @@ public extension CGSize {
         }
 
         // This CGSize constrains both width and height, making it a bounding box:
-        let useWidth = imageRatio >= self.aspectRatio
-        let value = useWidth ? min(self.width, imageSize.width) : min(self.height, imageSize.height)
+        let calculateHeightFromWidth = imageRatio >= self.aspectRatio
+        let value: CGFloat
+        let useWidth: Bool
+
+        if calculateHeightFromWidth {
+            let width = min(self.width, imageSize.width)
+            let height = imageSize.proportionalHeight(forWidth: width)
+            useWidth = width > height
+            value = max(width, height)
+        } else {
+            let height = min(self.height, imageSize.height)
+            let width = imageSize.proportionalWidth(forHeight: height)
+            useWidth = width > height
+            value = max(width, height)
+        }
+
         let result = Int(precision.applied(to: value))
-        print("🥸 Using \(useWidth ? "width" : "height"), 📦 \(self) bounds 🌁 \(imageSize) to \(result)")
+        print("Using \(useWidth ? "width" : "height") 📦 \(self) bounds 🌁 \(imageSize) to \(result)")
         return result
     }
 
