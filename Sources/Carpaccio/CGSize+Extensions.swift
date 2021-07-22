@@ -161,20 +161,12 @@ public extension CGSize {
             return Int(imageSize.proportionalHeight(forWidth: self.width, precision: precision))
         }
 
-        // This CGSize constrains both width and height:
-        let widthIsMaximumDimension: Bool
-
-        if ratio.isLandscape {	
-            widthIsMaximumDimension = ratio <= self.aspectRatio
-        } else {
-            widthIsMaximumDimension = ratio >= self.aspectRatio
-        }
-
-        if widthIsMaximumDimension {
-            return Int(precision.applied(to: self.width))
-        } else {
-            return Int(precision.applied(to: self.height))
-        }
+        // This CGSize constrains both width and height, so is effectively a bounding box:
+        let useWidth = imageSize.aspectRatio >= self.aspectRatio
+        let value = useWidth ? self.width : self.height
+        let result = Int(precision.applied(to: value))
+        print("🥸 Using \(useWidth ? "width" : "height"), 📦 \(self) bounds 🌁 \(imageSize) to \(result)")
+        return result
     }
 
     // Calculate a target width based on a desired target height, such that the target width and height will have the same aspect
