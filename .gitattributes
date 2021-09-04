@@ -1,0 +1,4 @@
+Tests/CarpaccioTests/Pixls/DP2M1726.X3F filter=lfs diff=lfs merge=lfs -text
+Tests/CarpaccioTests/DSC00583.ARW filter=lfs diff=lfs merge=lfs -text
+Tests/CarpaccioTests/DSC00588.ARW filter=lfs diff=lfs merge=lfs -text
+Tests/CarpaccioTests/DSC00593.ARW filter=lfs diff=lfs merge=lfs -text
