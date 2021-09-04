@@ -1,3 +1,6 @@
 *.ARW filter=lfs diff=lfs merge=lfs -text
 *.X3F filter=lfs diff=lfs merge=lfs -text
 *.DNG filter=lfs diff=lfs merge=lfs -text
+DSC00583.ARW filter=lfs diff=lfs merge=lfs -text
+DSC00588.ARW filter=lfs diff=lfs merge=lfs -text
+DSC00593.ARW filter=lfs diff=lfs merge=lfs -text
