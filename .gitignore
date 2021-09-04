@@ -59,3 +59,5 @@ fastlane/screenshots
 *.xcodeproj
 
 *.orig
+
+*.xcframework
