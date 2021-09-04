@@ -1,4 +1,4 @@
-name: Swift
+name: SPM build & test
 
 on:
   push:
