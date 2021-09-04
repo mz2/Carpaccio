@@ -17,4 +17,8 @@ jobs:
         run: git lfs checkout
       - name: Create XCFramework
         uses: mz2/swift-create-xcframework@v1.4.1
+      - uses: ncipollo/release-action@v1
+        with:
+          artifacts: "Carpaccio.zip,Carpaccio.sha256"
+          token: ${{ secrets.GITHUB_TOKEN }}
 
