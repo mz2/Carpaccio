@@ -10,8 +10,10 @@ jobs:
     name: Create Release
     runs-on: macos-latest
     steps:
-
       - uses: actions/checkout@v2
-
+        with:
+          lfs: true
+      - name: Checkout LFS objects
+        run: git lfs checkout
       - name: Create XCFramework
         uses: unsignedapps/swift-create-xcframework@v1.4
