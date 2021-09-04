@@ -13,6 +13,10 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+      with:
+          lfs: true
+    - name: Checkout LFS objects
+      run: git lfs checkout
     - name: Build
       run: swift build -v
     - name: Run tests
