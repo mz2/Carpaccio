@@ -153,7 +153,6 @@ class CarpaccioTests: XCTestCase {
         XCTAssertThrowsError(try loader.loadImageMetadataIfNeeded(forceReload: true))
     }
 
-    /*
     func testFailingThumbnailThrowsError() {
         guard let url = Bundle.module.url(forResource: "hdrmerge-bayer-fp16-w-pred-deflate", withExtension: "dng") else {
             XCTAssert(false)
@@ -162,7 +161,7 @@ class CarpaccioTests: XCTestCase {
         
         let loader = ImageLoader(imageURL: url, thumbnailScheme: .decodeFullImageIfEmbeddedThumbnailMissing)
         XCTAssertThrowsError(try loader.loadBitmapImage(maximumPixelDimensions: nil, colorSpace: nil, allowCropping: true, cancelled: nil))
-    }*/
+    }
 
     func testDictionaryRepresentation() {
         guard let url = Bundle.module.url(forResource: "iphone5", withExtension: "jpg") else {

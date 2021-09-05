@@ -32,14 +32,13 @@ let package = Package(
             name: "CarpaccioTests",
             dependencies: ["Carpaccio"],
             resources: [
-                .process("DSC00583.ARW"),
-                .process("DSC00588.ARW"),
-                .process("DSC00593.ARW"),
+                .process("ARW/DSC00583.ARW"),
+                .process("ARW/DSC00588.ARW"),
+                .process("ARW/DSC00593.ARW"),
                 .process("DSC02856.jpg"),
-                .process("DP2M1726.X3F"),
                 .process("iphone5.jpg"),
-                .process("Pixls/hdrmerge-bayer-fp16-w-pred-deflate.dng"),
-                .process("Pixls/DP2M1726.X3F"),
+                .process("Pixls/DNS/hdrmerge-bayer-fp16-w-pred-deflate.dng"),
+                .process("Pixls/X3F/DP2M1726.X3F"),
             ]
         ),
     ]
