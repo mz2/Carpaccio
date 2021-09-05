@@ -9,7 +9,7 @@
 import Foundation
 
 // Inspired by http://moreindirection.blogspot.co.uk/2015/07/gcd-and-parallel-collections-in-swift.html
-extension Swift.Collection where Self.Index == Int {
+extension Swift.Collection where Index == Int {
     public func parallelMap<T>(_ transform: @escaping ((Iterator.Element) throws -> T)) throws -> [T] {
         return try self.parallelCompactMap(transform)
     }
