@@ -15,7 +15,7 @@ jobs:
       - name: Checkout LFS objects
         run: git lfs checkout
       - name: Create XCFramework
-        uses: mz2/swift-create-xcframework@v1.4.2
+        uses: mz2/swift-create-xcframework@v1.4.4
       - uses: ncipollo/release-action@v1
         with:
           artifacts: "Carpaccio.zip,Carpaccio.sha256"
