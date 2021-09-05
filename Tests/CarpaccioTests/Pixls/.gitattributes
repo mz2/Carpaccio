@@ -1,2 +1,0 @@
-DP2M1726.X3F filter=lfs diff=lfs merge=lfs -text
-hdrmerge-bayer-fp16-w-pred-deflate.dng filter=lfs diff=lfs merge=lfs -text
