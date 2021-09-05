@@ -22,7 +22,7 @@ class CarpaccioTests: XCTestCase {
     }
     
     func testSonyRAWConversion() {
-        let img1URL = Bundle.module.url(forResource:"DSC00583", withExtension: "ARW")!
+        let img1URL = Bundle.module.url(forResource:"DSC00583_", withExtension: "ARW")!
         
         let tempDir = URL(fileURLWithPath:NSTemporaryDirectory() + "/\(UUID().uuidString)")
         
@@ -142,7 +142,7 @@ class CarpaccioTests: XCTestCase {
     }
     
     func testFailingMetadataThrowsError() {
-        guard let url = Bundle.module.url(forResource: "DP2M1726", withExtension: "X3F") else {
+        guard let url = Bundle.module.url(forResource: "DP2M1726_", withExtension: "X3F") else {
             XCTAssert(false)
             return
         }
@@ -152,9 +152,9 @@ class CarpaccioTests: XCTestCase {
         XCTAssertThrowsError(try loader.loadImageMetadataIfNeeded())
         XCTAssertThrowsError(try loader.loadImageMetadataIfNeeded(forceReload: true))
     }
-    
+
     func testFailingThumbnailThrowsError() {
-        guard let url = Bundle.module.url(forResource: "hdrmerge-bayer-fp16-w-pred-deflate", withExtension: "dng") else {
+        guard let url = Bundle.module.url(forResource: "hdrmerge-bayer-fp16-w-pred-deflate_", withExtension: "dng") else {
             XCTAssert(false)
             return
         }
