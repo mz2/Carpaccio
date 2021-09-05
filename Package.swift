@@ -37,7 +37,7 @@ let package = Package(
                 .process("ARW/DSC00593_.ARW"),
                 .process("DSC02856.jpg"),
                 .process("iphone5.jpg"),
-                .process("Pixls/DNS/hdrmerge-bayer-fp16-w-pred-deflate_.dng"),
+                .process("Pixls/DNG/hdrmerge-bayer-fp16-w-pred-deflate_.dng"),
                 .process("Pixls/X3F/DP2M1726_.X3F"),
             ]
         ),
