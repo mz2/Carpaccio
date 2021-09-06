@@ -26,7 +26,7 @@ let package = Package(
             name: "Carpaccio",
             dependencies: []
         ),
-        .target(name: "exifdump",
+        .executableTarget(name: "exifdump",
                 dependencies: ["Carpaccio"]),
         .testTarget(
             name: "CarpaccioTests",
