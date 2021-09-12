@@ -10,7 +10,9 @@ let package = Package(
     products: [
         .library(
             name: "Carpaccio",
-            type: .dynamic,
+            // supposedly making an .xcframework only works if this is made dynamic?
+            // didn't work with 12.5.1 anyway, so leaving as static.
+            type: .static,
             targets: ["Carpaccio"]
         ),
         .executable(name: "exifdump", targets: ["exifdump"])
