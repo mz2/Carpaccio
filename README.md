@@ -31,22 +31,18 @@ File > Swift Packages > Add Package Dependency...
 
 #### USAGE
 
-For a toy example, see below:
-
-```swift
-guard let url = Bundle.module.url(forResource: "DP2M1726", withExtension: "X3F") else {
-    return
-}
-let loader = ImageLoader(imageURL: url, thumbnailScheme: .fullImageIfThumbnailMissing, colorSpace: nil)
-```
-
-See more usage examples from the unit tests under `Tests/CarpaccioTests`.
+For usage examples, consult the unit tests under `Tests/CarpaccioTests`.
 
 #### TODO
 
 Carpaccio is still a very fresh and raw (har har) library and there are many tasks to make this a more generally useful library.
 
-- [ ] Update usage examples.
 - [x] Add tests for RAWs from a number of different camera vendors.
 - [x] GitLab CI support.
 - [x] iOS support.
+- [ ] Working xcframework support (when Xcode / SPM toolchain permits?) An xcframework build is already made available, but at least with Xcode 12.5.1 this results in build fails of the following kinds: 
+  - 'where' clause cannot be applied to a non-generic top-level declaration
+  - 'Iterator' is not a member type of type 'Self'
+  - 'Iterator' is not a member type of type 'Self'
+  - Covariant 'Self' can only appear as the type of a property, subscript or method result; did you mean 'Collection'?
+  - 'Index' is not a member type of class 'Carpaccio.Collection'
