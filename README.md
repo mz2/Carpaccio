@@ -1,4 +1,4 @@
-### Carpaccio [![Swift Package Manager compatible](https://img.shields.io/badge/Swift%20Package%20Manager-compatible-brightgreen.svg)](https://github.com/apple/swift-package-manager) [![pipeline status](https://gitlab.com/sashimiapp-public/Carpaccio/badges/master/pipeline.svg)](https://gitlab.com/sashimiapp-public/Carpaccio/-/commits/master)
+### Carpaccio [SPM build & test passes](https://github.com/mz2/Carpaccio/actions/workflows/spm-build-test.yml/badge.svg) [![Swift Package Manager compatible](https://img.shields.io/badge/Swift%20Package%20Manager-compatible-brightgreen.svg)](https://github.com/apple/swift-package-manager)
 ##### Pure Swift goodness for RAW and other image + metadata handling
 
 Carpaccio is a Swift library for macOS and iOS that allows fast decoding of image data & EXIF metadata from file formats supported by CoreImage (including all the various RAW file formats supported, using the CoreImage RAW decoding capability).
@@ -38,7 +38,7 @@ For usage examples, consult the unit tests under `Tests/CarpaccioTests`.
 Carpaccio is still a very fresh and raw (har har) library and there are many tasks to make this a more generally useful library.
 
 - [x] Add tests for RAWs from a number of different camera vendors.
-- [x] GitLab CI support.
+- [x] GitHub action CI support.
 - [x] iOS support.
 - [ ] Working xcframework support (when Xcode / SPM toolchain permits?) An xcframework build is already made available, but at least with Xcode 12.5.1 this results in build fails of the following kinds: 
   - 'where' clause cannot be applied to a non-generic top-level declaration
