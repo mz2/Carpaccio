@@ -456,6 +456,71 @@ public struct ImageMetadata: Codable {
         let oneTenthPrecisionSeconds = round(s * 10.0) / 10.0
         return "\(oneTenthPrecisionSeconds)s"
     }
+    
+    public var humanReadableFlashMode: String? {
+        guard let fm = self.flashMode else {
+            return nil
+        }
+        
+        switch (fm) {
+            case .unknown:
+                return "unknown"
+            case .noFlash:
+                return "No Flash"
+            case .fired:
+                return "Fired"
+            case .firedNotReturned:
+                return "Fired, Return not detected"
+            case .firedReturned:
+                return "Fired, Return detected"
+            case .onNotFired:
+                return "On, Did not fire"
+            case .onFired:
+                return "On, Fired"
+            case .onNotReturned:
+                return "On, Return not detected"
+            case .onReturned:
+                return "On, Return detected"
+            case .offNotFired:
+                return "Off, Did not fire"
+            case .offNotFiredNotReturned:
+                return "Off, Did not fire, Return not detected"
+            case .autoNotFired:
+                return "Auto, Did not fire"
+            case .autoFired:
+                return "Auto, Fired"
+            case .autoFiredNotReturned:
+                return "Auto, Fired, Return not detected"
+            case .autoFiredReturned:
+                return "Auto, Fired, Return detected"
+            case .noFlashFunction:
+                return "No flash function"
+            case .offNoFlashFunction:
+                return "Off, No flash function"
+            case .firedRedEye:
+                return "Fired, Red-eye reduction"
+            case .firedRedEyeNotReturned:
+                return "Fired, Red-eye reduction, Return not detected"
+            case .firedRedEyeReturned:
+                return "Fired, Red-eye reduction, Return detected"
+            case .onRedEye:
+                return "On, Red-eye reduction"
+            case .onRedEyeNotReturned:
+                return "On, Red-eye reduction, Return not detected"
+            case .onRedEyeReturned:
+                return "On, Red-eye reduction, Return detected"
+            case .offRedEye:
+                return "Off, Red-eye reduction"
+            case .autoNotFiredRedEye:
+                return "Auto, Did not fire, Red-eye reduction"
+            case .autoFiredRedEye:
+                return "Auto, Fired, Red-eye reduction"
+            case .autoFiredRedEyeNotReturned:
+                return "Auto, Fired, Red-eye reduction, Return not detected"
+            case .autoFiredRedEyeReturned:
+                return "Auto, Fired, Red-eye reduction, Return detected"
+        }
+    }
 
     /// Implement a dictionary representation used by some client code implemented before `ImageMetadata`
     /// implemented `Codable`. Therefore the keys are different (CodingKeys.x.dictionaryRepresentationKey
@@ -671,33 +736,33 @@ public enum ImageOrientation: String, Codable {
 
 public enum FlashMode: String, Codable {
     case unknown = "unknown"
-    case noFlash = "No Flash"
-    case fired = "Fired"
-    case firedNotReturned = "Fired, Return not detected"
-    case firedReturned = "Fired, Return detected"
-    case onNotFired = "On, Did not fire"
-    case onFired = "On, Fired"
-    case onNotReturned = "On, Return not detected"
-    case onReturned = "On, Return detected"
-    case offNotFired = "Off, Did not fire"
-    case offNotFiredNotReturned = "Off, Did not fire, Return not detected"
-    case autoNotFired = "Auto, Did not fire"
-    case autoFired = "Auto, Fired"
-    case autoFiredNotReturned = "Auto, Fired, Return not detected"
-    case autoFiredReturned = "Auto, Fired, Return detected"
-    case noFlashFunction = "No flash function"
-    case offNoFlashFunction = "Off, No flash function"
-    case firedRedEye = "Fired, Red-eye reduction"
-    case firedRedEyeNotReturned = "Fired, Red-eye reduction, Return not detected"
-    case firedRedEyeReturned = "Fired, Red-eye reduction, Return detected"
-    case onRedEye = "On, Red-eye reduction"
-    case onRedEyeNotReturned = "On, Red-eye reduction, Return not detected"
-    case onRedEyeReturned = "On, Red-eye reduction, Return detected"
-    case offRedEye = "Off, Red-eye reduction"
-    case autoNotFiredRedEye = "Auto, Did not fire, Red-eye reduction"
-    case autoFiredRedEye = "Auto, Fired, Red-eye reduction"
-    case autoFiredRedEyeNotReturned = "Auto, Fired, Red-eye reduction, Return not detected"
-    case autoFiredRedEyeReturned = "Auto, Fired, Red-eye reduction, Return detected"
+    case noFlash = "no-flash"
+    case fired = "fired"
+    case firedNotReturned = "fired-not-returned"
+    case firedReturned = "fired-returned"
+    case onNotFired = "on-not-fired"
+    case onFired = "on-fired"
+    case onNotReturned = "on-not-returned"
+    case onReturned = "on-returned"
+    case offNotFired = "off-not-fired"
+    case offNotFiredNotReturned = "off-not-fired-not-returned"
+    case autoNotFired = "auto-not-fired"
+    case autoFired = "auto-fired"
+    case autoFiredNotReturned = "auto-fired-not-returned"
+    case autoFiredReturned = "auto-fired-returned"
+    case noFlashFunction = "no-flash-function"
+    case offNoFlashFunction = "off-no-flash-function"
+    case firedRedEye = "fired-red-eye"
+    case firedRedEyeNotReturned = "fired-red-eye-not-returned"
+    case firedRedEyeReturned = "fired-red-eye-returned"
+    case onRedEye = "on-red-eye"
+    case onRedEyeNotReturned = "on-red-eye-not-returned"
+    case onRedEyeReturned = "on-red-eye-returned"
+    case offRedEye = "off-red-eye"
+    case autoNotFiredRedEye = "auto-not-fired-red-eye"
+    case autoFiredRedEye = "auto-fired-red-eye"
+    case autoFiredRedEyeNotReturned = "auto-fired-red-eye-not-returned"
+    case autoFiredRedEyeReturned = "auto-fired-red-eye-returned"
     
     init(flashState: Int?) {
         switch(flashState) {
