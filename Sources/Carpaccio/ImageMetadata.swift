@@ -466,59 +466,59 @@ public struct ImageMetadata: Codable {
             case .unknown:
                 return "unknown"
             case .noFlash:
-                return "No Flash"
+                return "No flash"
             case .fired:
                 return "Fired"
             case .firedNotReturned:
-                return "Fired, Return not detected"
+                return "Fired, return not detected"
             case .firedReturned:
-                return "Fired, Return detected"
+                return "Fired, return detected"
             case .onNotFired:
-                return "On, Did not fire"
+                return "On, did not fire"
             case .onFired:
-                return "On, Fired"
+                return "On, fired"
             case .onNotReturned:
-                return "On, Return not detected"
+                return "On, return not detected"
             case .onReturned:
-                return "On, Return detected"
+                return "On, return detected"
             case .offNotFired:
-                return "Off, Did not fire"
+                return "Off, did not fire"
             case .offNotFiredNotReturned:
-                return "Off, Did not fire, Return not detected"
+                return "Off, did not fire, return not detected"
             case .autoNotFired:
-                return "Auto, Did not fire"
+                return "Auto, did not fire"
             case .autoFired:
-                return "Auto, Fired"
+                return "Auto, fired"
             case .autoFiredNotReturned:
-                return "Auto, Fired, Return not detected"
+                return "Auto, fired, return not detected"
             case .autoFiredReturned:
-                return "Auto, Fired, Return detected"
+                return "Auto, fired, return detected"
             case .noFlashFunction:
                 return "No flash function"
             case .offNoFlashFunction:
-                return "Off, No flash function"
+                return "Off, no flash function"
             case .firedRedEye:
-                return "Fired, Red-eye reduction"
+                return "Fired, red-eye reduction"
             case .firedRedEyeNotReturned:
-                return "Fired, Red-eye reduction, Return not detected"
+                return "Fired, red-eye reduction, return not detected"
             case .firedRedEyeReturned:
-                return "Fired, Red-eye reduction, Return detected"
+                return "Fired, red-eye reduction, return detected"
             case .onRedEye:
-                return "On, Red-eye reduction"
+                return "On, red-eye reduction"
             case .onRedEyeNotReturned:
-                return "On, Red-eye reduction, Return not detected"
+                return "On, red-eye reduction, return not detected"
             case .onRedEyeReturned:
-                return "On, Red-eye reduction, Return detected"
+                return "On, red-eye reduction, return detected"
             case .offRedEye:
-                return "Off, Red-eye reduction"
+                return "Off, red-eye reduction"
             case .autoNotFiredRedEye:
-                return "Auto, Did not fire, Red-eye reduction"
+                return "Auto, did not fire, red-eye reduction"
             case .autoFiredRedEye:
-                return "Auto, Fired, Red-eye reduction"
+                return "Auto, fired, red-eye reduction"
             case .autoFiredRedEyeNotReturned:
-                return "Auto, Fired, Red-eye reduction, Return not detected"
+                return "Auto, fired, red-eye reduction, return not detected"
             case .autoFiredRedEyeReturned:
-                return "Auto, Fired, Red-eye reduction, Return detected"
+                return "Auto, fired, red-eye reduction, return detected"
         }
     }
 
