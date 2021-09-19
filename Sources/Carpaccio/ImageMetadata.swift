@@ -24,6 +24,13 @@ public struct ImageMetadata: Codable {
 
     public let cameraMaker: String?
     public let cameraModel: String?
+    
+    public let lensMaker: String?
+    public let lensModel: String?
+    
+    public let flashMode: FlashMode?
+    public let meteringMode: MeteringMode?
+    public let whiteBalance: WhiteBalance?
 
     public let colorSpaceName: String?
     
@@ -34,6 +41,7 @@ public struct ImageMetadata: Codable {
     public let focalLength35mmEquivalent: Double?
     public let iso: Double?
     public let shutterSpeed: TimeInterval?
+    public let exposureCompensation: Double?
     
     /**
      
@@ -71,13 +79,19 @@ public struct ImageMetadata: Codable {
         case nativeOrientation = "native-orientation"
         case cameraMaker = "camera-maker"
         case cameraModel = "camera-model"
+        case lensMaker = "lens-maker"
+        case lensModel = "lens-model"
         case colorSpaceName = "color-space"
         case fNumber = "f-number"
         case focalLength = "focal-length"
         case focalLength35mmEquivalent = "focal-length-35mm-equivalent"
         case iso
         case shutterSpeed = "shutter-speed"
+        case exposureCompensation = "exposure-compensation"
         case timestamp
+        case flashMode = "flash-mode"
+        case meteringMode = "metering-mode"
+        case whiteBalance = "white-balance"
 
         var dictionaryRepresentationKey: String {
             switch self {
@@ -89,6 +103,10 @@ public struct ImageMetadata: Codable {
                 return "cameraMaker"
             case .cameraModel:
                 return "cameraModel"
+            case .lensMaker:
+                return "lensMaker"
+            case .lensModel:
+                return "lensModel"
             case .colorSpaceName:
                 return "colorSpace"
             case .fNumber:
@@ -101,8 +119,16 @@ public struct ImageMetadata: Codable {
                 return "ISO"
             case .shutterSpeed:
                 return "shutterSpeed"
+            case .exposureCompensation:
+                return "exposureCompensation"
             case .timestamp:
                 return "timestamp"
+            case .flashMode:
+                return "flashMode"
+            case .meteringMode:
+                return "meteringMode"
+            case .whiteBalance:
+                return "whiteBalance"
             }
         }
     }
@@ -117,13 +143,26 @@ public struct ImageMetadata: Codable {
         focalLength35mmEquivalent: Double? = nil,
         iso: Double? = nil,
         shutterSpeed: TimeInterval? = nil,
+        exposureCompensation: Double? = nil,
         cameraMaker: String? = nil,
         cameraModel: String? = nil,
+        lensMaker: String? = nil,
+        lensModel: String? = nil,
+        flashMode: FlashMode? = nil,
+        meteringMode: MeteringMode? = nil,
+        whiteBalance: WhiteBalance? = nil,
         timestamp: Date? = nil
     ) {
         self.fNumber = fNumber
         self.cameraMaker = cameraMaker
         self.cameraModel = cameraModel
+        
+        self.lensMaker = lensMaker
+        self.lensModel = lensModel
+        
+        self.flashMode = flashMode
+        self.meteringMode = meteringMode
+        self.whiteBalance = whiteBalance
 
         self.colorSpaceName = colorSpaceName
 
@@ -133,6 +172,7 @@ public struct ImageMetadata: Codable {
         self.nativeOrientation = nativeOrientation
         self.nativeSize = nativeSize
         self.shutterSpeed = shutterSpeed
+        self.exposureCompensation = exposureCompensation
         self.timestamp = timestamp
     }
 
@@ -157,7 +197,9 @@ public struct ImageMetadata: Codable {
     }
 
     public init(cgImagePropertiesDictionary properties: [AnyHashable: Any], imageSource: ImageIO.CGImageSource? = nil) throws {
-        var fNumber: Double? = nil, focalLength: Double? = nil, focalLength35mm: Double? = nil, iso: Double? = nil, shutterSpeed: Double? = nil
+        var fNumber: Double? = nil, focalLength: Double? = nil, focalLength35mm: Double? = nil, iso: Double? = nil, shutterSpeed: Double? = nil, exposureCompensation: Double? = nil
+        var lensMaker: String? = nil, lensModel: String? = nil
+        var flashMode: FlashMode? = nil, meteringMode: MeteringMode? = nil, whiteBalance: WhiteBalance? = nil
         var colorSpaceName: String? = nil
         var width, height, exifWidth, exifHeight: CGFloat?
         var timestamp: Date? = nil
@@ -187,6 +229,12 @@ public struct ImageMetadata: Codable {
             colorSpaceName = exif[kCGImagePropertyExifColorSpace as String] as? String
             focalLength = (exif[kCGImagePropertyExifFocalLength as String] as? NSNumber)?.doubleValue
             focalLength35mm = (exif[kCGImagePropertyExifFocalLenIn35mmFilm as String] as? NSNumber)?.doubleValue
+            exposureCompensation = (exif[kCGImagePropertyExifExposureBiasValue as String] as? NSNumber)?.doubleValue
+            lensMaker = exif[kCGImagePropertyExifLensMake as String] as? String
+            lensModel = exif[kCGImagePropertyExifLensModel as String] as? String
+            flashMode = FlashMode(flashState: (exif[kCGImagePropertyExifFlash as String] as? NSNumber)?.intValue)
+            meteringMode = MeteringMode(meteringMode: (exif[kCGImagePropertyExifMeteringMode as String] as? NSNumber)?.intValue)
+            whiteBalance = WhiteBalance(whiteBalance: (exif[kCGImagePropertyExifWhiteBalance as String] as? NSNumber)?.intValue)
             
             if let isoValues = exif[kCGImagePropertyExifISOSpeedRatings as String] {
                 let isoArray = NSArray(array: isoValues as! CFArray)
@@ -283,8 +331,14 @@ public struct ImageMetadata: Codable {
             focalLength35mmEquivalent: focalLength35mm,
             iso: iso,
             shutterSpeed: shutterSpeed,
+            exposureCompensation: exposureCompensation,
             cameraMaker: cameraMaker,
             cameraModel: cameraModel,
+            lensMaker: lensMaker,
+            lensModel: lensModel,
+            flashMode: flashMode,
+            meteringMode: meteringMode,
+            whiteBalance: whiteBalance,
             timestamp: timestamp
         )
     }
@@ -402,6 +456,71 @@ public struct ImageMetadata: Codable {
         let oneTenthPrecisionSeconds = round(s * 10.0) / 10.0
         return "\(oneTenthPrecisionSeconds)s"
     }
+    
+    public var humanReadableFlashMode: String? {
+        guard let fm = self.flashMode else {
+            return nil
+        }
+        
+        switch (fm) {
+            case .unknown:
+                return "unknown"
+            case .noFlash:
+                return "No flash"
+            case .fired:
+                return "Fired"
+            case .firedNotReturned:
+                return "Fired, return not detected"
+            case .firedReturned:
+                return "Fired, return detected"
+            case .onNotFired:
+                return "On, did not fire"
+            case .onFired:
+                return "On, fired"
+            case .onNotReturned:
+                return "On, return not detected"
+            case .onReturned:
+                return "On, return detected"
+            case .offNotFired:
+                return "Off, did not fire"
+            case .offNotFiredNotReturned:
+                return "Off, did not fire, return not detected"
+            case .autoNotFired:
+                return "Auto, did not fire"
+            case .autoFired:
+                return "Auto, fired"
+            case .autoFiredNotReturned:
+                return "Auto, fired, return not detected"
+            case .autoFiredReturned:
+                return "Auto, fired, return detected"
+            case .noFlashFunction:
+                return "No flash function"
+            case .offNoFlashFunction:
+                return "Off, no flash function"
+            case .firedRedEye:
+                return "Fired, red-eye reduction"
+            case .firedRedEyeNotReturned:
+                return "Fired, red-eye reduction, return not detected"
+            case .firedRedEyeReturned:
+                return "Fired, red-eye reduction, return detected"
+            case .onRedEye:
+                return "On, red-eye reduction"
+            case .onRedEyeNotReturned:
+                return "On, red-eye reduction, return not detected"
+            case .onRedEyeReturned:
+                return "On, red-eye reduction, return detected"
+            case .offRedEye:
+                return "Off, red-eye reduction"
+            case .autoNotFiredRedEye:
+                return "Auto, did not fire, red-eye reduction"
+            case .autoFiredRedEye:
+                return "Auto, fired, red-eye reduction"
+            case .autoFiredRedEyeNotReturned:
+                return "Auto, fired, red-eye reduction, return not detected"
+            case .autoFiredRedEyeReturned:
+                return "Auto, fired, red-eye reduction, return detected"
+        }
+    }
 
     /// Implement a dictionary representation used by some client code implemented before `ImageMetadata`
     /// implemented `Codable`. Therefore the keys are different (CodingKeys.x.dictionaryRepresentationKey
@@ -417,6 +536,14 @@ public struct ImageMetadata: Codable {
 
         if let cameraModel = self.cameraModel {
             result[CodingKeys.cameraModel.dictionaryRepresentationKey] = cameraModel
+        }
+        
+        if let lensMaker = self.lensMaker {
+            result[CodingKeys.lensMaker.dictionaryRepresentationKey] = lensMaker
+        }
+        
+        if let lensModel = self.lensModel {
+            result[CodingKeys.lensModel.dictionaryRepresentationKey] = lensModel
         }
 
         if let space = self.colorSpace, let spaceName = space.name {
@@ -438,6 +565,10 @@ public struct ImageMetadata: Codable {
         if let iso = self.iso {
             result[CodingKeys.iso.dictionaryRepresentationKey] = iso
         }
+        
+        if let exposureCompensation = self.exposureCompensation {
+            result[CodingKeys.exposureCompensation.dictionaryRepresentationKey] = exposureCompensation
+        }
 
         // Note: we store the numeric CGImageOrientation value here, rather than the string equivalent
         result[CodingKeys.nativeOrientation.dictionaryRepresentationKey] = nativeOrientation.cgImageOrientation.rawValue
@@ -450,6 +581,18 @@ public struct ImageMetadata: Codable {
 
         if let shutterSpeed = self.shutterSpeed {
             result[CodingKeys.shutterSpeed.dictionaryRepresentationKey] = shutterSpeed
+        }
+        
+        if let flashMode = self.flashMode {
+            result[CodingKeys.flashMode.dictionaryRepresentationKey] = flashMode
+        }
+        
+        if let meteringMode = self.meteringMode {
+            result[CodingKeys.meteringMode.dictionaryRepresentationKey] = meteringMode
+        }
+        
+        if let whiteBalance = self.whiteBalance {
+            result[CodingKeys.whiteBalance.dictionaryRepresentationKey] = whiteBalance
         }
 
         if let timestamp = self.timestamp {
@@ -587,6 +730,149 @@ public enum ImageOrientation: String, Codable {
             return true
         default:
             return false
+        }
+    }
+}
+
+public enum FlashMode: String, Codable {
+    case unknown = "unknown"
+    case noFlash = "no-flash"
+    case fired = "fired"
+    case firedNotReturned = "fired-not-returned"
+    case firedReturned = "fired-returned"
+    case onNotFired = "on-not-fired"
+    case onFired = "on-fired"
+    case onNotReturned = "on-not-returned"
+    case onReturned = "on-returned"
+    case offNotFired = "off-not-fired"
+    case offNotFiredNotReturned = "off-not-fired-not-returned"
+    case autoNotFired = "auto-not-fired"
+    case autoFired = "auto-fired"
+    case autoFiredNotReturned = "auto-fired-not-returned"
+    case autoFiredReturned = "auto-fired-returned"
+    case noFlashFunction = "no-flash-function"
+    case offNoFlashFunction = "off-no-flash-function"
+    case firedRedEye = "fired-red-eye"
+    case firedRedEyeNotReturned = "fired-red-eye-not-returned"
+    case firedRedEyeReturned = "fired-red-eye-returned"
+    case onRedEye = "on-red-eye"
+    case onRedEyeNotReturned = "on-red-eye-not-returned"
+    case onRedEyeReturned = "on-red-eye-returned"
+    case offRedEye = "off-red-eye"
+    case autoNotFiredRedEye = "auto-not-fired-red-eye"
+    case autoFiredRedEye = "auto-fired-red-eye"
+    case autoFiredRedEyeNotReturned = "auto-fired-red-eye-not-returned"
+    case autoFiredRedEyeReturned = "auto-fired-red-eye-returned"
+    
+    init(flashState: Int?) {
+        switch(flashState) {
+            case 0:
+                self = .noFlash
+            case 1:
+                self = .fired
+            case 5:
+                self = .firedNotReturned
+            case 7:
+                self = .firedReturned
+            case 8:
+                self = .onNotFired
+            case 9:
+                self = .onFired
+            case 13:
+                self = .onNotReturned
+            case 15:
+                self = .onReturned
+            case 16:
+                self = .offNotFired
+            case 20:
+                self = .offNotFiredNotReturned
+            case 24:
+                self = .autoNotFired
+            case 25:
+                self = .autoFired
+            case 29:
+                self = .autoFiredNotReturned
+            case 31:
+                self = .autoFiredReturned
+            case 32:
+                self = .noFlash
+            case 48:
+                self = .offNoFlashFunction
+            case 65:
+                self = .firedRedEye
+            case 69:
+                self = .firedRedEyeNotReturned
+            case 71:
+                self = .firedRedEyeReturned
+            case 73:
+                self = .onRedEye
+            case 77:
+                self = .onRedEyeNotReturned
+            case 79:
+                self = .onRedEyeReturned
+            case 80:
+                self = .offRedEye
+            case 88:
+                self = .autoNotFiredRedEye
+            case 89:
+                self = .autoFiredRedEye
+            case 93:
+                self = .autoFiredRedEyeNotReturned
+            case 95:
+                self = .autoFiredRedEyeReturned
+            default:
+                self = .unknown
+        }
+    }
+}
+
+public enum MeteringMode: String, Codable {
+    case average = "average"
+    case centerWeightedAverage = "center-weighted-average"
+    case multiSpot = "multi-spot"
+    case other = "other"
+    case partial = "partial"
+    case pattern = "pattern"
+    case spot = "spot"
+    case unknown = "unknown"
+    
+    init(meteringMode: Int?) {
+        switch(meteringMode) {
+            case 1:
+                self = .average
+            case 2:
+                self = .centerWeightedAverage
+            case 3:
+                self = .spot
+            case 4:
+                self = .multiSpot
+            case 5:
+                self = .pattern
+            case 6:
+                self = .partial
+            case 255:
+                self = .other
+            case 0:
+                self = .unknown
+            default:
+                self = .unknown
+        }
+    }
+}
+
+public enum WhiteBalance: String, Codable {
+    case auto = "auto"
+    case manual = "manual"
+    case unknown = "unknown"
+    
+    init(whiteBalance: Int?) {
+        switch(whiteBalance) {
+            case 0:
+                self = .auto
+            case 1:
+                self = .manual
+            default:
+                self = .unknown
         }
     }
 }
