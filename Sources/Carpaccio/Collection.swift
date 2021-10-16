@@ -8,7 +8,7 @@
 
 import Foundation
 
-public protocol ImageCollection: class {
+public protocol ImageCollection: AnyObject {
     var images: AnyCollection<Image> { get }
     var imageCount: Int { get }
     var imageURLs: AnyCollection<URL> { get }
