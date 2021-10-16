@@ -124,34 +124,61 @@ public extension CGSize {
         }
     }
 
-    /// Assuming this `CGSize` describes desired maximum width and/or height of a scaled output image, return the value for
-    /// the `kCGImageSourceThumbnailMaxPixelSize` option, so that an image gets scaled down proportionally when loaded.
+    ///
+    /// Assuming this `CGSize` describes desired maximum width and/or height of a scaled output image, return the value for the
+    /// `kCGImageSourceThumbnailMaxPixelSize` option, so that an image gets scaled down proportionally when loaded by Image I/O.
+    ///
     func maximumPixelSize(forImageSize imageSize: CGSize) -> Int {
         let widthIsUnconstrained = self.width >= imageSize.width
         let heightIsUnconstrained = self.height >= imageSize.height
-        let ratio = imageSize.aspectRatio
+        let imageRatio = imageSize.aspectRatio
         let precision = PrecisionScheme.defaultPrecisionScheme
 
         if widthIsUnconstrained && heightIsUnconstrained {
-            if ratio.isLandscape {
+            // Neither width not height is requested to be constrained to a specific number of pixels. This means that this CGSize
+            // does not affect the calculation at all, so we return the appropriate (larger) image dimension.
+            if imageRatio.isLandscape {
                 return Int(precision.applied(to: imageSize.width))
             }
             return Int(precision.applied(to: imageSize.height))
 
         } else if widthIsUnconstrained {
-            if ratio.isLandscape {
+            // A specific height is requested:
+            if imageRatio.isLandscape {
+                // The image is larger (or equal) in width than height. Proportional width will be the maximum pixel size.
                 return Int(imageSize.proportionalWidth(forHeight: self.height, precision: precision))
             }
+            // The image is larger in height than width. This CGSize's height will be the maximum pixel size.
             return Int(precision.applied(to: self.height))
 
         } else if heightIsUnconstrained {
-            if ratio.isLandscape {
+            // A specific width is requested:
+            if imageRatio.isLandscape {
+                // The image is larger (or equal) in width than height. This CGSize's width will be the maximum pixel size.
                 return Int(precision.applied(to: self.width))
             }
+            // The image is larger in height than width. Proportional height will be the maximum pixel size.
             return Int(imageSize.proportionalHeight(forWidth: self.width, precision: precision))
         }
 
-        return Int(precision.applied(to: min(self.width, self.height)))
+        // This CGSize constrains both width and height, effectively making it a bounding box. We need to:
+        // - Calculate one dimension proportionally from the other
+        // - Pick which one based on whether the image aspect ratio or this bounding aspect ratio is the wider one
+        // - Return the larger result as the maximum pixel size
+        let calculateHeightFromWidth = imageRatio >= self.aspectRatio
+        let value: CGFloat
+
+        if calculateHeightFromWidth {
+            let width = min(self.width, imageSize.width)
+            let height = imageSize.proportionalHeight(forWidth: width)
+            value = max(width, height)
+        } else {
+            let height = min(self.height, imageSize.height)
+            let width = imageSize.proportionalWidth(forHeight: height)
+            value = max(width, height)
+        }
+
+        return Int(precision.applied(to: value))
     }
 
     // Calculate a target width based on a desired target height, such that the target width and height will have the same aspect
