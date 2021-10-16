@@ -60,7 +60,7 @@ public extension CIImage {
         rawFilter.setValue(options.enableVendorLensCorrection, forKey: CIRAWFilterOption.enableVendorLensCorrection.rawValue)
 
         // Preserve pixel values beyond 0.0 … 1.0, which wide colour images will have
-        rawFilter.setValue(true, forKey: kCIInputEnableEDRModeKey)
+        rawFilter.setValue(true, forKey: CIRAWFilterOption.ciInputEnableEDRModeKey.rawValue)
 
         guard let rawImage = rawFilter.outputImage else {
             throw ImageLoadingError.failedToDecode(URL: url, message: "Failed to decode image at \(url.path)")
