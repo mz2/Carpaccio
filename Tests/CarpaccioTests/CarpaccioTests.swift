@@ -22,7 +22,7 @@ class CarpaccioTests: XCTestCase {
     }
     
     func testSonyRAWConversion() {
-        let img1URL = Bundle.module.url(forResource:"DSC00583", withExtension: "ARW")!
+        let img1URL = Bundle.module.url(forResource:"DSC00583_", withExtension: "ARW")!
         
         let tempDir = URL(fileURLWithPath:NSTemporaryDirectory() + "/\(UUID().uuidString)")
         
@@ -36,7 +36,14 @@ class CarpaccioTests: XCTestCase {
         
         XCTAssertEqual(imageMetadata.cameraMaker, "SONY")
         XCTAssertEqual(imageMetadata.cameraModel, "ILCE-7RM2")
+        XCTAssertNil(imageMetadata.lensMaker)
         XCTAssertEqual(imageMetadata.iso, 125.0)
+        XCTAssertEqual(imageMetadata.exposureCompensation, 0.0)
+        XCTAssertNil(imageMetadata.lensMaker)
+        XCTAssertEqual(imageMetadata.lensModel, "----")
+        XCTAssertEqual(imageMetadata.flashMode, FlashMode.offNotFired)
+        XCTAssertEqual(imageMetadata.meteringMode, MeteringMode.pattern)
+        XCTAssertEqual(imageMetadata.whiteBalance, WhiteBalance.auto)
 
         #if os(macOS)
         // As of this writing, iOS returns the incorrect image size of 1616x1080, so for now, we only check this on macOS
@@ -81,6 +88,12 @@ class CarpaccioTests: XCTestCase {
         XCTAssertEqual(imageMetadata.focalLength!, 4.12, accuracy: 0.01)
         XCTAssertEqual(imageMetadata.focalLength35mmEquivalent!, 33.0, accuracy: 0.000000001)
         XCTAssertEqual(imageMetadata.shutterSpeed!, 0.00145772, accuracy: 0.00000001)
+        XCTAssertEqual(imageMetadata.exposureCompensation, 0.0)
+        XCTAssertEqual(imageMetadata.flashMode, FlashMode.offNotFired)
+        XCTAssertEqual(imageMetadata.lensMaker, "Apple")
+        XCTAssertEqual(imageMetadata.lensModel, "iPhone 5 back camera 4.12mm f/2.4")
+        XCTAssertEqual(imageMetadata.meteringMode, MeteringMode.spot)
+        XCTAssertEqual(imageMetadata.whiteBalance, WhiteBalance.auto)
         
         let testedComponents:Set<Calendar.Component> = [.year, .month, .day, .hour, .minute, .second]
         let date = imageMetadata.timestamp!
@@ -142,7 +155,7 @@ class CarpaccioTests: XCTestCase {
     }
     
     func testFailingMetadataThrowsError() {
-        guard let url = Bundle.module.url(forResource: "DP2M1726", withExtension: "X3F") else {
+        guard let url = Bundle.module.url(forResource: "DP2M1726_", withExtension: "X3F") else {
             XCTAssert(false)
             return
         }
@@ -152,9 +165,9 @@ class CarpaccioTests: XCTestCase {
         XCTAssertThrowsError(try loader.loadImageMetadataIfNeeded())
         XCTAssertThrowsError(try loader.loadImageMetadataIfNeeded(forceReload: true))
     }
-    
+
     func testFailingThumbnailThrowsError() {
-        guard let url = Bundle.module.url(forResource: "hdrmerge-bayer-fp16-w-pred-deflate", withExtension: "dng") else {
+        guard let url = Bundle.module.url(forResource: "hdrmerge-bayer-fp16-w-pred-deflate_", withExtension: "dng") else {
             XCTAssert(false)
             return
         }
@@ -188,6 +201,12 @@ class CarpaccioTests: XCTestCase {
             CGImagePropertyOrientation(rawValue: (dictRep[ImageMetadata.CodingKeys.nativeOrientation.dictionaryRepresentationKey] as! NSNumber).uint32Value)
         )
         XCTAssertEqual(imageMetadata.fNumber, (dictRep[ImageMetadata.CodingKeys.fNumber.dictionaryRepresentationKey] as! NSNumber).doubleValue)
+        XCTAssertEqual(imageMetadata.exposureCompensation, (dictRep[ImageMetadata.CodingKeys.exposureCompensation.dictionaryRepresentationKey] as! NSNumber).doubleValue)
+        XCTAssertEqual(imageMetadata.flashMode, dictRep[ImageMetadata.CodingKeys.flashMode.dictionaryRepresentationKey] as! FlashMode)
+        XCTAssertEqual(imageMetadata.lensMaker, dictRep[ImageMetadata.CodingKeys.lensMaker.dictionaryRepresentationKey] as! String)
+        XCTAssertEqual(imageMetadata.lensModel, dictRep[ImageMetadata.CodingKeys.lensModel.dictionaryRepresentationKey] as! String)
+        XCTAssertEqual(imageMetadata.meteringMode, dictRep[ImageMetadata.CodingKeys.meteringMode.dictionaryRepresentationKey] as! MeteringMode)
+        XCTAssertEqual(imageMetadata.whiteBalance, dictRep[ImageMetadata.CodingKeys.whiteBalance.dictionaryRepresentationKey] as! WhiteBalance)
         XCTAssertEqual(imageMetadata.timestamp?.timeIntervalSince1970, (dictRep[ImageMetadata.CodingKeys.timestamp.dictionaryRepresentationKey] as! NSNumber).doubleValue)
 
         let jsonEncoder = JSONEncoder()
@@ -202,6 +221,12 @@ class CarpaccioTests: XCTestCase {
         XCTAssertEqual(imageMetadata.iso, decodedImageMetadata.iso)
         XCTAssertEqual(imageMetadata.shutterSpeed!, decodedImageMetadata.shutterSpeed!, accuracy: 0.0001)
         XCTAssertEqual(imageMetadata.focalLength, decodedImageMetadata.focalLength)
+        XCTAssertEqual(imageMetadata.exposureCompensation!, decodedImageMetadata.exposureCompensation!, accuracy: 0.0001)
+        XCTAssertEqual(imageMetadata.flashMode, decodedImageMetadata.flashMode)
+        XCTAssertEqual(imageMetadata.lensMaker, decodedImageMetadata.lensMaker)
+        XCTAssertEqual(imageMetadata.lensModel, decodedImageMetadata.lensModel)
+        XCTAssertEqual(imageMetadata.meteringMode, decodedImageMetadata.meteringMode)
+        XCTAssertEqual(imageMetadata.whiteBalance, decodedImageMetadata.whiteBalance)
         XCTAssertEqual(imageMetadata.nativeOrientation, decodedImageMetadata.nativeOrientation)
         XCTAssertEqual(imageMetadata.timestamp, decodedImageMetadata.timestamp)
     }
