@@ -59,8 +59,16 @@ public extension CIImage {
         rawFilter.setValue(options.boostShadowAmount, forKey: CIRAWFilterOption.boostShadowAmount.rawValue)
         rawFilter.setValue(options.enableVendorLensCorrection, forKey: CIRAWFilterOption.enableVendorLensCorrection.rawValue)
 
-        // Preserve pixel values beyond 0.0 … 1.0, which wide colour images will have
-        rawFilter.setValue(true, forKey: CIRAWFilterOption.ciInputEnableEDRModeKey.rawValue)
+        // Preserve pixel values beyond 0.0 … 1.0
+        if #available(macOS 12, *), #available(iOS 15, *) {
+            rawFilter.setValue(true, forKey: CIRAWFilterOption.ciInputEnableEDRModeKey.rawValue)
+        } else {
+            // For the life of me, I could not figure out, in a reasonable time, how to use the legacy SDK constant named
+            // kCIInputEnableEDRModeKey here, and get past Xcdode 13.1's compiler error saying that it has been renamed to
+            // CIRAWFilterOption.ciInputEnableEDRModeKey. Life's too short, so we will use a direct literal value, as extracted
+            // from the console.
+            rawFilter.setValue(true, forKey: "inputEnableEDRMode")
+        }
 
         guard let rawImage = rawFilter.outputImage else {
             throw ImageLoadingError.failedToDecode(URL: url, message: "Failed to decode image at \(url.path)")
