@@ -12,9 +12,9 @@ jobs:
       matrix:
         destination:
           - 'platform=iOS Simulator,OS=15.0,name=iPhone 13'
-          - 'platform=macOS,arch=arm64'
           - 'platform=macOS,arch=x86_64'
-        xcode: ['13.1']
+          # - 'platform=macOS,arch=arm64' # Uncomment once https://github.com/actions/virtual-environments/issues/2187 resolved
+        xcode: ['13.0', '13.1']
         os: ['macos-11']
     runs-on: ${{ matrix.os }}
     steps:
@@ -25,6 +25,6 @@ jobs:
     - name: Checkout LFS objects
       run: git lfs checkout
     - name: Build
-      run: xcodebuild build -scheme Carpaccio-Package -destination ${{matrix.destination}}
+      run: xcodebuild build -scheme Carpaccio-Package -destination '${{matrix.destination}}'
     - name: Run tests
-      run: xcodebuild test -scheme Carpaccio-Package -destination ${{matrix.destination}}
+      run: xcodebuild test -scheme Carpaccio-Package -destination '${{matrix.destination}}'
