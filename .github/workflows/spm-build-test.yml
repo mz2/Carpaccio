@@ -25,6 +25,20 @@ jobs:
     - name: Checkout LFS objects
       run: git lfs checkout
     - name: Build
-      run: xcodebuild build -scheme Carpaccio-Package -destination '${{matrix.destination}}'
+      run: xcodebuild build -scheme Carpaccio -destination '${{matrix.destination}}'
+  test:
+    strategy:
+      matrix:
+        destination:
+          - 'platform=macOS,arch=x86_64'
+          # Uncomment / merge back to the `build` job once `exifdump` is separated to its own Package.swift
+          # exifdump being a "tool" type target induces right now the following fail (with Xcode 13.1):
+          # "unable to resolve product type 'com.apple.product-type.tool' for platform 'iphonesimulator"
+          # - 'platform=iOS Simulator,OS=15.0,name=iPhone 13'
+          # Uncomment once https://github.com/actions/virtual-environments/issues/2187 resolved
+          # - 'platform=macOS,arch=arm64'
+        xcode: ['13.0', '13.1']
+        os: ['macos-11']
+    steps:
     - name: Run tests
       run: xcodebuild test -scheme Carpaccio-Package -destination '${{matrix.destination}}'
