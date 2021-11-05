@@ -14,7 +14,7 @@ jobs:
           - 'platform=iOS Simulator,OS=15.0,name=iPhone 13'
           - 'platform=macOS,arch=x86_64'
           # - 'platform=macOS,arch=arm64' # Uncomment once https://github.com/actions/virtual-environments/issues/2187 resolved
-        xcode: ['13.0', '13.1']
+        xcode: ['13.1']
         os: ['macos-11']
     runs-on: ${{ matrix.os }}
     steps:
@@ -38,7 +38,7 @@ jobs:
           # - 'platform=iOS Simulator,OS=15.0,name=iPhone 13'
           # Uncomment once https://github.com/actions/virtual-environments/issues/2187 resolved
           # - 'platform=macOS,arch=arm64'
-        xcode: ['13.0', '13.1']
+        xcode: ['13.1']
         os: ['macos-11']
     runs-on: ${{ matrix.os }}
     steps:
