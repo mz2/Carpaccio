@@ -160,7 +160,8 @@ open class Image: Equatable, Hashable, CustomStringConvertible {
 
     public func clearCachedResources() {
         self.cachedImageLoader = nil
-        self.fileModificationTimestamp = nil
+        self.fileModificationDateAccessed = .notAccessed
+        self.fileCreationDateAccessed = .notAccessed
     }
     
     //
@@ -210,33 +211,65 @@ open class Image: Equatable, Hashable, CustomStringConvertible {
         self.imageLoader()?.updateCachedMetadata(metadata)
     }
 
-    private var fileModificationTimestamp: Date?
+    private enum Accessed<T> {
+        case notAccessed
+        case successfully(with: T)
+        case failedToAccess
+    }
 
-    open var fileTimestamp: Date? {
-        if let fileModificationTimestamp = fileModificationTimestamp {
-            return fileModificationTimestamp
-        }
+    private var fileCreationDateAccessed: Accessed<Date?> = .notAccessed
+    private var fileModificationDateAccessed: Accessed<Date?> = .notAccessed
 
-        guard let url = self.URL, url.isFileURL else {
+    open var fileModificationDate: Date? {
+        switch fileModificationDateAccessed {
+        case .successfully(let date):
+            return date
+        case .failedToAccess:
             return nil
+        case .notAccessed:
+            guard let url = self.URL, url.isFileURL else {
+                return nil
+            }
+            if let fileTimestamp = try? FileManager.default.attributesOfItem(atPath: url.path)[.modificationDate] as? Date {
+                fileModificationDateAccessed = .successfully(with: fileTimestamp)
+                return fileTimestamp
+            }
+            else {
+                fileModificationDateAccessed = .failedToAccess
+                return nil
+            }
         }
+    }
 
-        if let fileTimestamp = try? FileManager.default.attributesOfFileSystem(forPath: url.path)[.modificationDate] as? Date {
-            fileModificationTimestamp = fileTimestamp
-            return fileModificationTimestamp
+    open var fileCreationDate: Date? {
+        switch fileCreationDateAccessed {
+        case .successfully(let date):
+            return date
+        case .failedToAccess:
+            return nil
+        case .notAccessed:
+            guard let url = self.URL, url.isFileURL else {
+                return nil
+            }
+            if let fileTimestamp = try? FileManager.default.attributesOfItem(atPath: url.path)[.creationDate] as? Date {
+                fileModificationDateAccessed = .successfully(with: fileTimestamp)
+                return fileTimestamp
+            }
+            else {
+                fileModificationDateAccessed = .failedToAccess
+                return nil
+            }
         }
-
-        return nil
     }
     
     /// If available, return timestamp of image metadata. If reading image metadata fails, or the metadata doesn't contain a
     /// timestamp, fallback to file modification date. If none of these is available, return `nil`.
     open var approximateTimestamp: Date? {
         if let metadata = metadata {
-            return metadata.timestamp ?? self.fileTimestamp
+            return metadata.timestamp ?? self.fileModificationDate ?? self.fileCreationDate
         }
         let metadata = try? self.fetchMetadata()
-        return metadata?.timestamp ?? self.fileTimestamp
+        return metadata?.timestamp ?? self.fileModificationDate ?? self.fileCreationDate
     }
     
     public func fetchThumbnail(presentedHeight: CGFloat? = nil,
