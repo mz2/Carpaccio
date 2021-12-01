@@ -52,6 +52,6 @@ jobs:
       - name: Run tests
         run: swift test --enable-code-coverage --enable-test-discovery
       - name: Test coverage
-        uses: mattpolzin/swift-codecov-action@0.6.0
+        uses: maxep/spm-lcov-action@0.3.0
         with:
-          MINIMUM_COVERAGE: 38
+          output-file: ./coverage/lcov.info
