@@ -50,8 +50,8 @@ jobs:
       - name: Checkout LFS objects
         run: git lfs checkout
       - name: Run tests
-        run: swift test --enable-code-coverage
+        run: swift test --enable-code-coverage --enable-test-discovery
       - name: Test coverage
-        uses: maxep/spm-lcov-action@0.3.0
+        uses: mattpolzin/swift-codecov-action@0.6.0
         with:
-          output-file: ./coverage/lcov.info
+          MINIMUM_COVERAGE: 38
