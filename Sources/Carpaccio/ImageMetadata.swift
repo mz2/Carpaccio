@@ -11,7 +11,7 @@ import Foundation
 import QuartzCore
 import ImageIO
 
-public struct ImageMetadata: Codable {
+public struct ImageMetadata: Codable, Equatable {
     // MARK: Required metadata
 
     /** Width and height of the image. */

@@ -231,6 +231,28 @@ class CarpaccioTests: XCTestCase {
         XCTAssertEqual(imageMetadata.timestamp, decodedImageMetadata.timestamp)
     }
 
+    func testMetadataEquality() throws {
+        let a = ImageMetadata(nativeSize: CGSize(width: 100, height: 200),
+                              colorSpaceName: "derp",
+                              cameraModel: "foo",
+                              lensMaker: "bar",
+                              timestamp: Date.distantPast)
+        let aDup = ImageMetadata(nativeSize: CGSize(width: 100, height: 200),
+                                 colorSpaceName: "derp",
+                                 cameraModel: "foo",
+                                 lensMaker: "bar",
+                                 timestamp: Date.distantPast)
+        let bVeryDifferent = ImageMetadata(nativeSize: CGSize(width: 100, height: 200),
+                                           colorSpaceName: "derpety",
+                                           cameraModel: "fooderp",
+                                           lensMaker: "bar",
+                                           timestamp: Date.distantFuture)
+        XCTAssertEqual(a, aDup)
+        XCTAssertEqual(aDup, a)
+        XCTAssertNotEqual(a, bVeryDifferent)
+        XCTAssertNotEqual(aDup, bVeryDifferent)
+    }
+
     func testImageHashing() throws {
         // Mock up an Images and Words dictionary
         let originalURL1 = URL(fileURLWithPath: "/Users/erkki/Pictures/1.jpg")
