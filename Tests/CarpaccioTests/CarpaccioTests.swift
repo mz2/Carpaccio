@@ -202,11 +202,11 @@ class CarpaccioTests: XCTestCase {
         )
         XCTAssertEqual(imageMetadata.fNumber, (dictRep[ImageMetadata.CodingKeys.fNumber.dictionaryRepresentationKey] as! NSNumber).doubleValue)
         XCTAssertEqual(imageMetadata.exposureCompensation, (dictRep[ImageMetadata.CodingKeys.exposureCompensation.dictionaryRepresentationKey] as! NSNumber).doubleValue)
-        XCTAssertEqual(imageMetadata.flashMode, dictRep[ImageMetadata.CodingKeys.flashMode.dictionaryRepresentationKey] as! FlashMode)
-        XCTAssertEqual(imageMetadata.lensMaker, dictRep[ImageMetadata.CodingKeys.lensMaker.dictionaryRepresentationKey] as! String)
-        XCTAssertEqual(imageMetadata.lensModel, dictRep[ImageMetadata.CodingKeys.lensModel.dictionaryRepresentationKey] as! String)
-        XCTAssertEqual(imageMetadata.meteringMode, dictRep[ImageMetadata.CodingKeys.meteringMode.dictionaryRepresentationKey] as! MeteringMode)
-        XCTAssertEqual(imageMetadata.whiteBalance, dictRep[ImageMetadata.CodingKeys.whiteBalance.dictionaryRepresentationKey] as! WhiteBalance)
+        XCTAssertEqual(imageMetadata.flashMode, dictRep[ImageMetadata.CodingKeys.flashMode.dictionaryRepresentationKey] as? FlashMode)
+        XCTAssertEqual(imageMetadata.lensMaker, dictRep[ImageMetadata.CodingKeys.lensMaker.dictionaryRepresentationKey] as? String)
+        XCTAssertEqual(imageMetadata.lensModel, dictRep[ImageMetadata.CodingKeys.lensModel.dictionaryRepresentationKey] as? String)
+        XCTAssertEqual(imageMetadata.meteringMode, dictRep[ImageMetadata.CodingKeys.meteringMode.dictionaryRepresentationKey] as? MeteringMode)
+        XCTAssertEqual(imageMetadata.whiteBalance, dictRep[ImageMetadata.CodingKeys.whiteBalance.dictionaryRepresentationKey] as? WhiteBalance)
         XCTAssertEqual(imageMetadata.timestamp?.timeIntervalSince1970, (dictRep[ImageMetadata.CodingKeys.timestamp.dictionaryRepresentationKey] as! NSNumber).doubleValue)
 
         let jsonEncoder = JSONEncoder()
@@ -253,6 +253,33 @@ class CarpaccioTests: XCTestCase {
         XCTAssertNotEqual(aDup, bVeryDifferent)
     }
 
+    func testFileDates() {
+        guard let url = Bundle.module.url(forResource: "iphone5", withExtension: "jpg") else {
+            XCTAssert(false)
+            return
+        }
+        let image1 = Image(URL: url)
+
+        // Asserting simply non-nilness since file timestamps aren't retained on Git.
+        //
+        // Better test would be to create a copy of the file,
+        // modify the timestamp to a known value, and assert that.
+        // Life is short, however.
+        //
+        // Values are accessed twice since there is caching going on. Failure cases here also
+        XCTAssertNotNil(image1.fileModificationDate)
+        XCTAssertNotNil(image1.fileModificationDate)
+        XCTAssertNotNil(image1.fileCreationDate)
+        XCTAssertNotNil(image1.fileCreationDate)
+
+        let nonExistentImageURL = URL(fileURLWithPath: "/Users/erkki/made-up-path/42.jpg")
+        let nonExistentImage = Image(URL: nonExistentImageURL)
+        XCTAssertNil(nonExistentImage.fileModificationDate)
+        XCTAssertNil(nonExistentImage.fileModificationDate)
+        XCTAssertNil(nonExistentImage.fileCreationDate)
+        XCTAssertNil(nonExistentImage.fileCreationDate)
+    }
+    
     func testImageHashing() throws {
         // Mock up an Images and Words dictionary
         let originalURL1 = URL(fileURLWithPath: "/Users/erkki/Pictures/1.jpg")
