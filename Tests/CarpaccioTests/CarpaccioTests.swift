@@ -231,6 +231,28 @@ class CarpaccioTests: XCTestCase {
         XCTAssertEqual(imageMetadata.timestamp, decodedImageMetadata.timestamp)
     }
 
+    func testMetadataEquality() throws {
+        let a = ImageMetadata(nativeSize: CGSize(width: 100, height: 200),
+                              colorSpaceName: "derp",
+                              cameraModel: "foo",
+                              lensMaker: "bar",
+                              timestamp: Date.distantPast)
+        let aDup = ImageMetadata(nativeSize: CGSize(width: 100, height: 200),
+                                 colorSpaceName: "derp",
+                                 cameraModel: "foo",
+                                 lensMaker: "bar",
+                                 timestamp: Date.distantPast)
+        let bVeryDifferent = ImageMetadata(nativeSize: CGSize(width: 100, height: 200),
+                                           colorSpaceName: "derpety",
+                                           cameraModel: "fooderp",
+                                           lensMaker: "bar",
+                                           timestamp: Date.distantFuture)
+        XCTAssertEqual(a, aDup)
+        XCTAssertEqual(aDup, a)
+        XCTAssertNotEqual(a, bVeryDifferent)
+        XCTAssertNotEqual(aDup, bVeryDifferent)
+    }
+
     func testFileDates() {
         guard let url = Bundle.module.url(forResource: "iphone5", withExtension: "jpg") else {
             XCTAssert(false)
