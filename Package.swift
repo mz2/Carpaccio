@@ -43,6 +43,7 @@ let package = Package(
                 .process("iphone5.jpg"),
                 .process("Pixls/DNG/hdrmerge-bayer-fp16-w-pred-deflate_.dng"),
                 .process("Pixls/X3F/DP2M1726_.X3F"),
+                .process("outline-invert_2x.png")
             ]
         ),
     ]

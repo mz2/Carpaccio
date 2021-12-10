@@ -9,6 +9,7 @@
 import Foundation
 import CoreGraphics
 import ImageIO
+import Accelerate
 
 #if os(iOS)
 import MobileCoreServices
@@ -106,7 +107,7 @@ public extension CGImage {
             throw CGImageExtensionError.failedToLoadCGImage
         }
 
-        if let colorSpace = colorSpace {
+        if let colorSpace = colorSpace, colorSpace != cgImage.colorSpace {
             return try cgImage.convertedToColorSpace(colorSpace)
         }
         return cgImage
@@ -157,10 +158,39 @@ public extension CGImage {
         return pngData
     }
 
-    func convertedToColorSpace(_ colorSpace: CGColorSpace) throws -> CGImage {
-        guard let convertedImage = self.copy(colorSpace: colorSpace) else {
-            throw CGImageExtensionError.failedToConvertColorSpace
+    /// Return a copy of the image converted to the target color space.
+    ///
+    /// Callee is responsible for checking that the colour space of the source image is not already the target color space.
+    func convertedToColorSpace(_ colorSpace: CGColorSpace, renderingIntent: CGColorRenderingIntent = .defaultIntent)
+    throws -> CGImage {
+        precondition(self.colorSpace != colorSpace)
+        guard
+            let sourceImageFormat = vImage_CGImageFormat(cgImage: self),
+            let destinationImageFormat = vImage_CGImageFormat(
+                // TODO: Generalise this to work with arbitrary color space bit depths
+                bitsPerComponent: 8,
+                // + 1 for alpha (TODO: generalise over alpha / non-alpha channeled)
+                bitsPerPixel: 8 * (colorSpace.numberOfComponents + 1),
+                colorSpace: colorSpace,
+                bitmapInfo: CGBitmapInfo(rawValue: CGImageAlphaInfo.first.rawValue),
+                renderingIntent: renderingIntent) else {
+                    throw CGImageExtensionError.failedToConvertColorSpace
+                }
+    
+        let sourceBuffer = try vImage_Buffer(cgImage: self)
+        var destinationBuffer = try vImage_Buffer(width: Int(sourceBuffer.width),
+                                                     height: Int(sourceBuffer.height),
+                                                     bitsPerPixel: destinationImageFormat.bitsPerPixel)
+
+        let converter = try vImageConverter.make(sourceFormat: sourceImageFormat,
+                                                          destinationFormat: destinationImageFormat)
+        try converter.convert(source: sourceBuffer, destination: &destinationBuffer)
+        
+        defer {
+            sourceBuffer.free()
+            destinationBuffer.free()
         }
-        return convertedImage
+        
+        return try destinationBuffer.createCGImage(format: destinationImageFormat)
     }
 }
