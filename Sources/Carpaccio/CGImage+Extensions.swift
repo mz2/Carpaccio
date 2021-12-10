@@ -107,7 +107,7 @@ public extension CGImage {
             throw CGImageExtensionError.failedToLoadCGImage
         }
 
-        if let colorSpace = colorSpace {
+        if let colorSpace = colorSpace, colorSpace != cgImage.colorSpace {
             return try cgImage.convertedToColorSpace(colorSpace)
         }
         return cgImage

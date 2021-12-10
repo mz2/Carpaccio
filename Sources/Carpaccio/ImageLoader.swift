@@ -241,8 +241,11 @@ public class ImageLoader: ImageLoaderProtocol, URLBackedImageLoaderProtocol {
 
             try stopIfCancelled(cancelChecker, "Before converting color space of thumbnail image")
 
-            let image = try thumbnail.convertedToColorSpace(colorSpace)
-            return image
+            if thumbnail.colorSpace != colorSpace {
+                let image = try thumbnail.convertedToColorSpace(colorSpace)
+                return image
+            }
+            return thumbnail
         }()
 
         // Crop letterboxing out, if needed
