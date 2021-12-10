@@ -182,10 +182,9 @@ public extension CGImage {
                                                      height: Int(sourceBuffer.height),
                                                      bitsPerPixel: destinationImageFormat.bitsPerPixel)
 
-        let toRgbConverter = try vImageConverter.make(sourceFormat: sourceImageFormat,
+        let converter = try vImageConverter.make(sourceFormat: sourceImageFormat,
                                                           destinationFormat: destinationImageFormat)
-            
-        try toRgbConverter.convert(source: sourceBuffer, destination: &destinationBuffer)
+        try converter.convert(source: sourceBuffer, destination: &destinationBuffer)
         
         defer {
             sourceBuffer.free()
