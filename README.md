@@ -1,11 +1,14 @@
+<img align="left" width="80" height="80" src="https://raw.githubusercontent.com/mz2/Carpaccio/main/Icon/Icon.png" alt="Carpaccio icon">
+
 ### Carpaccio ![SPM build & test passes](https://github.com/mz2/Carpaccio/actions/workflows/spm-build-test.yml/badge.svg) [![Swift Package Manager compatible](https://img.shields.io/badge/Swift%20Package%20Manager-compatible-brightgreen.svg)](https://github.com/apple/swift-package-manager)
+
 ##### Pure Swift goodness for RAW and other image + metadata handling
 
 Carpaccio is a Swift library for macOS and iOS that allows fast decoding of image data & EXIF metadata from file formats supported by CoreImage (including all the various RAW file formats supported, using the CoreImage RAW decoding capability).
 
 - thumbnails
 - metadata
-- full sized image 
+- full sized image
 
 Carpaccio uses multiple CPU cores efficiently in parallel for all of metadata, thumbnail and image data decoding.
 
@@ -38,7 +41,7 @@ Carpaccio is still a very fresh and raw (har har) library and there are many tas
 - [x] Add tests for RAWs from a number of different camera vendors.
 - [x] GitHub action CI support.
 - [x] iOS support.
-- [ ] Working xcframework support (when Xcode / SPM toolchain permits?) An xcframework build is already made available, but at least with Xcode 12.5.1 this results in build fails of the following kinds: 
+- [ ] Working xcframework support (when Xcode / SPM toolchain permits?) An xcframework build is already made available, but at least with Xcode 12.5.1 this results in build fails of the following kinds:
   - 'where' clause cannot be applied to a non-generic top-level declaration
   - 'Iterator' is not a member type of type 'Self'
   - 'Iterator' is not a member type of type 'Self'
