@@ -296,15 +296,38 @@ class CarpaccioTests: XCTestCase {
         XCTAssertEqual(map[image3], "walrus")
 
         // Simulate moving images to a Keepers subdirectory
-        let newURL1 = originalURL1.deletingLastPathComponent().appendingPathComponent("Keepers").appendingPathComponent(originalURL1.lastPathComponent)
+        let newURL1 = originalURL1
+            .deletingLastPathComponent()
+            .appendingPathComponent("Keepers")
+            .appendingPathComponent(originalURL1.lastPathComponent)
         image1.updateURL(newURL1)
-        let newURL2 = originalURL1.deletingLastPathComponent().appendingPathComponent("Keepers").appendingPathComponent(originalURL2.lastPathComponent)
+        
+        let newURL2 = originalURL1
+            .deletingLastPathComponent()
+            .appendingPathComponent("Keepers")
+            .appendingPathComponent(originalURL2.lastPathComponent)
         image2.updateURL(newURL2)
-        let newURL3 = originalURL1.deletingLastPathComponent().appendingPathComponent("Keepers").appendingPathComponent(originalURL3.lastPathComponent)
+        
+        let newURL3 = originalURL1.deletingLastPathComponent()
+            .appendingPathComponent("Keepers")
+            .appendingPathComponent(originalURL3.lastPathComponent)
         image3.updateURL(newURL3)
 
         XCTAssertEqual(map[image1], "cat")
         XCTAssertEqual(map[image2], "dog")
         XCTAssertEqual(map[image3], "walrus")
+    }
+
+    func testColorSpaceConversion() throws {
+        guard let url = Bundle.module.url(forResource: "outline-invert_2x", withExtension: "png") else {
+            XCTAssert(false)
+            return
+        }
+        
+        let dataProvider = CGDataProvider(filename: url.path)!
+        let image = CGImage(pngDataProviderSource: dataProvider, decode: nil, shouldInterpolate: true, intent: .defaultIntent)!
+        XCTAssertEqual(image.colorSpace!.name, CGColorSpace.genericGrayGamma2_2)
+        let convertedImage = try image.convertedToColorSpace(CGColorSpace(name: CGColorSpace.sRGB)!, renderingIntent: .perceptual)
+        XCTAssertEqual(convertedImage.colorSpace!.name, CGColorSpace.sRGB)
     }
 }
