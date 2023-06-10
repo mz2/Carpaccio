@@ -11,7 +11,20 @@ import Foundation
 import QuartzCore
 import ImageIO
 
+///
+/// Model select parts of the metadata of an image, read either from an image file's embedded metadata, or restored from a
+/// `Codable` representation.
+///
+/// For extracting metadata from images, this implementation uses Apple's Image I/O API and its defined keys for the EXIF, TIFF
+/// and IPTC metadata standards, with some custom logic for making the best educated guess for crucial bits like native size,
+/// orientation and creation date & time.
+///
+/// ## See also
+///
+/// [IPTC Photo Metadata specification](https://iptc.org/std/photometadata/specification/IPTC-PhotoMetadata)
+///
 public struct ImageMetadata: Codable, Equatable {
+    
     // MARK: Required metadata
 
     /** Width and height of the image. */
@@ -34,7 +47,7 @@ public struct ImageMetadata: Codable, Equatable {
 
     public let colorSpaceName: String?
     
-    /** In common tog parlance, this'd be "aperture": f/2.8 etc.*/
+    /// In common photographer parlance, this would be "aperture": f/2.8 etc.
     public let fNumber: Double?
     
     public let focalLength: Double?
@@ -42,7 +55,7 @@ public struct ImageMetadata: Codable, Equatable {
     public let iso: Double?
     public let shutterSpeed: TimeInterval?
     public let exposureCompensation: Double?
-    
+        
     /**
      
      Date & time best suitable to be interpreted as the image's original creation timestamp.
@@ -64,6 +77,26 @@ public struct ImageMetadata: Codable, Equatable {
 
      */
     public let timestamp: Date?
+
+    /// Description of image contents, mapping to the value of the `kCGImagePropertyIPTCCaptionAbstract` key in IPTC metadata.
+    public let description: String?
+    
+    /// Summary of image contents, mapping to the value of the `kCGImagePropertyIPTCHeadline` key in IPTC metadata.
+    public let summary: String?
+
+    ///
+    /// Star rating of the image, mapping to the value of `kCGImagePropertyIPTCStarRating` in IPTC metadata.
+    ///
+    /// The intended value range is 0 ... 5, inclusive. The
+    /// [IPTC specification](https://iptc.org/std/photometadata/specification/IPTC-PhotoMetadata#image-rating) says:
+    ///
+    /// _The value shall be -1 or in the range 0..5. -1 indicates "rejected" and 0 "unrated". If an explicit value is missing
+    /// the implicit default value is 0 should be assumed._
+    ///
+    public let rating: Int?
+    
+    /// Keywords/tags relevant to image contents, mapping to the value of the `kCGImagePropertyIPTCKeywords` key in IPTC metadata.
+    public let keywords: [String]?
 
     // Derived properties
     public var colorSpace: CGColorSpace? {
@@ -92,6 +125,10 @@ public struct ImageMetadata: Codable, Equatable {
         case flashMode = "flash-mode"
         case meteringMode = "metering-mode"
         case whiteBalance = "white-balance"
+        case summary = "summary"
+        case description = "description"
+        case rating = "rating"
+        case keywords = "keywords"
 
         var dictionaryRepresentationKey: String {
             switch self {
@@ -129,11 +166,20 @@ public struct ImageMetadata: Codable, Equatable {
                 return "meteringMode"
             case .whiteBalance:
                 return "whiteBalance"
+            case .description:
+                return "description"
+            case .summary:
+                return "summary"
+            case .rating:
+                return "rating"
+            case .keywords:
+                return "keywords"
             }
         }
     }
 
-    // MARK: Initialisers
+    // MARK: - Initialisers
+    
     public init(
         nativeSize: CGSize,
         nativeOrientation: ImageOrientation = .up,
@@ -151,7 +197,11 @@ public struct ImageMetadata: Codable, Equatable {
         flashMode: FlashMode? = nil,
         meteringMode: MeteringMode? = nil,
         whiteBalance: WhiteBalance? = nil,
-        timestamp: Date? = nil
+        timestamp: Date? = nil,
+        description: String? = nil,
+        summary: String? = nil,
+        rating: Int? = nil,
+        keywords: [String]? = nil
     ) {
         self.fNumber = fNumber
         self.cameraMaker = cameraMaker
@@ -174,6 +224,11 @@ public struct ImageMetadata: Codable, Equatable {
         self.shutterSpeed = shutterSpeed
         self.exposureCompensation = exposureCompensation
         self.timestamp = timestamp
+        
+        self.description = description
+        self.summary = summary
+        self.rating = rating
+        self.keywords = keywords
     }
 
     public static func cgColorSpaceNameForPictureStyleColorSpaceName(_ name: String) -> String? {
@@ -203,7 +258,7 @@ public struct ImageMetadata: Codable, Equatable {
         var colorSpaceName: String? = nil
         var width, height, exifWidth, exifHeight: CGFloat?
         var timestamp: Date? = nil
-
+        
         //
         // Get image dimensions. Priority order of finding this out is:
         //
@@ -222,7 +277,7 @@ public struct ImageMetadata: Codable, Equatable {
             width = pixelWidth
             height = pixelHeight
         }
-
+        
         // Examine EXIF metadata
         if let exif = properties[kCGImagePropertyExifDictionary as String] as? [String: Any] {
             fNumber = (exif[kCGImagePropertyExifFNumber as String] as? NSNumber)?.doubleValue
@@ -244,7 +299,7 @@ public struct ImageMetadata: Codable, Equatable {
             }
             
             shutterSpeed = (exif[kCGImagePropertyExifExposureTime as String] as? NSNumber)?.doubleValue
-
+            
             // Take note of width and height, for later deciding whether to use them or the top-level values
             if let pixelXDimension = (exif[kCGImagePropertyExifPixelXDimension as String] as? NSNumber)?.doubleValue,
                let pixelYDimension = (exif[kCGImagePropertyExifPixelYDimension as String] as? NSNumber)?.doubleValue
@@ -268,12 +323,28 @@ public struct ImageMetadata: Codable, Equatable {
             if let tiffOrientation = (tiff[kCGImagePropertyTIFFOrientation as String] as? NSNumber)?.uint32Value {
                 orientation = try? ImageOrientation(tiffOrientation: tiffOrientation)
             }
-
+            
             if timestamp == nil, let dateTimeString = (tiff[kCGImagePropertyTIFFDateTime as String] as? String) {
                 timestamp = ImageMetadata.EXIFDateFormatter.date(from: dateTimeString)
             }
         }
-
+        
+        // Examine IPTC metadata
+        var description: String? = nil
+        var summary: String? = nil
+        var rating: Int? = nil
+        var keywords: [String]? = nil
+        
+        if let iptc = properties[kCGImagePropertyIPTCDictionary as String] as? [String: Any] {
+            description = iptc[kCGImagePropertyIPTCCaptionAbstract as String] as? String
+            summary = iptc[kCGImagePropertyIPTCHeadline as String] as? String
+            rating = iptc[kCGImagePropertyIPTCStarRating as String] as? Int
+            if let keywordsArray = iptc[kCGImagePropertyIPTCKeywords as String] as? [String], !keywordsArray.isEmpty {
+                keywords = keywordsArray
+            }
+        }
+        
+        // Determine color space
         if colorSpaceName == nil {
             if let pictureStyleDictionary = properties["{PictureStyle}"] as? [String: Any],
                 let names = pictureStyleDictionary["PictStyleColorSpace"] as? [Any],
@@ -339,7 +410,11 @@ public struct ImageMetadata: Codable, Equatable {
             flashMode: flashMode,
             meteringMode: meteringMode,
             whiteBalance: whiteBalance,
-            timestamp: timestamp
+            timestamp: timestamp,
+            description: description,
+            summary: summary,
+            rating: rating,
+            keywords: keywords
         )
     }
 
@@ -597,6 +672,10 @@ public struct ImageMetadata: Codable, Equatable {
 
         if let timestamp = self.timestamp {
             result[CodingKeys.timestamp.dictionaryRepresentationKey] = timestamp.timeIntervalSince1970
+        }
+        
+        if let rating = self.rating {
+            result[CodingKeys.rating.dictionaryRepresentationKey] = rating
         }
 
         return result
@@ -891,6 +970,7 @@ fileprivate struct DateFormatterStylePair: Equatable, Hashable {
     }
 }
 
+// MARK: -
 
 func conditional(string s: String?, condition: Bool) -> String
 {
